@@ -3,7 +3,7 @@
 @section('content')
 <div class="header flex items-center bg-white p-3">
     <!-- Tombol Back -->
-    <a href="/chat-admin" class="flex items-center space-x-2 text-white bg-[#0A58CA] shadow-lg rounded-full p-2 mx-2 font-semibold">
+    <a href="/chat" class="flex items-center space-x-2 text-white bg-[#0A58CA] shadow-lg rounded-full p-2 mx-2 font-semibold">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
         </svg>

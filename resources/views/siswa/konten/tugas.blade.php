@@ -33,9 +33,9 @@
     <!-- Tugas -->
     <section class="mb-6">
         <h2 class="text-2xl font-semibold mb-4">Tugas (7)</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            @for ($i = 1; $i <= 3; $i++)
-            <a href="{{ route('siswa.tugas.detail', ['id' => $i]) }}" class="block">
+        <div class="flex flex-col gap-4 lg:flex-row lg:overflow-x-auto lg:space-x-4 lg:gap-0 px-1">
+            @for ($i = 1; $i <= 6; $i++)
+            <a href="{{ route('siswa.tugas.detail', ['id' => $i]) }}" class="flex-shrink-0 w-full lg:w-64">
                 <div class="bg-white rounded-lg shadow p-4 text-center hover:shadow-md transition h-full">
                     <img src="/logo.png" alt="Tugas {{ $i }}" class="mx-auto rounded-md">
                     <p class="mt-2 font-medium text-blue-500 hover:underline">Tugas {{ $i }}</p>
@@ -50,9 +50,9 @@
     <!-- Kuis Harian -->
     <section>
         <h2 class="text-2xl font-semibold mb-4">Kuis Harian</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            @for ($i = 1; $i <= 3; $i++)
-            <a href="{{ route('siswa.kuis.detail', ['id' => $i]) }}" class="block">
+        <div class="flex flex-col gap-4 lg:flex-row lg:overflow-x-auto lg:space-x-4 lg:gap-0 px-1">
+            @for ($i = 1; $i <= 7; $i++)
+            <a href="{{ route('siswa.kuis.detail', ['id' => $i]) }}" class="flex-shrink-0 w-full lg:w-64">
                 <div class="bg-white rounded-lg shadow p-4 text-center hover:shadow-md transition h-full">
                     <img src="/logo.png" alt="Kuis {{ $i }}" class="mx-auto rounded-md">
                     <p class="mt-2 font-medium text-blue-500 hover:underline">Kuis {{ $i }}</p>
@@ -63,5 +63,6 @@
             @endfor
         </div>
     </section>
+
 </main>
 @endsection

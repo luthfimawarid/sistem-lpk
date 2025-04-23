@@ -1,18 +1,6 @@
 @extends('siswa.main.sidebar')
 
 @section('content')
-<!-- <div class="header flex justify-between items-center bg-white p-3 md:p-5">
-    <h1 class="text-lg md:text-xl font-semibold mx-3 md:mx-7">Welcome Back, Alamsyah!</h1>
-    <div class="kanan flex items-center space-x-3 md:space-x-5 me-3 md:me-5">
-        <svg class="w-5 h-5 md:w-6 md:h-6 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
-        </svg>
-        <svg class="w-8 h-6 md:w-10 md:h-8 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
-            <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd"/>
-        </svg>
-    </div>
-</div> -->
-
 <div class="p-5 md:p-10 bg-blue-50">
     <!-- Ongoing Courses -->
     <section class="mb-6">
@@ -41,7 +29,7 @@
         <section class="md:col-span-2 bg-white rounded-lg shadow p-4 md:p-6">
             <div class="flex justify-between items-center mb-4">
                 <p class="text-lg md:text-xl font-semibold">Nilai Latihan</p>
-                <select id="chartFilter" class="border text-xs md:text-lg p-2 rounded-md">
+                <select id="intervalSelect" class="border text-xs md:text-lg p-2 rounded-md">
                     <option value="daily">Harian</option>
                     <option value="weekly" selected>Mingguan</option>
                     <option value="monthly">Bulanan</option>
@@ -55,7 +43,7 @@
             <p class="text-lg font-medium">Pesan</p>
             <div id="chat-box" class="flex-1 overflow-y-auto space-y-3 mt-4">
                 <div class="flex items-start space-x-3">
-                    <div class="w-8 h-8 md:w-10 md:h-10 bg-gray-300 rounded-full flex items-center justify-center font-medium">A</div>
+                  div class="w-8 h-8 md:w-10 md:h-10 bg-gray-300 rounded-full flex items-center justify-center font-medium">A</div>
                     <div class="bg-gray-100 rounded-lg p-2 md:p-3 w-full">
                         <p class="text-xs md:text-sm font-medium">~ Alamsyah</p>
                         <p class="text-xs md:text-sm">Jangan lupa tugas hari ini guys!!</p>
@@ -120,7 +108,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const ctx = document.getElementById('nilaiChart').getContext('2d');
-        const chartFilter = document.getElementById('chartFilter');
+        const intervalSelect = document.getElementById('intervalSelect');
 
         const chartData = {
             daily: {
@@ -148,16 +136,18 @@
                     {
                         label: 'Nilai Bahasa',
                         data: chartData['weekly'].nilaiBahasa,
-                        backgroundColor: '#0A58CA',
+                        backgroundColor: 'rgba(10, 88, 202, 0.2)',
                         borderColor: '#0A58CA',
-                        borderWidth: 1
+                        borderWidth: 2,
+                        tension: 0.3
                     },
                     {
                         label: 'Nilai Budaya',
                         data: chartData['weekly'].nilaiBudaya,
-                        backgroundColor: '#FF7F00',
+                        backgroundColor: 'rgba(255, 127, 0, 0.2)',
                         borderColor: '#FF7F00',
-                        borderWidth: 1
+                        borderWidth: 2,
+                        tension: 0.3
                     }
                 ]
             },
@@ -179,7 +169,7 @@
             }
         });
 
-        chartFilter.addEventListener('change', function () {
+        intervalSelect.addEventListener('change', function () {
             const selectedOption = this.value;
             nilaiChart.data.labels = chartData[selectedOption].labels;
             nilaiChart.data.datasets[0].data = chartData[selectedOption].nilaiBahasa;

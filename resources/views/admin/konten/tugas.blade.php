@@ -28,7 +28,7 @@
     <section class="mb-6">
         <h2 class="text-2xl font-semibold mb-4">Tugas (7)</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            @for ($i = 1; $i <= 3; $i++)
+            @for ($i = 1; $i <= 7; $i++)
             <a href="{{ route('admin.tugas.detail', ['id' => $i]) }}" class="block">
                 <div class="bg-white rounded-lg shadow p-4 text-center hover:shadow-md transition h-full">
                     <img src="/logo.png" alt="Tugas {{ $i }}" class="mx-auto rounded-md">
