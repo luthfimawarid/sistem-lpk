@@ -18,21 +18,33 @@
                         <th class="border border-blue-100 px-4 py-2 text-left">Nama Siswa</th>
                         <th class="border border-blue-100 px-4 py-2 text-left">Tanggal Pengumpulan</th>
                         <th class="border border-blue-100 px-4 py-2 text-left">Status</th>
+                        <th class="border border-blue-100 px-4 py-2 text-left">File Jawaban</th>
                         <th class="border border-blue-100 px-4 py-2 text-left">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @for ($i = 1; $i <= 10; $i++)
+                    @forelse ($pengumpulan as $index => $item)
                     <tr>
-                        <td class="border border-blue-100 px-4 py-2">{{ $i }}</td>
-                        <td class="border border-blue-100 px-4 py-2">Siswa {{ $i }}</td>
-                        <td class="border border-blue-100 px-4 py-2">10 Agustus 2024</td>
-                        <td class="border border-blue-100 px-4 py-2">Belum Dinilai</td>
+                        <td class="border border-blue-100 px-4 py-2">{{ $index + 1 }}</td>
+                        <td class="border border-blue-100 px-4 py-2">{{ $item->user->nama_lengkap ?? '-' }}</td>
+                        <td class="border border-blue-100 px-4 py-2">{{ \Carbon\Carbon::parse($item->updated_at)->translatedFormat('d F Y') }}</td>
+                        <td class="border border-blue-100 px-4 py-2 capitalize">{{ str_replace('_', ' ', $item->status) }}</td>
+                        <td class="border border-blue-100 px-4 py-2">
+                            @if ($item->jawaban)
+                                <a href="{{ asset('storage/jawaban_siswa/'.$item->jawaban) }}" target="_blank" class="text-blue-600 hover:underline">Lihat File</a>
+                            @else
+                                <span class="text-gray-500 italic">Tidak ada file</span>
+                            @endif
+                        </td>
                         <td class="border border-blue-100 px-4 py-2 text-green-600">
-                            <a href="/input-nilai/{{ $i }}" class="text-green-600 hover:underline">Beri Nilai</a>
+                            <a href="/input-nilai/{{ $item->id }}" class="text-green-600 hover:underline">Beri Nilai</a>
                         </td>
                     </tr>
-                    @endfor
+                    @empty
+                    <tr>
+                        <td colspan="5" class="text-center py-4">Belum ada siswa yang mengumpulkan tugas.</td>
+                    </tr>
+                    @endforelse
                 </tbody>
             </table>
         </div>

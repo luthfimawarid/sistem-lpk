@@ -18,9 +18,13 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'id',
+        'nama_lengkap',
         'email',
         'password',
+        'role',
+        'kelas',
+        'foto'
     ];
 
     /**
@@ -45,4 +49,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function TugasUser()
+    {
+        return $this->hasMany(TugasUser::class);
+    }
+
 }

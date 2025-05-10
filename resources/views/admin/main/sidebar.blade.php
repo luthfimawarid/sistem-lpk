@@ -23,21 +23,31 @@
             </button>
 
             <!-- Teks Welcome Back -->
-            <h1 class="text-sm md:text-xl md:ml-64 font-semibold">Welcome Back, Alamsyah!</h1>
-
+            <h1 class="text-sm md:text-xl md:ml-64 font-semibold">
+                Welcome Back, {{ Auth::user()->nama_lengkap }}!
+            </h1>
             <!-- Ikon Profil & Search -->
-            <div class="flex items-center space-x-3 md:space-x-5">
-                <svg class="w-5 h-5 md:w-6 md:h-6 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="none"
-                    viewBox="0 0 24 24">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
-                        d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
+            <div class="flex items-center space-x-3 md:space-x-3">
+                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
                 </svg>
-                <svg class="w-8 h-6 md:w-10 md:h-8 text-gray-800" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                    viewBox="0 0 24 24">
-                    <path fill-rule="evenodd"
-                        d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z"
-                        clip-rule="evenodd" />
-                </svg>
+                <div class="relative">
+                    <button id="profileBtn" class="focus:outline-none">
+                        <svg class="w-8 h-8 mt-1.5 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd"/>
+                        </svg>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div id="profileDropdown"
+                        class="hidden absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border z-50">
+                        <a href="/profil-admin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Lihat Profil</a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -49,7 +59,7 @@
             </div>
             <ul class="space-y-2">
                 <li>
-                    <a href="/admin" class="flex items-center p-2 rounded-lg hover:bg-[#A6CDC6]">
+                    <a href="/admin/dashboard" class="flex items-center p-2 rounded-lg hover:bg-[#A6CDC6]">
                         <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                             <path fill-rule="evenodd" d="M4.857 3A1.857 1.857 0 0 0 3 4.857v4.286C3 10.169 3.831 11 4.857 11h4.286A1.857 1.857 0 0 0 11 9.143V4.857A1.857 1.857 0 0 0 9.143 3H4.857Zm10 0A1.857 1.857 0 0 0 13 4.857v4.286c0 1.026.831 1.857 1.857 1.857h4.286A1.857 1.857 0 0 0 21 9.143V4.857A1.857 1.857 0 0 0 19.143 3h-4.286Zm-10 10A1.857 1.857 0 0 0 3 14.857v4.286C3 20.169 3.831 21 4.857 21h4.286A1.857 1.857 0 0 0 11 19.143v-4.286A1.857 1.857 0 0 0 9.143 13H4.857Zm10 0A1.857 1.857 0 0 0 13 14.857v4.286c0 1.026.831 1.857 1.857 1.857h4.286A1.857 1.857 0 0 0 21 19.143v-4.286A1.857 1.857 0 0 0 19.143 13h-4.286Z" clip-rule="evenodd"/>
                         </svg>
@@ -69,29 +79,29 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                         </svg>
                     </button>
-                    <ul id="dropdown-menu" class="hidden pl-8 mt-2 space-y-2">
-                        <li class="flex items-center p-2 rounded-lg hover:bg-[#A6CDC6]">
-                            <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <div id="dropdown-menu" class="hidden pl-8 mt-2 space-y-2">
+                        <a href="/ebook-admin" class="flex items-center p-2 rounded-lg hover:bg-[#A6CDC6] text-white">
+                            <svg class="w-6 h-6 text-white dark:text-white mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                                 <path fill-rule="evenodd" d="M6 2a2 2 0 0 0-2 2v15a3 3 0 0 0 3 3h12a1 1 0 1 0 0-2h-2v-2h2a1 1 0 0 0 1-1V4a2 2 0 0 0-2-2h-8v16h5v2H7a1 1 0 1 1 0-2h1V2H6Z" clip-rule="evenodd"/>
                             </svg>
-                            <a href="/ebook-admin" class="block text-white">E-book</a>
-                            <span class="w-2 h-2 rounded-full bg-white opacity-0 group-[.active-link]:opacity-100"></span>
-                        </li>
-                        <li class="flex items-center p-2 rounded-lg hover:bg-[#A6CDC6]">
-                            <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <span>E-book</span>
+                        </a>
+
+                        <a href="/listening-admin" class="flex items-center p-2 rounded-lg hover:bg-[#A6CDC6] text-white">
+                            <svg class="w-6 h-6 text-white dark:text-white mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                                 <path fill-rule="evenodd" d="M12 5a7 7 0 0 0-7 7v1.17c.313-.11.65-.17 1-.17h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H6a3 3 0 0 1-3-3v-6a9 9 0 0 1 18 0v6a3 3 0 0 1-3 3h-2a1 1 0 0 1-1-1v-6a1 1 0 0 1 1-1h2c.35 0 .687.06 1 .17V12a7 7 0 0 0-7-7Z" clip-rule="evenodd"/>
                             </svg>
-                            <a href="/listening-admin" class="block text-white">Listening</a>
-                            <span class="w-2 h-2 rounded-full bg-white opacity-0 group-[.active-link]:opacity-100"></span>
-                        </li>
-                        <li class="flex items-center p-2 rounded-lg hover:bg-[#A6CDC6]">
-                            <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <span>Listening</span>
+                        </a>
+
+                        <a href="/video-admin" class="flex items-center p-2 rounded-lg hover:bg-[#A6CDC6] text-white">
+                            <svg class="w-6 h-6 text-white dark:text-white mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                                 <path fill-rule="evenodd" d="M19.003 3A2 2 0 0 1 21 5v2h-2V5.414L17.414 7h-2.828l2-2h-2.172l-2 2H9.586l2-2H9.414l-2 2H3V5a2 2 0 0 1 2-2h14.003ZM3 9v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9H3Zm2-2.414L6.586 5H5v1.586Zm4.553 4.52a1 1 0 0 1 1.047.094l4 3a1 1 0 0 1 0 1.6l-4 3A1 1 0 0 1 9 18v-6a1 1 0 0 1 .553-.894Z" clip-rule="evenodd"/>
                             </svg>
-                            <a href="/video-admin" class="block text-white">Video</a>
-                            <span class="w-2 h-2 rounded-full bg-white opacity-0 group-[.active-link]:opacity-100"></span>
-                        </li>
-                    </ul>
+                            <span>Video</span>
+                        </a>
+                    </div>
+
                 </li>
                 <li>
                     <a href="/chat-admin" class="flex items-center p-2 rounded-lg hover:bg-[#A6CDC6]">
@@ -151,6 +161,19 @@
 
     <!-- JavaScript -->
     <script>
+        const profileBtn = document.getElementById('profileBtn');
+            const profileDropdown = document.getElementById('profileDropdown');
+
+            profileBtn.addEventListener('click', function () {
+                profileDropdown.classList.toggle('hidden');
+            });
+
+            // Tutup dropdown saat klik di luar area
+            window.addEventListener('click', function (e) {
+                if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                    profileDropdown.classList.add('hidden');
+                }
+            });
        document.addEventListener("DOMContentLoaded", function () {
         // Menandai link aktif berdasarkan URL saat ini
         const links = document.querySelectorAll('a[href]');

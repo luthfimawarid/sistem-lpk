@@ -1,53 +1,66 @@
 @extends('admin.main.sidebar')
 
 @section('content')
-<!-- 
-<div class="header flex justify-between items-center bg-white p-3">
-    <div class="kiri">
-        <h1 class="text-xl font-semibold my-2 mx-7">Welcome Back, Alamsyah!</h1>
-    </div>
-    <div class="kanan flex items-center me-5">
-        <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
-        </svg>
-        <svg class="w-10 h-8 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-            <path fill-rule="evenodd" d="M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4h-4Z" clip-rule="evenodd"/>
-        </svg>
-    </div>
-</div> -->
 
-<div class="p-10 bg-blue-50">
-    <div class="header flex justify-between items-center pb-6">
-        <h1 class="text-xl font-semibold">Edit Kuis</h1>
-        <a href="/tugas-admin" class="bg-[#0A58CA] text-white py-2 px-4 rounded-lg">Kembali</a>
+<div class="p-6 bg-blue-50 min-h-screen">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-xl font-semibold">Edit Tugas</h1>
+        <a href="{{ route('tugas.index') }}" class="bg-[#0A58CA] text-white py-2 px-4 rounded-lg">Kembali</a>
     </div>
 
-    <main class="min-h-screen bg-gray-100">
-        <form action="#" method="POST" class="bg-white p-6 rounded-lg shadow-md">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <form action="{{ route('tugas.update', $tugas->id) }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            @method('PUT')
+
             <div class="mb-4">
-                <label for="judul" class="block text-sm font-medium text-gray-700">Judul Kuis</label>
-                <input type="text" id="judul" name="judul" class="mt-1 p-2 w-full border rounded-md" placeholder="Masukkan judul Kuis">
+                <label class="block text-sm font-medium text-gray-700">Judul</label>
+                <input type="text" name="judul" class="mt-1 p-2 w-full border rounded-md" value="{{ old('judul', $tugas->judul) }}" required>
             </div>
+
             <div class="mb-4">
-                <label for="deskripsi" class="block text-sm font-medium text-gray-700">Deskripsi</label>
-                <textarea id="deskripsi" name="deskripsi" rows="4" class="mt-1 p-2 w-full border rounded-md" placeholder="Masukkan deskripsi Kuis"></textarea>
+                <label class="block text-sm font-medium text-gray-700">Deskripsi</label>
+                <textarea name="deskripsi" rows="4" class="mt-1 p-2 w-full border rounded-md">{{ old('deskripsi', $tugas->deskripsi) }}</textarea>
             </div>
+
             <div class="mb-4">
-                <label for="deadline" class="block text-sm font-medium text-gray-700">Deadline</label>
-                <input type="date" id="deadline" name="deadline" class="mt-1 p-2 w-full border rounded-md">
+                <label class="block text-sm font-medium text-gray-700">Deadline</label>
+                <input type="date" name="deadline" class="mt-1 p-2 w-full border rounded-md" value="{{ old('deadline', $tugas->deadline) }}">
             </div>
+
             <div class="mb-4">
-                <label for="tipe" class="block text-sm font-medium text-gray-700">Tipe</label>
-                <select id="tipe" name="tipe" class="mt-1 p-2 w-full border rounded-md">
-                    <option value="Kuis">Kuis</option>
-                    <option value="kuis">Kuis</option>
-                    <option value="ujian_akhir">Ujian Akhir</option>
+                <label class="block text-sm font-medium text-gray-700">Tipe</label>
+                <select name="tipe" class="mt-1 p-2 w-full border rounded-md" required>
+                    <option value="tugas" {{ $tugas->tipe == 'tugas' ? 'selected' : '' }}>Tugas</option>
+                    <option value="kuis" {{ $tugas->tipe == 'kuis' ? 'selected' : '' }}>Kuis</option>
+                    <option value="ujian_akhir" {{ $tugas->tipe == 'ujian_akhir' ? 'selected' : '' }}>Ujian Akhir</option>
                 </select>
             </div>
-            <div class="flex justify-end">
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md">Simpan</button>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Cover (opsional)</label>
+                <input type="file" name="cover" accept="image/png,image/jpeg" class="mt-1 p-2 w-full border rounded-md">
+                @if($tugas->cover)
+                    <img src="{{ asset('storage/cover_tugas/'.$tugas->cover) }}" class="w-20 mt-2">
+                @endif
             </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Status</label>
+                <select name="status" class="mt-1 p-2 w-full border rounded-md" required>
+                    <option value="belum_selesai" {{ $tugas->status == 'belum_selesai' ? 'selected' : '' }}>Belum Selesai</option>
+                    <option value="selesai" {{ $tugas->status == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                </select>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="bg-[#0A58CA] text-white px-6 py-2 rounded-md hover:bg-blue-700 transition">
+                    Update
+                </button>
+            </div>
+
         </form>
-    </main>
+    </div>
 </div>
+
 @endsection

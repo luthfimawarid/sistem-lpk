@@ -40,10 +40,13 @@
 
         <!-- Chat -->
         <section class="bg-white rounded-lg shadow p-4 md:p-6 flex flex-col">
-            <p class="text-lg font-medium">Pesan</p>
+            <div class="flex justify-between items-center">
+                <p class="text-lg font-medium">Pesan</p>
+                <a href="/chat" class="text-sm text-[#0A58CA]">Lihat semua</a>
+            </div>
             <div id="chat-box" class="flex-1 overflow-y-auto space-y-3 mt-4">
                 <div class="flex items-start space-x-3">
-                  div class="w-8 h-8 md:w-10 md:h-10 bg-gray-300 rounded-full flex items-center justify-center font-medium">A</div>
+                  <div class="w-8 h-8 md:w-10 md:h-10 bg-gray-300 rounded-full flex items-center justify-center font-medium">A</div>
                     <div class="bg-gray-100 rounded-lg p-2 md:p-3 w-full">
                         <p class="text-xs md:text-sm font-medium">~ Alamsyah</p>
                         <p class="text-xs md:text-sm">Jangan lupa tugas hari ini guys!!</p>
