@@ -53,7 +53,7 @@ class TugasController extends Controller
         
     
         // Simpan soal jika tipe kuis atau ujian_akhir
-        if (in_array($request->tipe, ['kuis', 'ujian_akhir']) && $request->has('soal')) {
+        if (in_array($request->tipe, ['kuis', 'ujian_akhir','tryout']) && $request->has('soal')) {
             foreach ($request->soal as $item) {
                 SoalKuis::create([
                     'tugas_id' => $tugas->id,
@@ -139,6 +139,7 @@ class TugasController extends Controller
     
         switch ($tugas->tipe) {
             case 'kuis':
+            case 'tryout':
             case 'ujian_akhir':
                 return view('siswa.konten.detailkuis', compact('tugas'));
             default:
@@ -150,18 +151,17 @@ class TugasController extends Controller
     {
         $tugas = Tugas::with('soalKuis')->findOrFail($id);
         $userId = Auth::id();
-    
+
         $benar = 0;
         $totalSoal = $tugas->soalKuis->count();
-    
+
         foreach ($request->jawaban as $soalId => $jawaban) {
             $soal = $tugas->soalKuis->firstWhere('id', $soalId);
-    
+
             if ($soal && strtoupper($soal->jawaban) === strtoupper($jawaban)) {
                 $benar++;
             }
-    
-            // Simpan jawaban
+
             JawabanKuis::updateOrCreate(
                 [
                     'tugas_id' => $tugas->id,
@@ -173,11 +173,9 @@ class TugasController extends Controller
                 ]
             );
         }
-    
-        // Hitung nilai
+
         $nilai = $totalSoal > 0 ? round(($benar / $totalSoal) * 100) : 0;
-    
-        // Simpan nilai dan status ke tugas_user
+
         TugasUser::updateOrCreate(
             [
                 'tugas_id' => $tugas->id,
@@ -189,9 +187,13 @@ class TugasController extends Controller
                 'catatan' => 'Nilai dihitung otomatis oleh sistem kuis'
             ]
         );
-    
-        return redirect()->route('siswa.tugas')->with('success', 'Kuis selesai. Nilai Anda: ' . $nilai);
+
+        return response()->json([
+            'success' => true,
+            'nilai' => $nilai
+        ]);
     }
+
     
 
     public function kirimJawaban(Request $request, $id)

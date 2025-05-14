@@ -10,7 +10,7 @@ class MateriController extends Controller
     public function indexEbook()
     {
         $materi = Materi::where('tipe', 'ebook')->get();
-        $tipe = 'ebook'; // tetap ada
+        $tipe = 'ebook'; 
         return view('admin.konten.ebook', compact('materi', 'tipe')); // <<< PERBAIKI INI
     }
 
@@ -129,6 +129,30 @@ class MateriController extends Controller
         $materi->delete();
 
         return redirect()->back()->with('success', 'Materi berhasil dihapus.');
+    }
+
+    public function siswaEbook()
+    {
+        $materi = Materi::where('tipe', 'ebook')->where('status', 'aktif')->get();
+        $tipe = 'ebook'; 
+
+        return view('siswa.konten.ebook', compact('materi', 'tipe'));
+    }
+
+    public function siswaListening()
+    {
+        $materi = Materi::where('tipe', 'listening')->where('status', 'aktif')->get();
+        $tipe = 'listening'; 
+
+        return view('siswa.konten.listening', compact('materi','tipe'));
+    }
+
+    public function siswaVideo()
+    {
+        $materi = Materi::where('tipe', 'video')->where('status', 'aktif')->get();
+        $tipe = 'video'; 
+
+        return view('siswa.konten.video', compact('materi','tipe'));
     }
 
 

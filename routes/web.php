@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MateriController;
 use App\Http\Controllers\SertifikatController;
 use App\Http\Controllers\TugasController;
+use App\Http\Controllers\dashboardController;
 
 
 Route::get('/', [AuthController::class, 'showLoginForm'])->name('login');
@@ -12,36 +13,23 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/siswa/dashboard', function () {
-        return view('siswa.konten.dashboard');
-    })->name('siswa.dashboard');
+    Route::get('/siswa/dashboard', [DashboardController::class, 'indexsiswa'])->name('siswa.dashboard');
+    Route::get('/admin/dashboard', [dashboardController::class, 'index'])->name('admin.dashboard');
 
-    Route::get('/admin/dashboard', function () {
-        return view('admin.konten.dashboard');
-    })->name('admin.dashboard');
 
     Route::get('/tugas', [TugasController::class, 'indexSiswa'])->name('siswa.tugas');
     Route::post('/siswa/tugas/{id}/kirim', [TugasController::class, 'kirimJawaban'])->name('siswa.kirimJawaban');
     Route::get('/siswa/tugas/{id}', [TugasController::class, 'showSiswa'])->name('siswa.tugas.detail');
     Route::post('/kuis/{id}/jawab', [TugasController::class, 'submitKuis'])->name('kuis.jawab');
-
+    Route::get('/ebook', [MateriController::class, 'siswaEbook'])->name('siswa.ebook');
+    Route::get('/listening', [MateriController::class, 'siswaListening'])->name('siswa.listening');
+    Route::get('/video', [MateriController::class, 'siswaVideo'])->name('siswa.video');
     Route::get('/sertifikat', [SertifikatController::class, 'siswaIndex'])->name('siswa.sertifikat');
+    Route::get('/rapot', [dashboardController::class, 'nilaisiswa'])->name('siswa.nilai');
 
 });
 
 
-
-Route::get('/ebook', function () {
-    return view('siswa.konten.ebook');
-});
-
-Route::get('/listening', action: function () {
-    return view('siswa.konten.listening');
-});
-
-Route::get('/video', function () {
-    return view('siswa.konten.video');
-});
 
 Route::get('/chat', function () {
     return view('siswa.konten.chat');
@@ -52,9 +40,9 @@ Route::get('/kelas/{id}', function ($id) {
     return view('siswa.konten.isichat', ['kelas' => $kelas]);
 })->name('kelas.siswa.show');
 
-Route::get('/rapot', function () {
-    return view('siswa.konten.rapot');
-});
+// Route::get('/rapot', function () {
+//     return view('siswa.konten.rapot');
+// });
 
 // Route::get('/sertifikat', function () {
 //     return view('siswa.konten.sertifikat');

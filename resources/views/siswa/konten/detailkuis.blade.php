@@ -21,7 +21,7 @@
         <!-- Form Jawaban -->
         <div class="mt-6 p-4 bg-gray-50 rounded-lg">
             <h2 class="text-lg font-semibold">📝 Soal Kuis</h2>
-            <form action="{{ route('kuis.jawab', $tugas->id) }}" method="POST">
+            <form id="kuisForm" action="{{ route('kuis.jawab', $tugas->id) }}" method="POST">
                 @csrf
                 @foreach ($tugas->soalKuis as $index => $soal)
                 <div class="mt-6">
@@ -40,7 +40,54 @@
                     Kirim Jawaban
                 </button>
             </form>
+
+            <!-- Modal nilai -->
+            <div id="hasilModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
+                <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                    <h2 class="text-xl font-bold mb-4">🎉 Nilai Anda</h2>
+                    <p id="nilaiText" class="text-3xl font-semibold text-blue-600"></p>
+                    <button onclick="closeModal()" class="mt-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        Tutup
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 @endsection
+@section('scripts')
+<script>
+    const form = document.getElementById('kuisForm');
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        fetch(form.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.nilai !== undefined) {
+                document.getElementById('nilaiText').innerText = data.nilai;
+                document.getElementById('hasilModal').classList.remove('hidden');
+            } else {
+                alert("Terjadi kesalahan dalam penilaian.");
+            }
+        })
+        .catch(err => {
+            alert("Gagal mengirim jawaban.");
+            console.error(err);
+        });
+    });
+
+    function closeModal() {
+        document.getElementById('hasilModal').classList.add('hidden');
+        window.location.href = "{{ route('siswa.tugas') }}"; // Redirect setelah modal ditutup
+    }
+</script>
+@endsection
+

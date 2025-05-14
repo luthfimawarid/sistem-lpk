@@ -11,11 +11,8 @@ class TugasUser extends Model
 
     protected $table = 'tugas_user';
 
-    protected $fillable = [
-        'tugas_id',
-        'user_id',
-        'status',
-    ];
+    protected $fillable = ['tugas_id', 'user_id', 'status', 'nilai', 'catatan'];
+
 
     // Relasi ke model Tugas
     public function tugas()

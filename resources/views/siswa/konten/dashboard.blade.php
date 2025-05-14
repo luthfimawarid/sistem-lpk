@@ -3,29 +3,22 @@
 @section('content')
 <div class="p-5 md:p-10 bg-blue-50">
     <!-- Ongoing Courses -->
-    <section class="mb-6">
-        <div class="header flex justify-between items-center">
-            <p class="text-lg md:text-xl font-semibold">Ongoing Courses (21)</p>
-            <a href="/ebook" class="px-3 py-2 text-xs md:text-sm text-blue-600 border border-blue-600 rounded-full font-semibold">Lihat semua</a>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            <div class="bg-white rounded-lg shadow p-3 md:p-4 text-center">
-                <img src="/logo.png" alt="Kanji Course" class="rounded-lg mb-2 mx-auto w-3/4 md:w-full">
-                <p class="text-sm md:text-base font-medium">Mengenal Kanji Dasar (JLPT N5-N4)</p>
+<section class="mb-6">
+    <div class="flex justify-between items-center">
+        <p class="text-base md:text-lg font-semibold">Ongoing Courses (21)</p>
+        <a href="/ebook" class="px-3 py-1 text-sm md:text-base text-[#0A58CA] rounded-full font-semibold border border-[#0A58CA]">Lihat semua</a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+        @foreach ($courses as $course)
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <img src="{{ asset('storage/cover/' . $course->cover) }}" alt="Course Image" class="rounded-lg mb-2 mx-auto max-w-[150px]">
+                <p class="font-medium text-base md:text-lg">{{ $course->judul }}</p>
             </div>
-            <div class="bg-white rounded-lg shadow p-3 md:p-4 text-center">
-                <img src="/logo.png" alt="Conversation Course" class="rounded-lg mb-2 mx-auto w-3/4 md:w-full">
-                <p class="text-sm md:text-base font-medium">Percakapan Sehari-hari dalam Bahasa Jepang</p>
-            </div>
-            <div class="bg-white rounded-lg shadow p-3 md:p-4 text-center">
-                <img src="/logo.png" alt="Culture Course" class="rounded-lg mb-2 mx-auto w-3/4 md:w-full">
-                <p class="text-sm md:text-base font-medium">Keberagaman Budaya Jepang</p>
-            </div>
-        </div>
-    </section>
+        @endforeach
+    </div>
+</section>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <!-- Nilai Latihan -->
         <section class="md:col-span-2 bg-white rounded-lg shadow p-4 md:p-6">
             <div class="flex justify-between items-center mb-4">
                 <p class="text-lg md:text-xl font-semibold">Nilai Latihan</p>
@@ -70,15 +63,17 @@
                     <tr class="text-gray-600 bg-blue-50">
                         <th class="py-2 px-3 md:py-3 md:px-6">Courses Name</th>
                         <th class="py-2 px-3 md:py-3 md:px-6">Category</th>
-                        <th class="py-2 px-3 md:py-3 md:px-6">Progress</th>
+                        <th class="py-2 px-3 md:py-3 md:px-6">Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-t">
-                        <td class="py-2 px-3 md:py-3 md:px-6">Mengenal Kanji Dasar (JLPT N5-N4)</td>
-                        <td class="py-2 px-3 md:py-3 md:px-6">Video</td>
-                        <td class="py-2 px-3 md:py-3 md:px-6">45%</td>
-                    </tr>
+                    @foreach ($myCourses as $materi)
+                        <tr class="border-t">
+                            <td class="py-2 px-3 md:py-3 md:px-6">{{ $materi->judul }}</td>
+                            <td class="py-2 px-3 md:py-3 md:px-6">{{ ucfirst($materi->tipe) }}</td>
+                            <td class="py-2 px-3 md:py-3 md:px-6">aktif</td> {{-- Dummy progress --}}
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </section>
@@ -109,48 +104,99 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const ctx = document.getElementById('nilaiChart').getContext('2d');
-        const intervalSelect = document.getElementById('intervalSelect');
+    const nilaiTugas = @json($nilaiTugas);
+    const nilaiEvaluasi = @json($nilaiEvaluasi);
+    const nilaiTryout = @json($nilaiTryout);
 
-        const chartData = {
-            daily: {
-                labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
-                nilaiBahasa: [80, 85, 90, 70, 75, 95, 100],
-                nilaiBudaya: [70, 75, 85, 65, 80, 90, 95]
-            },
-            weekly: {
-                labels: ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'],
-                nilaiBahasa: [85, 88, 90, 92],
-                nilaiBudaya: [75, 78, 80, 85]
-            },
-            monthly: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
-                nilaiBahasa: [75, 80, 85, 90, 88, 92, 95, 90, 85, 80, 78, 85],
-                nilaiBudaya: [70, 72, 78, 80, 75, 85, 90, 85, 80, 75, 73, 80]
+    function getDayName(dateStr) {
+        const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        return days[new Date(dateStr).getDay()];
+    }
+
+    function formatDataByInterval(data, interval) {
+        const grouped = {};
+        const labelMap = new Map();
+
+        let index = 1;
+
+        data.forEach(entry => {
+            const date = new Date(entry.tanggal);
+            let label = '';
+
+            if (interval === 'daily') {
+                label = getDayName(entry.tanggal);
+            } else if (interval === 'weekly') {
+                const yearStart = new Date(date.getFullYear(), 0, 1);
+                const weekNumber = Math.ceil((((date - yearStart) / 86400000) + yearStart.getDay() + 1) / 7);
+                label = `Minggu ke-${weekNumber}`;
+            } else if (interval === 'monthly') {
+                label = `Bulan ke-${date.getMonth() + 1}`;
             }
+
+            if (!grouped[label]) {
+                grouped[label] = [];
+                if (!labelMap.has(label)) labelMap.set(label, index++);
+            }
+
+            grouped[label].push(entry.nilai);
+        });
+
+        const sortedLabels = Array.from(labelMap.entries()).sort((a, b) => a[1] - b[1]).map(l => l[0]);
+        const values = sortedLabels.map(label => {
+            const nilai = grouped[label];
+            return Math.round(nilai.reduce((a, b) => a + b, 0) / nilai.length); // rata-rata
+        });
+
+        return { labels: sortedLabels, values };
+    }
+
+    const intervalSelect = document.getElementById('intervalSelect');
+    let chartInstance = null;
+
+    function renderChart(interval) {
+        const tugas = formatDataByInterval(nilaiTugas, interval);
+        const evaluasi = formatDataByInterval(nilaiEvaluasi, interval);
+        const tryout = formatDataByInterval(nilaiTryout, interval);
+
+        const allLabels = [...new Set([...tugas.labels, ...evaluasi.labels, ...tryout.labels])];
+
+        const alignData = (labels, dataset) => {
+            return labels.map(label => {
+                const idx = dataset.labels.indexOf(label);
+                return idx !== -1 ? dataset.values[idx] : null;
+            });
         };
 
-        let nilaiChart = new Chart(ctx, {
+        if (chartInstance) chartInstance.destroy();
+
+        chartInstance = new Chart(document.getElementById('nilaiChart'), {
             type: 'line',
             data: {
-                labels: chartData['weekly'].labels,
+                labels: allLabels,
                 datasets: [
                     {
-                        label: 'Nilai Bahasa',
-                        data: chartData['weekly'].nilaiBahasa,
-                        backgroundColor: 'rgba(10, 88, 202, 0.2)',
+                        label: 'Tugas',
+                        data: alignData(allLabels, tugas),
                         borderColor: '#0A58CA',
+                        backgroundColor: 'rgba(10, 88, 202, 0.2)',
                         borderWidth: 2,
-                        tension: 0.3
+                        tension: 0.4
                     },
                     {
-                        label: 'Nilai Budaya',
-                        data: chartData['weekly'].nilaiBudaya,
-                        backgroundColor: 'rgba(255, 127, 0, 0.2)',
-                        borderColor: '#FF7F00',
+                        label: 'Evaluasi',
+                        data: alignData(allLabels, evaluasi),
+                        borderColor: '#FFCE56',
+                        backgroundColor: 'rgba(255, 206, 86, 0.2)',
                         borderWidth: 2,
-                        tension: 0.3
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Tryout',
+                        data: alignData(allLabels, tryout),
+                        borderColor: '#FF6384',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderWidth: 2,
+                        tension: 0.4
                     }
                 ]
             },
@@ -158,10 +204,7 @@
                 responsive: true,
                 scales: {
                     y: {
-                        beginAtZero: true,
-                        ticks: {
-                            stepSize: 10
-                        }
+                        beginAtZero: true
                     }
                 },
                 plugins: {
@@ -171,14 +214,15 @@
                 }
             }
         });
+    }
 
-        intervalSelect.addEventListener('change', function () {
-            const selectedOption = this.value;
-            nilaiChart.data.labels = chartData[selectedOption].labels;
-            nilaiChart.data.datasets[0].data = chartData[selectedOption].nilaiBahasa;
-            nilaiChart.data.datasets[1].data = chartData[selectedOption].nilaiBudaya;
-            nilaiChart.update();
-        });
+    document.addEventListener('DOMContentLoaded', () => {
+        renderChart(intervalSelect.value);
+    });
+
+    intervalSelect.addEventListener('change', () => {
+        renderChart(intervalSelect.value);
     });
 </script>
+
 @endsection

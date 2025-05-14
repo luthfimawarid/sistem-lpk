@@ -107,8 +107,11 @@
                     <img src="{{ asset('/logo.png') }}" alt="Evaluasi" class="mx-auto rounded-md h-40 object-cover">
                     <p class="mt-2 font-medium text-blue-600">{{ $item->judul }}</p>
                     <p class="text-sm text-gray-600">Deadline: {{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('d M Y') : '-' }}</p>
-                    <p class="text-sm {{ $item->status == 'selesai' ? 'text-green-600' : 'text-red-600' }}">
-                        Status: {{ ucfirst(str_replace('_', ' ', $item->status)) }}
+                    @php
+                        $tugasUser = $item->tugasUser->first(); // Sudah difilter by user_id di controller
+                    @endphp
+                    <p class="text-sm {{ $tugasUser && $tugasUser->status == 'selesai' ? 'text-green-600' : 'text-red-600' }}">
+                        Status: {{ ucfirst(str_replace('_', ' ', $tugasUser->status ?? 'belum_selesai')) }}
                     </p>
                 </div>
             </a>

@@ -120,7 +120,7 @@
         const fileUpload = document.getElementById('file-upload');
         const soalGroup = document.getElementById('soal-group');
 
-        if (tipe === 'tugas' || tipe === 'evaluasi_mingguan' || tipe === 'tryout') {
+        if (tipe === 'tugas' || tipe === 'evaluasi_mingguan') {
             fileUpload.classList.remove('hidden');
             soalGroup.classList.add('hidden');
         } else {

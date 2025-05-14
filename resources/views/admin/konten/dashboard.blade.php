@@ -9,18 +9,12 @@
         <a href="/" class="px-3 py-1 text-sm md:text-base text-[#0A58CA] rounded-full font-semibold border border-[#0A58CA]">Lihat semua</a>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <img src="/logo.png" alt="Kanji Course" class="rounded-lg mb-2 mx-auto max-w-[150px] md:w-auto">
-            <p class="font-medium text-base md:text-lg">Mengenal Kanji Dasar (JLPT N5-N4)</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <img src="/logo.png" alt="Conversation Course" class="rounded-lg mb-2 mx-auto max-w-[150px] md:w-auto">
-            <p class="font-medium text-base md:text-lg">Percakapan Sehari-hari dalam Bahasa Jepang</p>
-        </div>
-        <div class="bg-white rounded-lg shadow p-4 text-center">
-            <img src="/logo.png" alt="Culture Course" class="rounded-lg mb-2 mx-auto max-w-[150px] md:w-auto">
-            <p class="font-medium text-base md:text-lg">Keberagaman Budaya Jepang</p>
-        </div>
+        @foreach ($courses as $course)
+            <div class="bg-white rounded-lg shadow p-4 text-center">
+                <img src="{{ asset('storage/materi/' . $course->cover) }}" alt="Course Image" class="rounded-lg mb-2 mx-auto max-w-[150px]">
+                <p class="font-medium text-base">{{ $course->judul }}</p>
+            </div>
+        @endforeach
     </div>
 </section>
 
@@ -31,7 +25,7 @@
             <div class="bg-white rounded-lg shadow overflow-hidden h-full">
                 <div class="flex justify-between mx-4 my-5">
                     <p class="text-base md:text-lg font-semibold">Kursus Saya</p>
-                    <a href="/kursus" class="text-sm md:text-base text-blue-600">Lihat semua</a>
+                    <a href="/ebook-admin" class="text-sm md:text-base text-blue-600">Lihat semua</a>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm md:text-base">
@@ -43,16 +37,13 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @foreach ($myCourses as $materi)
                             <tr class="border-t">
-                                <td class="py-2 px-4">Mengenal Kanji Dasar (JLPT N5-N4)</td>
-                                <td class="py-2 px-4 text-center">Video</td>
-                                <td class="py-2 px-4 text-center">Aktif</td>
+                                <td class="py-2 px-4">{{ $materi->judul }}</td>
+                                <td class="py-2 px-4 text-center">{{ ucfirst($materi->kategori) }}</td>
+                                <td class="py-2 px-4 text-center">{{ ucfirst($materi->status) }}</td>
                             </tr>
-                            <tr class="border-t">
-                                <td class="py-2 px-4">Percakapan Sehari-hari dalam Bahasa Jepang</td>
-                                <td class="py-2 px-4 text-center">Video</td>
-                                <td class="py-2 px-4 text-center">Aktif</td>
-                            </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
@@ -100,26 +91,18 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="border-t">
-                        <td class="py-2 px-4">Ahmad Zaki</td>
-                        <td class="py-2 px-4 text-center">N5</td>
-                        <td class="py-2 px-4 text-center">Aktif</td>
-                        <td class="py-2 px-4 text-center flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                            </svg>
-                        </td>
-                    </tr>
-                    <tr class="border-t">
-                        <td class="py-2 px-4">Rina Kusuma</td>
-                        <td class="py-2 px-4 text-center">N4</td>
-                        <td class="py-2 px-4 text-center">Aktif</td>
-                        <td class="py-2 px-4 text-center flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                            </svg>
-                        </td>
-                    </tr>
+                @foreach ($siswa as $user)
+                <tr class="border-t">
+                    <td class="py-2 px-4">{{ $user->nama_lengkap }}</td>
+                    <td class="py-2 px-4 text-center">{{ $user->kelas ?? '-' }}</td>
+                    <td class="py-2 px-4 text-center">Aktif</td>
+                    <td class="py-2 px-4 text-center flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                        </svg>
+                    </td>
+                </tr>
+                @endforeach
                 </tbody>
             </table>
         </div>
