@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'role',
         'kelas',
+        'tanggal_lahir',
         'foto'
     ];
 
@@ -53,6 +54,19 @@ class User extends Authenticatable
     public function TugasUser()
     {
         return $this->hasMany(TugasUser::class);
+    }
+
+    public function dokumen() {
+        return $this->hasMany(DokumenSiswa::class);
+    }
+
+        public function sertifikat()
+    {
+        return $this->hasMany(Sertifikat::class, 'user_id');
+    }
+
+    public function chatRooms() {
+        return $this->belongsToMany(ChatRoom::class, 'chat_room_user');
     }
 
 }

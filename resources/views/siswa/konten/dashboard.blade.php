@@ -31,6 +31,7 @@
             <canvas id="nilaiChart"></canvas>
         </section>
 
+
         <!-- Chat -->
         <section class="bg-white rounded-lg shadow p-4 md:p-6 flex flex-col">
             <div class="flex justify-between items-center">
@@ -107,16 +108,62 @@
     const nilaiTugas = @json($nilaiTugas);
     const nilaiEvaluasi = @json($nilaiEvaluasi);
     const nilaiTryout = @json($nilaiTryout);
+    const tanggalTerdaftar = new Date("{{ $tanggalTerdaftar }}");
 
     function getDayName(dateStr) {
         const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
         return days[new Date(dateStr).getDay()];
     }
 
+    function getDefaultLabels(interval) {
+        const today = new Date();
+        const result = [];
+
+        if (interval === 'daily') {
+            return ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        }
+
+        if (interval === 'weekly') {
+            const month = today.getMonth();
+            const year = today.getFullYear();
+            const date = new Date(year, month, 1);
+
+            const weeks = new Set();
+
+            while (date.getMonth() === month) {
+                const firstDayOfMonth = new Date(year, month, 1);
+                const offset = (date.getDate() + firstDayOfMonth.getDay() - 1);
+                const weekNumber = Math.floor(offset / 7) + 1;
+                weeks.add(`Minggu ke-${weekNumber}`);
+                date.setDate(date.getDate() + 1);
+            }
+
+            return Array.from(weeks);
+        }
+
+        if (interval === 'monthly') {
+            const startMonth = tanggalTerdaftar.getMonth();
+            const startYear = tanggalTerdaftar.getFullYear();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+
+            const totalMonths = (currentYear - startYear) * 12 + (currentMonth - startMonth) + 1;
+
+            for (let i = 0; i < totalMonths; i++) {
+                const labelDate = new Date(startYear, startMonth + i);
+                const monthYear = labelDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+                result.push(monthYear.charAt(0).toUpperCase() + monthYear.slice(1));
+            }
+
+            return result;
+        }
+
+        return [];
+    }
+
     function formatDataByInterval(data, interval) {
         const grouped = {};
         const labelMap = new Map();
-
         let index = 1;
 
         data.forEach(entry => {
@@ -126,12 +173,34 @@
             if (interval === 'daily') {
                 label = getDayName(entry.tanggal);
             } else if (interval === 'weekly') {
-                const yearStart = new Date(date.getFullYear(), 0, 1);
-                const weekNumber = Math.ceil((((date - yearStart) / 86400000) + yearStart.getDay() + 1) / 7);
+                const today = new Date();
+                const currentMonth = today.getMonth();
+                const currentYear = today.getFullYear();
+
+                if (date.getMonth() !== currentMonth || date.getFullYear() !== currentYear) return;
+
+                const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+                const offset = (date.getDate() + firstDayOfMonth.getDay() - 1);
+                const weekNumber = Math.floor(offset / 7) + 1;
                 label = `Minggu ke-${weekNumber}`;
             } else if (interval === 'monthly') {
-                label = `Bulan ke-${date.getMonth() + 1}`;
+                const userStartMonth = tanggalTerdaftar.getMonth();
+                const userStartYear = tanggalTerdaftar.getFullYear();
+
+                if (
+                    date.getFullYear() < userStartYear ||
+                    (date.getFullYear() === userStartYear && date.getMonth() < userStartMonth)
+                ) {
+                    return; // skip data sebelum akun dibuat
+                }
+
+                const monthDiff = (date.getFullYear() - userStartYear) * 12 + (date.getMonth() - userStartMonth);
+                const labelDate = new Date(date.getFullYear(), date.getMonth());
+                const monthYear = labelDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+                label = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
             }
+
+            if (!label) return;
 
             if (!grouped[label]) {
                 grouped[label] = [];
@@ -142,9 +211,10 @@
         });
 
         const sortedLabels = Array.from(labelMap.entries()).sort((a, b) => a[1] - b[1]).map(l => l[0]);
+
         const values = sortedLabels.map(label => {
             const nilai = grouped[label];
-            return Math.round(nilai.reduce((a, b) => a + b, 0) / nilai.length); // rata-rata
+            return Math.round(nilai.reduce((a, b) => a + b, 0) / nilai.length);
         });
 
         return { labels: sortedLabels, values };
@@ -154,11 +224,11 @@
     let chartInstance = null;
 
     function renderChart(interval) {
+        const defaultLabels = getDefaultLabels(interval);
+
         const tugas = formatDataByInterval(nilaiTugas, interval);
         const evaluasi = formatDataByInterval(nilaiEvaluasi, interval);
         const tryout = formatDataByInterval(nilaiTryout, interval);
-
-        const allLabels = [...new Set([...tugas.labels, ...evaluasi.labels, ...tryout.labels])];
 
         const alignData = (labels, dataset) => {
             return labels.map(label => {
@@ -172,31 +242,34 @@
         chartInstance = new Chart(document.getElementById('nilaiChart'), {
             type: 'line',
             data: {
-                labels: allLabels,
+                labels: defaultLabels,
                 datasets: [
                     {
                         label: 'Tugas',
-                        data: alignData(allLabels, tugas),
+                        data: alignData(defaultLabels, tugas),
                         borderColor: '#0A58CA',
                         backgroundColor: 'rgba(10, 88, 202, 0.2)',
                         borderWidth: 2,
-                        tension: 0.4
+                        tension: 0.4,
+                        spanGaps: true
                     },
                     {
                         label: 'Evaluasi',
-                        data: alignData(allLabels, evaluasi),
+                        data: alignData(defaultLabels, evaluasi),
                         borderColor: '#FFCE56',
                         backgroundColor: 'rgba(255, 206, 86, 0.2)',
                         borderWidth: 2,
-                        tension: 0.4
+                        tension: 0.4,
+                        spanGaps: true
                     },
                     {
                         label: 'Tryout',
-                        data: alignData(allLabels, tryout),
+                        data: alignData(defaultLabels, tryout),
                         borderColor: '#FF6384',
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
                         borderWidth: 2,
-                        tension: 0.4
+                        tension: 0.4,
+                        spanGaps: true
                     }
                 ]
             },
@@ -210,6 +283,10 @@
                 plugins: {
                     legend: {
                         position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
                     }
                 }
             }
@@ -224,5 +301,4 @@
         renderChart(intervalSelect.value);
     });
 </script>
-
 @endsection

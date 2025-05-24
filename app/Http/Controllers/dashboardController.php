@@ -28,7 +28,8 @@ class dashboardController extends Controller
         $courses = Materi::latest()->take(3)->get();
         $myCourses = Materi::where('status', 'aktif')->take(5)->get();
 
-        // Ambil nilai lengkap dengan tanggal
+        $tanggalTerdaftar = Auth::user()->created_at->toDateString(); // Ambil tanggal pendaftaran
+
         $nilaiTugas = TugasUser::join('tugas', 'tugas.id', '=', 'tugas_user.tugas_id')
             ->where('tugas_user.user_id', $userId)
             ->where('tugas.tipe', 'tugas')
@@ -53,19 +54,24 @@ class dashboardController extends Controller
             ->orderBy('tanggal')
             ->get();
 
+            
+
         return view('siswa.konten.dashboard', compact(
             'courses',
             'myCourses',
             'nilaiTugas',
             'nilaiEvaluasi',
-            'nilaiTryout'
+            'nilaiTryout',
+            'tanggalTerdaftar'
         ));
     }
+
     public function nilaisiswa()
     {
         $userId = Auth::id();
 
         $courses = Materi::latest()->take(3)->get();
+        $tanggalTerdaftar = Auth::user()->created_at;
         $myCourses = Materi::where('status', 'aktif')->take(5)->get();
 
         // 🔹 Ambil data nilai lengkap (tanggal & nilai) untuk grafik
@@ -117,7 +123,9 @@ class dashboardController extends Controller
             'rataTugas',
             'rataEvaluasi',
             'rataTryout',
-            'status'
+            'status',
+            'tanggalTerdaftar'
+
         ));
     }
 

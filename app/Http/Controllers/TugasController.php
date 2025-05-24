@@ -7,6 +7,7 @@ use App\Models\SoalKuis;
 use App\Models\JawabanKuis;
 use App\Models\TugasUser;
 use Illuminate\Http\Request;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -268,4 +269,85 @@ class TugasController extends Controller
         return redirect()->route('tugas.index')->with('success', 'Nilai berhasil disimpan.');
     }
 
+    public function nilaiRaporAdmin()
+    {
+        $siswa = User::where('role', 'siswa')->get();
+
+        $data = $siswa->map(function ($user) {
+            $tugasUser = $user->tugasUser()->with('tugas')->get();
+
+            // Nilai berdasarkan tipe tugas
+            $nilaiTugas = $tugasUser->where('tugas.tipe', 'tugas')->pluck('nilai')->filter()->avg();
+            $nilaiEvaluasi = $tugasUser->where('tugas.tipe', 'evaluasi_mingguan')->pluck('nilai')->filter()->avg();
+            $nilaiTryout = $tugasUser->where('tugas.tipe', 'tryout')->pluck('nilai')->filter()->avg();
+
+            // Kategori prediksi (placeholder dulu)
+            $prediksi = '-';
+
+            return [
+                'nama' => $user->nama_lengkap,
+                'kelas' => $user->kelas ?? '-',
+                'nilai_tugas' => $nilaiTugas ? round($nilaiTugas) : '-',
+                'nilai_evaluasi' => $nilaiEvaluasi ? round($nilaiEvaluasi) : '-',
+                'nilai_tryout' => $nilaiTryout ? round($nilaiTryout) : '-',
+                'prediksi' => $prediksi,
+                'id' => $user->id,
+            ];
+        });
+
+        return view('admin.konten.rapotsiswa', compact('data'));
+    }
+
+    public function detailNilai($id)
+    {
+        $user = User::with(['tugasUser.tugas'])->findOrFail($id);
+
+        $dataTugas = $user->tugasUser->map(function ($item) {
+            return [
+                'tanggal' => $item->created_at->format('d M Y'),
+                'pelajaran' => $item->tugas->nama ?? '-',
+                'tipe' => $item->tugas->tipe ?? '-',
+                'catatan' => $item->catatan ?? '-',
+                'status' => $item->status ?? 'Belum dikoreksi',
+            ];
+        });
+
+        return view('admin.konten.detailnilai', [
+            'user' => $user,
+            'dataTugas' => $dataTugas,
+        ]);
+    }
+
+    public function editnilai($id)
+    {
+        $user = User::findOrFail($id);
+
+        // Asumsikan kamu punya model Nilai yg menyimpan nilai tugas/evaluasi/tryout
+        $nilai = $user->nilai ?? null;
+
+        return view('admin.konten.edit-rapot', compact('user', 'nilai'));
+    }
+
+    public function updatenilai(Request $request, $id)
+    {
+        $request->validate([
+            'nilai_tugas' => 'required|numeric|min:0|max:100',
+            'nilai_evaluasi' => 'required|numeric|min:0|max:100',
+            'nilai_tryout' => 'required|numeric|min:0|max:100',
+            'prediksi' => 'required|in:Lulus,Beresiko',
+        ]);
+
+        $user = User::findOrFail($id);
+
+        // Simpan data nilai (buat model Nilai jika belum ada)
+        $nilai = $user->nilai ?? new TugasUser();
+        $nilai->user_id = $user->id;
+        $nilai->nilai_tugas = $request->nilai_tugas;
+        $nilai->nilai_evaluasi = $request->nilai_evaluasi;
+        $nilai->nilai_tryout = $request->nilai_tryout;
+        $nilai->prediksi = $request->prediksi;
+        $nilai->save();
+
+        return redirect()->route('rapot.list')->with('success', 'Nilai berhasil diperbarui');
+    }
 }

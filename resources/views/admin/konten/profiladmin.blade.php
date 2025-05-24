@@ -12,73 +12,85 @@
         <!-- Tab Content -->
         <div id="tab-data-diri" class="tab-content">
             <!-- ISI DATA DIRI -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="col-span-2 flex justify-center">
-                    <div class="text-center">
-                        <div class="w-24 h-24 rounded-full bg-gray-300 mx-auto mb-2"></div>
-                        <p class="font-semibold">Ubah Foto</p>
+            <form action="{{ route('admin.update.profil') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Foto -->
+                    <div class="col-span-2 flex justify-center">
+                        <div class="text-center">
+                            <div class="w-24 h-24 rounded-full bg-gray-300 mx-auto mb-2">
+                                <!-- tampilkan foto jika ada -->
+                                @if ($user->photo)
+                                    <img src="{{ asset('storage/' . $user->photo) }}" alt="Foto Profil" class="w-24 h-24 rounded-full object-cover">
+                                @endif
+                            </div>
+                            <input type="file" name="photo" class="text-sm text-gray-500">
+                        </div>
+                    </div>
+
+                    <!-- Nama Lengkap -->
+                    <div>
+                        <label class="text-gray-500 text-sm">Nama Lengkap</label>
+                        <input type="text" name="nama_lengkap" value="{{ $user->nama_lengkap }}" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
+                    </div>
+
+                    <!-- ID / Username (readonly) -->
+                    <div>
+                        <label class="text-gray-500 text-sm">ID (Username)</label>
+                        <input type="text" value="{{ $user->id }}" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent" readonly>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="text-gray-500 text-sm">Email</label>
+                        <input type="email" name="email" value="{{ $user->email }}" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
+                    </div>
+
+                    <!-- No HP -->
+                    <div>
+                        <label class="text-gray-500 text-sm">No HP</label>
+                        <input type="text" name="phone" value="{{ $user->phone ?? '' }}" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
+                    </div>
+
+                    <!-- Status -->
+                    <div>
+                        <label class="text-gray-500 text-sm">Status</label>
+                        <input type="text" name="status" value="{{ $user->status ?? '' }}" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
+                    </div>
+
+                    <!-- Tombol -->
+                    <div class="col-span-2 text-right mt-4">
+                        <button class="bg-[#0A58CA] text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Simpan Perubahan</button>
                     </div>
                 </div>
-
-                <div>
-                    <label class="text-gray-500 text-sm">Nama Lengkap</label>
-                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
-                </div>
-
-                <div>
-                    <label class="text-gray-500 text-sm">Username / ID</label>
-                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
-                </div>
-
-                <div>
-                    <label class="text-gray-500 text-sm">Email</label>
-                    <input type="email" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
-                </div>
-
-                <div>
-                    <label class="text-gray-500 text-sm">No HP</label>
-                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
-                </div>
-
-                <div>
-                    <label class="text-gray-500 text-sm">Mata Pelajaran</label>
-                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
-                </div>
-
-                <div>
-                    <label class="text-gray-500 text-sm">Status</label>
-                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
-                </div>
-
-                <div>
-                    <label class="text-gray-500 text-sm">Angkatan</label>
-                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
-                </div>
-            </div>
+            </form>
         </div>
 
         <div id="tab-password" class="tab-content hidden">
             <!-- Form Ubah Password -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="text-gray-500 text-sm">Password Lama</label>
-                    <input type="password" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
-                </div>
+            <form action="{{ route('admin.update.password') }}" method="POST">
+                @csrf
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-gray-500 text-sm">Password Lama</label>
+                        <input type="password" name="current_password" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
+                    </div>
 
-                <div>
-                    <label class="text-gray-500 text-sm">Password Baru</label>
-                    <input type="password" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
-                </div>
+                    <div>
+                        <label class="text-gray-500 text-sm">Password Baru</label>
+                        <input type="password" name="new_password" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
+                    </div>
 
-                <div>
-                    <label class="text-gray-500 text-sm">Konfirmasi Password Baru</label>
-                    <input type="password" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
-                </div>
+                    <div>
+                        <label class="text-gray-500 text-sm">Konfirmasi Password Baru</label>
+                        <input type="password" name="new_password_confirmation" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent">
+                    </div>
 
-                <div class="col-span-2 text-right mt-4">
-                    <button class="bg-[#0A58CA] text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Simpan Perubahan</button>
+                    <div class="col-span-2 text-right mt-4">
+                        <button class="bg-[#0A58CA] text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Simpan Password</button>
+                    </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 </main>
