@@ -33,6 +33,18 @@
             </select>
         </div>
 
+        <div id="bidang-skill" class="mb-4 hidden">
+            <label for="bidang" class="block">Bidang Skill</label>
+            <select name="bidang" id="bidang" class="w-full border p-2 rounded">
+                <option value="">-- Pilih Bidang Skill --</option>
+                <option value="Pengolahan Makanan">Pengolahan Makanan</option>
+                <option value="Perakitan Mesin">Perakitan Mesin</option>
+                <option value="Desain Grafis">Desain Grafis</option>
+                <option value="Teknik Listrik">Teknik Listrik</option>
+                <option value="Pemrograman">Pemrograman</option>
+            </select>
+        </div>
+
         <div class="mb-4">
             <label for="deskripsi" class="block">Deskripsi</label>
             <textarea name="deskripsi" rows="4" class="w-full border p-2 rounded"></textarea>
@@ -48,6 +60,24 @@
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg">Simpan</button>
         </div>
     </form>
-
 </main>
+@endsection
+@section('scripts')
+<script>
+    function toggleTipe() {
+        const tipe = document.getElementById('tipe').value;
+        const bidangDiv = document.getElementById('bidang-skill');
+        if (tipe === 'skill') {
+            bidangDiv.classList.remove('hidden');
+        } else {
+            bidangDiv.classList.add('hidden');
+        }
+    }
+
+    // Jalankan saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', function () {
+        toggleTipe(); // untuk kondisi jika user kembali atau reload
+    });
+</script>
+
 @endsection

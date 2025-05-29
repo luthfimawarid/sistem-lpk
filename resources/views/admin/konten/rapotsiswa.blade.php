@@ -10,18 +10,6 @@
                 <!-- Teks Data Siswa di kiri -->
                 <p class="text-xl font-semibold">Data Siswa</p>
 
-                <!-- Bagian kanan dengan tombol atas-bawah di mobile, sejajar di desktop -->
-                <div class="flex flex-col md:flex-row items-end md:items-left gap-2 md:gap-4">
-                    <a href="/" class="flex items-left px-2 py-1 text-sm text-[#0A58CA] rounded-full font-semibold border border-[#0A58CA] w-fit">
-                        Sort By 
-                        <svg class="w-4 h-4 text-[#0A58CA] ml-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10l4 4 4-4" />
-                        </svg>
-                    </a>
-                    <!-- <a href="/" class="px-2 py-1 text-sm text-[#0A58CA] rounded-full font-semibold border border-[#0A58CA] w-fit">
-                        Terbitkan Rapot
-                    </a> -->
-                </div>
             </div>
 
                 <table class="min-w-full">
@@ -54,7 +42,6 @@
                                     <div class="dropdown hidden absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-50">
                                         <ul class="py-1 text-gray-700">
                                             <li><a href="{{ route('detail.nilai', ['id' => $item['id']]) }}" class="block px-4 py-2 hover:bg-gray-100">Lihat Detail Nilai</a></li>
-                                            <li><a href="{{ route('edit.rapot', ['id' => $item['id']]) }}" class="block px-4 py-2 hover:bg-gray-100">Edit</a></li>
                                             <li><a href="#" class="block px-4 py-2 hover:bg-red-100 text-red-600">Hapus</a></li>
                                         </ul>
                                     </div>

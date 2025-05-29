@@ -7,12 +7,12 @@
         <h2 id="ebook-count" class="md:text-lg font-semibold my-2 md:my-0 md:order-1">
             {{ ucfirst($tipe) }} ({{ $materi->count() }})
         </h2>
-        <button class="border-2 border-gray-400 font-semibold text-sm text-gray-400 px-4 flex items-center py-2 rounded-lg">
+        <!-- <button class="border-2 border-gray-400 font-semibold text-sm text-gray-400 px-4 flex items-center py-2 rounded-lg">
             Sort By
             <svg class="w-6 h-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m8 10 4 4 4-4"/>
             </svg>
-        </button>
+        </button> -->
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

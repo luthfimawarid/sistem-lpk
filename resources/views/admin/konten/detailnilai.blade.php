@@ -8,7 +8,7 @@
         <a href="/rapot-siswa" class="bg-[#0A58CA] py-2 px-4 text-white rounded">Kembali</a>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-6">
             <p class="font-semibold">Nama :</p>
-            <p>{{ $user->name }}</p>
+            <p>{{ $user->nama_lengkap }}</p>
             <p class="font-semibold">Kelas :</p>
             <p>{{ $user->kelas ?? '-' }}</p>
             <p class="font-semibold">Prediksi Kelulusan :</p>
@@ -18,19 +18,18 @@
 
     <section class="my-6 w-full">
         <div class="bg-white rounded-lg shadow overflow-hidden pb-10">
-
-            <!-- Membuat tabel responsif -->
             <div class="overflow-x-auto">
                 <table class="w-full min-w-max">
                     <thead>
-                        <tr class="text-gray-600 bg-blue-50 text-sm sm:text-base">
-                            <th class="py-3 px-3">No</th>
-                            <th class="py-3 px-3">Tanggal</th>
-                            <th class="py-3 px-3 text-center">Pelajaran</th>
-                            <th class="py-3 px-3 text-center">Tipe</th>
-                            <th class="py-3 px-3 text-center">Catatan</th>
-                            <th class="py-3 px-3 text-center">Status</th>
-                            <th class="py-3 px-3">Aksi</th>
+                        <tr class="text-white bg-[#0A58CA] text-sm sm:text-base">
+                            <th class="py-5 px-3">No</th>
+                            <th class="py-5 px-3">Tanggal</th>
+                            <th class="py-5 px-3 text-center">Pelajaran</th>
+                            <th class="py-5 px-3 text-center">Tipe</th>
+                            <th class="py-5 px-3 text-center">Catatan</th>
+                            <th class="py-5 px-3 text-center">Status</th>
+                            <th class="py-5 px-3 text-center">Nilai</th>
+                            <th class="py-5 px-3">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm sm:text-base">
@@ -42,6 +41,7 @@
                             <td class="py-3 px-3 text-center">{{ ucfirst($tugas['tipe']) }}</td>
                             <td class="py-3 px-3 text-center">{{ $tugas['catatan'] }}</td>
                             <td class="py-3 px-3 text-center text-green-600">{{ $tugas['status'] }}</td>
+                            <td class="py-3 px-3 text-center">{{ $tugas['nilai'] }}</td>
                             <td class="py-3 px-3 relative">
                                 <div class="relative">
                                     <svg class="w-6 h-6 text-gray-800 cursor-pointer" onclick="toggleDropdown(this)" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
@@ -49,7 +49,9 @@
                                     </svg>
                                     <div class="dropdown hidden absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-50">
                                         <ul class="py-1 text-gray-700">
-                                            <li><a href="{{ route('edit.rapot', ['id' => $user->id]) }}" class="block px-4 py-2 hover:bg-gray-100">Edit</a></li>
+                                            <li>
+                                                <a href="{{ route('edit.rapot.tipe', ['id' => $user->id, 'tipe' => $tugas['tipe']]) }}" class="block px-4 py-2 hover:bg-gray-100">Edit</a>
+                                            </li>
                                             <li><a href="#" class="block px-4 py-2 hover:bg-red-100 text-red-600">Hapus</a></li>
                                         </ul>
                                     </div>

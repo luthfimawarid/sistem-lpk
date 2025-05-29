@@ -20,7 +20,6 @@
 
 
     <div class="flex flex-col md:flex-row gap-4">
-        <!-- Kursus Saya -->
         <section class="w-full md:w-2/3">
             <div class="bg-white rounded-lg shadow overflow-hidden h-full">
                 <div class="flex justify-between mx-4 my-5">
@@ -32,7 +31,7 @@
                         <thead>
                             <tr class="text-gray-600 bg-blue-50">
                                 <th class="py-2 px-4">Courses Name</th>
-                                <th class="py-2 px-4 text-center">Category</th>
+                                <th class="py-2 px-4 text-center">Tipe</th>
                                 <th class="py-2 px-4 text-center">Status</th>
                             </tr>
                         </thead>
@@ -40,7 +39,7 @@
                             @foreach ($myCourses as $materi)
                             <tr class="border-t">
                                 <td class="py-2 px-4">{{ $materi->judul }}</td>
-                                <td class="py-2 px-4 text-center">{{ ucfirst($materi->kategori) }}</td>
+                                <td class="py-2 px-4 text-center">{{ ucfirst($materi->tipe) }}</td>
                                 <td class="py-2 px-4 text-center">{{ ucfirst($materi->status) }}</td>
                             </tr>
                             @endforeach

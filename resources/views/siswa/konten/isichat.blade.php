@@ -49,7 +49,7 @@
                             @if($room->type === 'group')
                                 <h4 class="font-semibold">{{ $message->user->nama_lengkap }}</h4>
                             @endif
-                            <p class="text-sm {{ $message->user_id == auth()->id() ? 'bg-[#0A58CA] text-white' : 'bg-gray-100' }} p-2 rounded-lg max-w-xl">
+                            <p class="text-sm {{ $message->user_id == auth()->id() ? 'bg-[#0A58CA] text-white' : 'bg-gray-100' }} p-2 rounded-lg">
                                 {{ $message->message }}
                             </p>
                         </div>

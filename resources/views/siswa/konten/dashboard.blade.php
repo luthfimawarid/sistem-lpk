@@ -36,47 +36,97 @@
         <section class="bg-white rounded-lg shadow p-4 md:p-6 flex flex-col">
             <div class="flex justify-between items-center">
                 <p class="text-lg font-medium">Pesan</p>
-                <a href="/chat" class="text-sm text-[#0A58CA]">Lihat semua</a>
+                <a href="{{ route('chat.index') }}" class="text-sm text-[#0A58CA]">Lihat semua</a>
             </div>
-            <div id="chat-box" class="flex-1 overflow-y-auto space-y-3 mt-4">
-                <div class="flex items-start space-x-3">
-                  <div class="w-8 h-8 md:w-10 md:h-10 bg-gray-300 rounded-full flex items-center justify-center font-medium">A</div>
-                    <div class="bg-gray-100 rounded-lg p-2 md:p-3 w-full">
-                        <p class="text-xs md:text-sm font-medium">~ Alamsyah</p>
-                        <p class="text-xs md:text-sm">Jangan lupa tugas hari ini guys!!</p>
-                        <p class="text-xs text-right text-blue-600">18.42</p>
-                    </div>
-                </div>
+
+            <div id="chat-list" class="mt-4 space-y-3">
+                @if($rooms->isEmpty())
+                    <p class="text-center text-gray-500">Belum ada chat</p>
+                @else
+                    @foreach ($rooms as $room)
+                        @php
+                            $lastMessage = $room->messages->first();
+                            $otherUser = $room->users->where('id', '!=', auth()->id())->first();
+                            $roomName = $room->type === 'group' ? $room->name : ($otherUser->nama_lengkap ?? 'Private Chat');
+                            $messageText = $lastMessage->message ?? 'Belum ada pesan';
+                            $messageTime = optional($lastMessage?->created_at)->format('H:i');
+                        @endphp
+                        <a href="{{ route('chat.show', $room->id) }}" class="flex items-center hover:bg-gray-100 transition p-2 rounded-lg">
+                            <img src="/logo.png" class="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover mr-3" alt="Avatar">
+                            <div class="flex-1">
+                                <p class="text-xs md:text-sm font-semibold truncate">{{ $roomName }}</p>
+                                <p class="text-xs text-gray-600 truncate">{{ $messageText }}</p>
+                            </div>
+                            <span class="text-xs text-gray-400 ml-2">{{ $messageTime }}</span>
+                        </a>
+                    @endforeach
+                @endif
             </div>
-            <form id="chat-form" class="flex mt-4">
-                <input type="text" id="chat-input" class="w-full bg-blue-50 rounded-l-full p-2 text-xs md:text-sm" placeholder="Ketik pesan...">
-                <button type="submit" class="bg-blue-600 text-white px-3 md:px-4 rounded-r-full">➤</button>
-            </form>
         </section>
     </div>
 
     <!-- Kursus Saya & Prediksi Kelulusan -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
         <section class="md:col-span-2 bg-white rounded-lg shadow p-4 md:p-6">
-            <p class="text-lg md:text-xl font-semibold">Kursus Saya</p>
-            <table class="w-full text-xs md:text-sm text-left mt-3">
-                <thead>
-                    <tr class="text-gray-600 bg-blue-50">
-                        <th class="py-2 px-3 md:py-3 md:px-6">Courses Name</th>
-                        <th class="py-2 px-3 md:py-3 md:px-6">Category</th>
-                        <th class="py-2 px-3 md:py-3 md:px-6">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($myCourses as $materi)
-                        <tr class="border-t">
-                            <td class="py-2 px-3 md:py-3 md:px-6">{{ $materi->judul }}</td>
-                            <td class="py-2 px-3 md:py-3 md:px-6">{{ ucfirst($materi->tipe) }}</td>
-                            <td class="py-2 px-3 md:py-3 md:px-6">aktif</td> {{-- Dummy progress --}}
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+            <p class="text-lg md:text-xl font-semibold">Job Matching</p>
+
+            @if ($sertifikatLulus < 2)
+                <p class="text-center text-gray-500 mt-4">
+                    Job Matching akan tersedia setelah kamu mendapatkan minimal 2 sertifikat lulus.
+                </p>
+            @else
+                @if (count($jobMatchings) > 0)
+                    <table class="w-full text-xs md:text-sm text-left mt-3">
+                        <thead>
+                            <tr class="text-gray-600 bg-blue-50">
+                                <th class="py-2 px-3 md:py-3 md:px-6">Posisi</th>
+                                <th class="py-2 px-3 md:py-3 md:px-6">Perusahaan</th>
+                                <th class="py-2 px-3 md:py-3 md:px-6">Status Lamaran</th>
+                                <th class="py-2 px-3 md:py-3 md:px-6">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($jobMatchings as $job)
+                                <tr class="border-t">
+                                    <td class="py-2 px-3 md:py-3 md:px-6">{{ $job->posisi }}</td>
+                                    <td class="py-2 px-3 md:py-3 md:px-6">{{ $job->nama_perusahaan }}</td>
+                                    <td class="py-2 px-3 md:py-3 md:px-6">
+                                        @if (isset($jobApplications[$job->id]))
+                                            <span class="px-2 py-1 rounded-full text-white text-xs
+                                                {{ $jobApplications[$job->id]->status === 'lolos' ? 'bg-green-500' : ($jobApplications[$job->id]->status === 'diproses' ? 'bg-yellow-500' : 'bg-red-500') }}">
+                                                {{ ucfirst($jobApplications[$job->id]->status) }}
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-1 rounded-full text-gray-500 text-xs">
+                                                Belum Melamar
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="py-2 px-3 md:py-3 md:px-6">
+                                        @if (!isset($jobApplications[$job->id]))
+                                            <form action="{{ url('/job-matching/apply/' . $job->id) }}" method="POST">
+                                                @csrf
+                                                <button type="submit"
+                                                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
+                                                    Ajukan Lamaran
+                                                </button>
+                                            </form>
+                                        @else
+                                            <button disabled class="bg-gray-300 text-gray-600 px-3 py-1 rounded text-xs">
+                                                Sudah Melamar
+                                            </button>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <p class="text-center text-gray-500 mt-4">
+                        Tidak ada lowongan tersedia saat ini.
+                    </p>
+                @endif
+            @endif
         </section>
 
         <section class="bg-white rounded-lg shadow p-4 md:p-6">

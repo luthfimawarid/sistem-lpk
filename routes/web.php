@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\JobController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MateriController;
@@ -27,8 +28,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/siswa', [AuthController::class, 'index'])->name('admin.siswa.index');
     Route::get('/rapot-siswa', [TugasController::class, 'nilaiRaporAdmin'])->name('admin.nilai');
     Route::get('/rapot-siswa/detail/{id}', [TugasController::class, 'detailNilai'])->name('detail.nilai');
-    Route::get('/rapot-siswa/edit/{id}', [TugasController::class, 'edit'])->name('edit.rapot');
-    Route::put('/rapot-siswa/update/{id}', [TugasController::class, 'update'])->name('rapot.update');
+    Route::get('/rapot/edit/{id}/{tipe}', [TugasController::class, 'editNilaiTipe'])->name('edit.rapot.tipe');
+    Route::put('/rapot/update/{id}/{tipe}', [TugasController::class, 'updateNilaiTipe'])->name('rapot.update.tipe');
+    Route::get('/job-matching', [JobController::class, 'adminIndex'])->name('admin.job-matching.index');
+    Route::get('/job-matching/tambah', [JobController::class, 'create'])->name('admin.job-matching.create');
+    Route::post('/job-matching', [JobController::class, 'store'])->name('admin.job-matching.store');
+    Route::get('/job-matching/{id}/edit', [JobController::class, 'edit'])->name('admin.job-matching.edit');
+    Route::put('/job-matching/{id}', [JobController::class, 'update'])->name('admin.job-matching.update');
+    Route::delete('/job-matching/{id}/hapus', [JobController::class, 'destroy'])->name('admin.job-matching.destroy');
+    Route::get('/admin/job-matching/{id}/pelamar', [JobController::class, 'viewApplicants'])->name('admin.job-matching.pelamar');
+
+
 
 
 
@@ -44,9 +54,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/video', [MateriController::class, 'siswaVideo'])->name('siswa.video');
     Route::get('/sertifikat', [SertifikatController::class, 'siswaIndex'])->name('siswa.sertifikat');
     Route::get('/rapot', [dashboardController::class, 'nilaisiswa'])->name('siswa.nilai');
+    Route::get('/siswa/nilai/detail', [TugasController::class, 'detailNilaiSiswa'])->name('siswa.nilai.detail');
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::get('/chat/{roomId}', [ChatController::class, 'show'])->name('chat.show');
     Route::post('/chat/{roomId}/send', [ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::post('/job-matching/apply/{jobId}', [JobController::class, 'apply'])->middleware('auth');
+
 
 });
 
@@ -139,6 +152,7 @@ Route::get('/chat-admin/room/{id}', [ChatController::class, 'showAdmin'])->name(
 Route::post('/chat-admin/room/{id}/send', [ChatController::class, 'sendMessageAdmin'])->name('chat.admin.send');
 Route::get('/chat-admin/start/{userId}', [ChatController::class, 'startChatWithUser'])->name('chat.admin.start');
 Route::post('/chat-admin/create-group', [ChatController::class, 'createGroup'])->name('chat.admin.createGroup');
+Route::post('/chat-admin/room/{id}/add-user', [ChatController::class, 'addUserToGroup'])->name('chat.admin.addUserToGroup');
 
 
 Route::get('/input-nilai/{id}', [TugasController::class, 'formInputNilai'])->name('nilai.form');
@@ -173,7 +187,7 @@ Route::get('/sertifikat-admin', [SertifikatController::class, 'index'])->name('s
 Route::get('/buat-sertifikat', [SertifikatController::class, 'create'])->name('sertifikat.create');
 Route::post('/simpan', [SertifikatController::class, 'store'])->name('sertifikat.store');
 Route::get('/edit-sertifikat/{id}', [SertifikatController::class, 'edit'])->name('sertifikat.edit');
-Route::post('/update/{id}', [SertifikatController::class, 'update'])->name('sertifikat.update');
+Route::put('/update/{id}', [SertifikatController::class, 'update'])->name('sertifikat.update');
 Route::delete('/hapus/{id}', [SertifikatController::class, 'destroy'])->name('sertifikat.destroy');
 
 

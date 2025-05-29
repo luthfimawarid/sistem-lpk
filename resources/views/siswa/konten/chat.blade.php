@@ -13,10 +13,20 @@
         </div>
 
         <div class="border rounded-lg py-3">
-            @if($rooms->isEmpty())
+            @php
+                // Urutkan rooms berdasarkan waktu pesan terakhir (descending)
+                $sortedRooms = $rooms->sortByDesc(function($room) {
+                    return optional($room->messages->first())->created_at;
+                });
+            @endphp
+
+            @if($sortedRooms->isEmpty())
                 <p class="text-center text-gray-500 py-6">Belum ada chat</p>
             @else
-                @foreach ($rooms as $room)
+                @foreach ($sortedRooms as $room)
+                @php
+                    $lastMessage = $room->messages->first();
+                @endphp
                 <a href="{{ route('chat.show', $room->id) }}" class="block hover:bg-gray-100 transition duration-200">
                     <div class="flex items-center justify-between px-3 h-12 my-3">
                         <div class="flex items-center">
@@ -31,23 +41,14 @@
                                     @endif
                                 </h3>
                                 <p class="text-xs md:text-sm text-gray-600">
-                                    {{-- Pesan terakhir --}}
-                                    {{ optional($room->messages->first())->message ?? 'Belum ada pesan' }}
+                                    {{ $lastMessage->message ?? 'Belum ada pesan' }}
                                 </p>
                             </div>
                         </div>
                         <div class="text-right">
                             <span class="text-xs md:text-sm text-gray-400">
-                                {{-- waktu pesan terakhir --}}
-                                @php
-                                    $lastMessage = $room->messages->first();
-                                @endphp
-
-                                <span class="text-xs md:text-sm text-gray-400">
-                                    {{ $lastMessage && $lastMessage->created_at ? $lastMessage->created_at->format('H:i') : '' }}
-                                </span>
+                                {{ $lastMessage && $lastMessage->created_at ? $lastMessage->created_at->format('H:i') : '' }}
                             </span>
-                            {{-- Notif unread bisa kamu tambahkan nanti --}}
                         </div>
                     </div>
                 </a>

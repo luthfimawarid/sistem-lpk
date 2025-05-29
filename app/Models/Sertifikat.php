@@ -7,7 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class Sertifikat extends Model
 {
     protected $table = 'sertifikat';
-    protected $fillable = ['user_id', 'judul', 'tipe', 'deskripsi', 'file'];
+    protected $fillable = [
+        'user_id',
+        'judul',
+        'tipe',
+        'deskripsi',
+        'bidang',
+        'file',
+    ];
 
     public function user()
     {

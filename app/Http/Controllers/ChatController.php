@@ -68,24 +68,47 @@ class ChatController extends Controller
     {
         // Ambil semua siswa
         $allStudents = User::where('role', 'siswa')->get();
+
+        // Ambil semua grup
         $allGroups = ChatRoom::with('users')
             ->where('type', 'group')
             ->get();
-        // Kelompokkan berdasarkan isi kolom 'kelas'
+
+        // Kelompokkan berdasarkan kelas
         $groupedByClass = $allStudents->groupBy('kelas');
 
+        // Ambil semua chat room yang dimiliki admin (baik grup maupun private),
+        // beserta user dan pesan terakhir, urut berdasarkan waktu terbaru
+        $rooms = Auth::user()->chatRooms()
+            ->with([
+                'users',
+                'messages' => function ($query) {
+                    $query->latest()->limit(1);
+                }
+            ])
+            ->latest('updated_at')
+            ->get();
+
+        // Kirim semua data ke view
         return view('admin.konten.chat', [
             'groupedStudents' => $groupedByClass,
             'allStudents' => $allStudents,
-            'allGroups'=> $allGroups
+            'allGroups' => $allGroups,
+            'rooms' => $rooms, // <-- penting! biar bisa ditampilkan di blade
         ]);
     }
 
-    public function showAdmin($roomId)
+    public function showAdmin($id)
     {
-        $room = ChatRoom::with(['users', 'messages.user'])->findOrFail($roomId);
-        return view('admin.konten.isichat', compact('room'));
+        $room = ChatRoom::with(['users', 'messages.user'])->findOrFail($id);
+        $allStudents = User::where('role', 'siswa')->get();
+
+        return view('admin.konten.isichat', [
+            'room' => $room,
+            'allStudents' => $allStudents
+        ]);
     }
+
 
     public function sendMessageAdmin(Request $request, $roomId)
     {
@@ -147,6 +170,30 @@ class ChatController extends Controller
         $room->users()->attach(array_merge($request->siswa_ids, [auth()->id()]));
 
         return redirect()->route('chat.admin.show', $room->id)->with('success', 'Grup berhasil dibuat!');
+    }
+
+    public function addUserToGroup(Request $request, $roomId)
+    {
+        $request->validate([
+            'siswa_ids' => 'required|array|min:1',
+            'siswa_ids.*' => 'exists:users,id',
+        ]);
+
+        $room = ChatRoom::findOrFail($roomId);
+
+        // Pastikan hanya grup yang bisa ditambahkan user
+        if ($room->type !== 'group') {
+            return redirect()->back()->with('error', 'Hanya grup yang bisa ditambahkan peserta.');
+        }
+
+        // Tambahkan siswa yang belum tergabung
+        foreach ($request->siswa_ids as $siswaId) {
+            if (!$room->users->contains($siswaId)) {
+                $room->users()->attach($siswaId);
+            }
+        }
+
+        return redirect()->route('chat.admin.show', $roomId)->with('success', 'Peserta berhasil ditambahkan!');
     }
 
 }

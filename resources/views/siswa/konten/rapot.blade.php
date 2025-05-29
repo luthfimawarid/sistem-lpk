@@ -1,5 +1,47 @@
 @extends('siswa.main.sidebar')
 
+@php
+    $bobotTugas = 0.3;
+    $bobotEvaluasi = 0.3;
+    $bobotTryout = 0.4;
+
+    $nilaiList = [];
+    $totalBobot = 0;
+
+    if (!is_null($rataTugas)) {
+        $nilaiList[] = $rataTugas * $bobotTugas;
+        $totalBobot += $bobotTugas;
+    }
+    if (!is_null($rataEvaluasi)) {
+        $nilaiList[] = $rataEvaluasi * $bobotEvaluasi;
+        $totalBobot += $bobotEvaluasi;
+    }
+    if (!is_null($rataTryout)) {
+        $nilaiList[] = $rataTryout * $bobotTryout;
+        $totalBobot += $bobotTryout;
+    }
+
+    $rataKeseluruhan = count($nilaiList) > 0 ? round(array_sum($nilaiList) / $totalBobot) : '-';
+
+    if ($rataKeseluruhan === '-') {
+        $statusKelulusan = '-';
+        $warna = 'gray';
+    } elseif ($rataKeseluruhan > 65) {
+        $statusKelulusan = 'Lulus';
+        $warna = 'green';
+    } elseif ($rataKeseluruhan >= 60) {
+        $statusKelulusan = 'Beresiko';
+        $warna = 'yellow';
+    } else {
+        $statusKelulusan = 'Tidak Lulus';
+        $warna = 'red';
+    }
+
+    function status($nilai) {
+        return $nilai >= 75 ? 'Baik' : 'Perlu Perbaikan';
+    }
+@endphp
+
 @section('content')
 <div class="p-6 md:p-10 bg-blue-50 min-h-screen">
     <div class="flex flex-col md:flex-row gap-4">
@@ -27,7 +69,7 @@
             <div class="bg-white rounded-lg shadow p-6 h-full flex flex-col">
                 <div class="flex justify-between items-center mb-4">
                     <p class="text-sm md:text-lg font-semibold">Prediksi Kelulusan</p>
-                    <button class="bg-[#0A58CA] text-white px-2 py-2 rounded-lg text-sm md:text-sm hover:bg-blue-600 transition">
+                    <button class="bg-[#0A58CA] text-white px-2 py-2 rounded-lg text-sm md:text-sm hover:bg-[#0A58CA] transition">
                         Cek Prediksi
                     </button>
                 </div>
@@ -52,57 +94,61 @@
 
     <section class="my-6 w-full overflow-x-auto">
         <div class="bg-white rounded-lg shadow min-w-[600px] md:w-full">
-            <div class="mx-6 mt-5 pt-10 pb-2">
-                <p class="text-xl font-semibold">Rapor dan Nilai Saya</p>
-            </div>
-            <table class="w-full text-sm">
+            <p class="text-xl px-6 py-5 font-semibold">Rapor dan Nilai Saya</p>
+            <table class="w-full">
                 <thead>
                     <tr class="text-gray-600 bg-blue-50">
-                        <th class="py-3 px-4 text-left">Tipe Penilaian</th>
-                        <th class="py-3 px-4 text-center">Nilai</th>
-                        <th class="py-3 px-4 text-center">Keterangan</th>
+                        <th class="py-3 px-6 text-left">Tipe Penilaian</th>
+                        <th class="py-3 px-6 text-center">Nilai</th>
+                        <th class="py-3 px-6 text-center">Keterangan</th>
+                        <th class="py-3 px-6 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr class="border-t">
-                        <td class="py-3 px-4">Tugas</td>
-                        <td class="py-3 px-4 text-center">{{ $rataTugas ?? '-' }}</td>
-                        <td class="py-3 px-4 text-center text-{{ $rataTugas >= 75 ? 'green' : 'red' }}-600 font-medium">
+                        <td class="py-3 px-6">Tugas</td>
+                        <td class="py-3 px-6 text-center">{{ $rataTugas ?? '-' }}</td>
+                        <td class="py-3 px-6 text-center text-{{ $rataTugas >= 75 ? 'green' : 'red' }}-600 font-medium">
                             {{ $rataTugas !== null ? $status($rataTugas) : '-' }}
                         </td>
-                    </tr>
-                    <tr class="border-t">
-                        <td class="py-3 px-4">Evaluasi Mingguan</td>
-                        <td class="py-3 px-4 text-center">{{ $rataEvaluasi ?? '-' }}</td>
-                        <td class="py-3 px-4 text-center text-{{ $rataEvaluasi >= 75 ? 'green' : 'red' }}-600 font-medium">
-                            {{ $rataEvaluasi !== null ? $status($rataEvaluasi) : '-' }}
+                        <td class="py-3 px-6 text-center">
+                            <a href="{{ route('siswa.nilai.detail', ['tipe' => 'tugas']) }}" class="text-[#0A58CA] hover:underline">Lihat</a>
                         </td>
                     </tr>
                     <tr class="border-t">
-                        <td class="py-3 px-4">Tryout</td>
-                        <td class="py-3 px-4 text-center">{{ $rataTryout ?? '-' }}</td>
-                        <td class="py-3 px-4 text-center text-{{ $rataTryout >= 75 ? 'green' : 'red' }}-600 font-medium">
+                        <td class="py-3 px-6">Evaluasi Mingguan</td>
+                        <td class="py-3 px-6 text-center">{{ $rataEvaluasi ?? '-' }}</td>
+                        <td class="py-3 px-6 text-center text-{{ $rataEvaluasi >= 75 ? 'green' : 'red' }}-600 font-medium">
+                            {{ $rataEvaluasi !== null ? $status($rataEvaluasi) : '-' }}
+                        </td>
+                        <td class="py-3 px-6 text-center">
+                            <a href="{{ route('siswa.nilai.detail', ['tipe' => 'tugas']) }}" class="text-[#0A58CA] hover:underline">Lihat</a>
+                        </td>
+                    </tr>
+                    <tr class="border-t">
+                        <td class="py-3 px-6">Tryout</td>
+                        <td class="py-3 px-6 text-center">{{ $rataTryout ?? '-' }}</td>
+                        <td class="py-3 px-6 text-center text-{{ $rataTryout >= 75 ? 'green' : 'red' }}-600 font-medium">
                             {{ $rataTryout !== null ? $status($rataTryout) : '-' }}
+                        </td>
+                        <td class="py-3 px-6 text-center">
+                            <a href="{{ route('siswa.nilai.detail', ['tipe' => 'tugas']) }}" class="text-[#0A58CA] hover:underline">Lihat</a>
                         </td>
                     </tr>
 
                     <tr class="border-t bg-gray-100">
-                        <td class="py-3 px-4 font-semibold">Rata-rata Keseluruhan</td>
-                        <td class="py-3 px-4 text-center font-semibold text-blue-600">
-                            {{
-                                collect([$rataTugas, $rataEvaluasi, $rataTryout])
-                                    ->filter()
-                                    ->avg() ? round(collect([$rataTugas, $rataEvaluasi, $rataTryout])
-                                    ->filter()
-                                    ->avg()) : '-'
-                            }}
+                        <td class="py-3 px-6 font-semibold">Rata-rata Keseluruhan</td>
+                        <td class="py-3 px-6 text-center font-semibold text-[#0A58CA]">
+                            {{ $rataKeseluruhan }}
                         </td>
-                        <td class="py-3 px-4 text-center font-semibold text-gray-700">-</td>
+                        <td class="py-3 px-6 text-center font-semibold text-{{ $warna }}-600">
+                            {{ $statusKelulusan }}
+                        </td>
                     </tr>
                 </tbody>
             </table>
             <div class="p-6 flex justify-end">
-                <button class="bg-[#0A58CA] text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-600">
+                <button class="bg-[#0A58CA] text-white px-6 py-2 rounded-lg shadow-md hover:bg-[#0A58CA]">
                     Unduh Rapor
                 </button>
             </div>

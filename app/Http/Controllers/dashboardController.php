@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\JobApplication;
+use App\Models\JobMatching;
 use Illuminate\Http\Request;
 use App\Models\Materi;
+use App\Models\Sertifikat;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TugasUser;
+// use App\Models\ChatRoom;
 // use App\Models\Tugas;
 
 
@@ -25,11 +29,24 @@ class dashboardController extends Controller
     {
         $userId = Auth::id();
 
+        // Ambil data kursus, chat, nilai, dll seperti biasa...
         $courses = Materi::latest()->take(3)->get();
         $myCourses = Materi::where('status', 'aktif')->take(5)->get();
+        $tanggalTerdaftar = Auth::user()->created_at->toDateString();
 
-        $tanggalTerdaftar = Auth::user()->created_at->toDateString(); // Ambil tanggal pendaftaran
+        $jobMatchings = [];
+        $jobApplications = [];
 
+        $sertifikatLulus = Sertifikat::where('user_id', $userId)->count();
+
+        if ($sertifikatLulus >= 2) {
+            $jobMatchings = JobMatching::where('status', 'terbuka')->get();
+
+            // Ambil lamaran user untuk job yang ada
+            $jobApplications = JobApplication::where('user_id', $userId)->get()->keyBy('job_matching_id');
+        }
+
+        // Ambil nilai tugas, evaluasi, tryout seperti biasa...
         $nilaiTugas = TugasUser::join('tugas', 'tugas.id', '=', 'tugas_user.tugas_id')
             ->where('tugas_user.user_id', $userId)
             ->where('tugas.tipe', 'tugas')
@@ -54,15 +71,27 @@ class dashboardController extends Controller
             ->orderBy('tanggal')
             ->get();
 
-            
+        $rooms = Auth::user()->chatRooms()
+            ->with([
+                'users',
+                'messages' => function ($query) {
+                    $query->latest()->limit(1);
+                }
+            ])
+            ->latest('updated_at')
+            ->get();
 
         return view('siswa.konten.dashboard', compact(
             'courses',
+            'rooms',
             'myCourses',
             'nilaiTugas',
             'nilaiEvaluasi',
             'nilaiTryout',
-            'tanggalTerdaftar'
+            'tanggalTerdaftar',
+            'jobMatchings',
+            'jobApplications',
+            'sertifikatLulus'
         ));
     }
 

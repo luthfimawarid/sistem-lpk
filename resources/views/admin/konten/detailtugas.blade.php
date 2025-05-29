@@ -28,7 +28,13 @@
                         <td class="border border-blue-100 px-4 py-2">{{ $index + 1 }}</td>
                         <td class="border border-blue-100 px-4 py-2">{{ $item->user->nama_lengkap ?? '-' }}</td>
                         <td class="border border-blue-100 px-4 py-2">{{ \Carbon\Carbon::parse($item->updated_at)->translatedFormat('d F Y') }}</td>
-                        <td class="border border-blue-100 px-4 py-2 capitalize">{{ str_replace('_', ' ', $item->status) }}</td>
+                        <td class="border border-blue-100 px-4 py-2 capitalize">
+                            @if ($item->nilai !== null)
+                                <span class="text-green-600">Sudah Dikoreksi</span>
+                            @else
+                                <span class="text-red-500">Belum Dikoreksi</span>
+                            @endif
+                        </td>
                         <td class="border border-blue-100 px-4 py-2">
                             @if ($item->jawaban)
                                 <a href="{{ asset('storage/jawaban_siswa/'.$item->jawaban) }}" target="_blank" class="text-blue-600 hover:underline">Lihat File</a>

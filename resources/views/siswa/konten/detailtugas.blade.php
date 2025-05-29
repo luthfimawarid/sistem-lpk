@@ -21,10 +21,11 @@
             $tugasUser = $tugas->tugasUser->first(); // diasumsikan sudah difilter berdasarkan user_id di controller
         @endphp
         <p class="text-gray-600 mt-2">📘 Status: 
-            <strong class="{{ $tugasUser && $tugasUser->status == 'selesai' ? 'text-green-500' : 'text-red-500' }}">
-                {{ ucfirst(str_replace('_', ' ', $tugasUser->status ?? 'belum_selesai')) }}
+            <strong class="text-sm {{ $userStatus && $userStatus->status == 'selesai' ? 'text-green-600' : 'text-red-600' }}">
+                Status: {{ $userStatus && $userStatus->status == 'selesai' ? 'Selesai' : 'Belum Selesai' }}
             </strong>
         </p>
+
 
 
         @if ($tugas->cover)
@@ -37,16 +38,23 @@
         </div>
         @endif
 
-        <!-- Form Upload Jawaban -->
         <div class="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h2 class="text-lg font-semibold">📤 Unggah Jawaban</h2>
-            <form action="{{ route('siswa.kirimJawaban', $tugas->id) }}" method="POST" enctype="multipart/form-data">
-                @csrf
-                <input type="file" name="jawaban" class="mt-2 p-2 w-full border rounded-lg" required>
-                <button class="mt-4 bg-[#0A58CA] text-white px-4 py-2 rounded-lg hover:bg-blue-600" type="submit">
-                    Kirim Jawaban
-                </button>
-            </form>
+            <h2 class="text-lg font-semibold">📤 Jawaban Kamu</h2>
+
+            @if ($userStatus && $userStatus->jawaban)
+                <p class="text-gray-700">✅ Kamu sudah mengirim jawaban:</p>
+                <a href="{{ asset('storage/jawaban_tugas/' . $userStatus->jawaban) }}" target="_blank" class="text-blue-600 hover:underline">
+                    📄 Lihat / Download Jawaban
+                </a>
+            @else
+                <form action="{{ route('siswa.kirimJawaban', $tugas->id) }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="file" name="jawaban" class="mt-2 p-2 w-full border rounded-lg" required>
+                    <button class="mt-4 bg-[#0A58CA] text-white px-4 py-2 rounded-lg hover:bg-blue-600" type="submit">
+                        Kirim Jawaban
+                    </button>
+                </form>
+            @endif
         </div>
     </div>
 </div>

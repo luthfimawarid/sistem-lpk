@@ -32,21 +32,31 @@ class SertifikatController extends Controller
             'judul' => 'required|string|max:255',
             'tipe' => 'required|in:bahasa,skill',
             'deskripsi' => 'nullable|string',
-            'gambar' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'gambar' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'bidang' => 'nullable|string|max:255', // tambahkan ini
         ]);
+
 
         $gambarPath = null;
         if ($request->hasFile('gambar')) {
             $gambarPath = $request->file('gambar')->store('sertifikat', 'public');
+            if (!$gambarPath) {
+                return back()->withErrors(['gambar' => 'Gagal menyimpan file.'])->withInput();
+            }
+        } else {
+            return back()->withErrors(['gambar' => 'File tidak ditemukan'])->withInput();
         }
+
 
         Sertifikat::create([
             'user_id' => $request->user_id,
             'judul' => $request->judul,
             'tipe' => $request->tipe,
             'deskripsi' => $request->deskripsi,
+            'bidang' => $request->tipe === 'skill' ? $request->bidang : null,
             'file' => $gambarPath,
         ]);
+
 
         return redirect()->route('sertifikat.index')->with('success', 'Sertifikat berhasil ditambahkan.');
     }
@@ -63,12 +73,13 @@ class SertifikatController extends Controller
         $sertifikat = Sertifikat::findOrFail($id);
 
         $request->validate([
-            'user_id' => 'required|exists:users,id',
             'judul' => 'required|string|max:255',
-            'tipe' => 'required|in:bahasa,skill',
+            'tipe' => 'nullable|in:bahasa,skill',
             'deskripsi' => 'nullable|string',
-            'gambar' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'gambar' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048', // tidak wajib
+            'bidang' => 'nullable|string|max:255',
         ]);
+
 
         if ($request->hasFile('gambar')) {
             if ($sertifikat->file) {
@@ -78,10 +89,10 @@ class SertifikatController extends Controller
         }
 
         $sertifikat->update([
-            'user_id' => $request->user_id,
             'judul' => $request->judul,
             'tipe' => $request->tipe,
             'deskripsi' => $request->deskripsi,
+            'bidang' => $request->tipe === 'skill' ? $request->bidang : null,
             'file' => $sertifikat->file,
         ]);
 

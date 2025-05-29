@@ -9,6 +9,7 @@ use App\Models\TugasUser;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class TugasController extends Controller
@@ -136,15 +137,22 @@ class TugasController extends Controller
 
     public function showSiswa($id)
     {
-        $tugas = Tugas::with('soalKuis')->findOrFail($id);
-    
+        $userId = Auth::id();
+
+        $tugas = Tugas::with(['tugasUser' => function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        }, 'soalKuis'])->findOrFail($id);
+
+        // Ambil userStatus dari relasi (karena hanya satu data, bisa ambil first)
+        $userStatus = $tugas->tugasUser->first();
+
         switch ($tugas->tipe) {
             case 'kuis':
             case 'tryout':
             case 'ujian_akhir':
-                return view('siswa.konten.detailkuis', compact('tugas'));
+                return view('siswa.konten.detailkuis', compact('tugas', 'userStatus'));
             default:
-                return view('siswa.konten.detailtugas', compact('tugas'));
+                return view('siswa.konten.detailtugas', compact('tugas', 'userStatus'));
         }
     }
     
@@ -194,8 +202,6 @@ class TugasController extends Controller
             'nilai' => $nilai
         ]);
     }
-
-    
 
     public function kirimJawaban(Request $request, $id)
     {
@@ -276,13 +282,32 @@ class TugasController extends Controller
         $data = $siswa->map(function ($user) {
             $tugasUser = $user->tugasUser()->with('tugas')->get();
 
-            // Nilai berdasarkan tipe tugas
+            // Nilai per tipe
             $nilaiTugas = $tugasUser->where('tugas.tipe', 'tugas')->pluck('nilai')->filter()->avg();
             $nilaiEvaluasi = $tugasUser->where('tugas.tipe', 'evaluasi_mingguan')->pluck('nilai')->filter()->avg();
             $nilaiTryout = $tugasUser->where('tugas.tipe', 'tryout')->pluck('nilai')->filter()->avg();
 
-            // Kategori prediksi (placeholder dulu)
-            $prediksi = '-';
+            // Bobot nilai
+            $bobotTugas = 0.3;
+            $bobotEvaluasi = 0.3;
+            $bobotTryout = 0.4;
+
+            $nilaiTugas = $nilaiTugas ?? 0;
+            $nilaiEvaluasi = $nilaiEvaluasi ?? 0;
+            $nilaiTryout = $nilaiTryout ?? 0;
+
+            // Rata-rata keseluruhan berbobot
+            $rataKeseluruhan = ($nilaiTugas * $bobotTugas) + ($nilaiEvaluasi * $bobotEvaluasi) + ($nilaiTryout * $bobotTryout);
+            $rataKeseluruhan = round($rataKeseluruhan, 2);
+
+            // Prediksi kelulusan
+            if ($rataKeseluruhan > 65) {
+                $prediksi = 'Lulus';
+            } elseif ($rataKeseluruhan >= 60) {
+                $prediksi = 'Beresiko';
+            } else {
+                $prediksi = 'Tidak Lulus';
+            }
 
             return [
                 'nama' => $user->nama_lengkap,
@@ -290,6 +315,7 @@ class TugasController extends Controller
                 'nilai_tugas' => $nilaiTugas ? round($nilaiTugas) : '-',
                 'nilai_evaluasi' => $nilaiEvaluasi ? round($nilaiEvaluasi) : '-',
                 'nilai_tryout' => $nilaiTryout ? round($nilaiTryout) : '-',
+                'rata_keseluruhan' => $rataKeseluruhan,
                 'prediksi' => $prediksi,
                 'id' => $user->id,
             ];
@@ -305,12 +331,14 @@ class TugasController extends Controller
         $dataTugas = $user->tugasUser->map(function ($item) {
             return [
                 'tanggal' => $item->created_at->format('d M Y'),
-                'pelajaran' => $item->tugas->nama ?? '-',
+                'pelajaran' => $item->tugas->judul ?? '-',
                 'tipe' => $item->tugas->tipe ?? '-',
                 'catatan' => $item->catatan ?? '-',
                 'status' => $item->status ?? 'Belum dikoreksi',
+                'nilai' => $item->nilai ?? '-', // Tambahkan ini
             ];
         });
+
 
         return view('admin.konten.detailnilai', [
             'user' => $user,
@@ -318,36 +346,85 @@ class TugasController extends Controller
         ]);
     }
 
-    public function editnilai($id)
+    public function editNilaiTipe($id, $tipe)
+    {
+        $user = User::findOrFail($id);
+        $nilai = $user->nilai; // pastikan relasi 'nilai' sudah ada
+        return view('admin.konten.editnilai', compact('user', 'nilai', 'tipe'));
+    }
+
+    public function updateNilaiTipe(Request $request, $id, $tipe)
     {
         $user = User::findOrFail($id);
 
-        // Asumsikan kamu punya model Nilai yg menyimpan nilai tugas/evaluasi/tryout
-        $nilai = $user->nilai ?? null;
-
-        return view('admin.konten.edit-rapot', compact('user', 'nilai'));
-    }
-
-    public function updatenilai(Request $request, $id)
-    {
         $request->validate([
-            'nilai_tugas' => 'required|numeric|min:0|max:100',
-            'nilai_evaluasi' => 'required|numeric|min:0|max:100',
-            'nilai_tryout' => 'required|numeric|min:0|max:100',
-            'prediksi' => 'required|in:Lulus,Beresiko',
+            'nilai' => 'required|numeric|min:0|max:100',
         ]);
 
-        $user = User::findOrFail($id);
+        // Cari tugas dengan tipe yang dimaksud
+        $tugas = Tugas::where('tipe', $tipe)->first();
 
-        // Simpan data nilai (buat model Nilai jika belum ada)
-        $nilai = $user->nilai ?? new TugasUser();
-        $nilai->user_id = $user->id;
-        $nilai->nilai_tugas = $request->nilai_tugas;
-        $nilai->nilai_evaluasi = $request->nilai_evaluasi;
-        $nilai->nilai_tryout = $request->nilai_tryout;
-        $nilai->prediksi = $request->prediksi;
-        $nilai->save();
+        if (!$tugas) {
+            return back()->with('error', 'Tugas dengan tipe tersebut tidak ditemukan.');
+        }
 
-        return redirect()->route('rapot.list')->with('success', 'Nilai berhasil diperbarui');
+        // Cari tugas_user berdasarkan user dan tugas
+        $tugasUser = TugasUser::firstOrNew([
+            'user_id' => $user->id,
+            'tugas_id' => $tugas->id,
+        ]);
+
+        $tugasUser->nilai = $request->nilai;
+        $tugasUser->save();
+
+        // Hitung prediksi kelulusan
+        $nilaiTugas = TugasUser::where('user_id', $user->id)
+            ->whereHas('tugas', fn($q) => $q->where('tipe', 'tugas'))
+            ->value('nilai');
+
+        $nilaiEvaluasi = TugasUser::where('user_id', $user->id)
+            ->whereHas('tugas', fn($q) => $q->where('tipe', 'evaluasi'))
+            ->value('nilai');
+
+        $nilaiTryout = TugasUser::where('user_id', $user->id)
+            ->whereHas('tugas', fn($q) => $q->where('tipe', 'tryout'))
+            ->value('nilai');
+
+        if ($nilaiTugas !== null && $nilaiEvaluasi !== null && $nilaiTryout !== null) {
+            $total = 0.3 * $nilaiTugas + 0.3 * $nilaiEvaluasi + 0.4 * $nilaiTryout;
+            $prediksi = $total > 65 ? 'Lulus' : ($total >= 60 ? 'Beresiko' : 'Tidak Lulus');
+
+            // Simpan prediksi ke kolom tambahan jika kamu punya, atau tampilkan saja di view
+            $user->prediksi = $prediksi;
+            $user->save();
+        }
+
+        return redirect()->route('admin.nilai')->with('success', 'Nilai berhasil diperbarui.');
     }
+
+    public function detailNilaiSiswa(Request $request)
+    {
+        $tipe = $request->query('tipe');
+
+        // Validasi tipe
+        if (!in_array($tipe, ['tugas', 'evaluasi', 'tryout'])) {
+            abort(404);
+        }
+
+        $userId = auth()->id();
+
+        $nilai = DB::table('tugas_user')
+            ->join('tugas', 'tugas_user.tugas_id', '=', 'tugas.id')
+            ->where('tugas_user.user_id', $userId)
+            ->where('tugas.tipe', $tipe)
+            ->select('tugas.judul', 'tugas_user.nilai', 'tugas_user.created_at')
+            ->orderBy('tugas_user.created_at', 'desc')
+            ->get();
+
+        return view('siswa.konten.detailnilai', compact('nilai', 'tipe'));
+    }
+
+
+
+
 }
