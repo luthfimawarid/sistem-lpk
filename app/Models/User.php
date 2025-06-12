@@ -69,4 +69,9 @@ class User extends Authenticatable
         return $this->belongsToMany(ChatRoom::class, 'chat_room_user');
     }
 
+    public function notifikasi()
+    {
+        return $this->hasMany(Notifikasi::class);
+    }
+
 }

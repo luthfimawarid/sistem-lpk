@@ -14,8 +14,13 @@ class SertifikatController extends Controller
     {
         $sertifikatBahasa = Sertifikat::where('tipe', 'bahasa')->with('user')->latest()->get();
         $sertifikatSkill = Sertifikat::where('tipe', 'skill')->with('user')->latest()->get();
-    
-        return view('admin.konten.sertifikat', compact('sertifikatBahasa', 'sertifikatSkill'));
+
+        // Ambil semua siswa yang punya minimal 1 sertifikat (bahasa atau skill)
+        $usersWithCertificates = User::whereHas('sertifikat')->with(['sertifikat' => function ($query) {
+            $query->orderBy('tipe');
+        }])->get();
+
+        return view('admin.konten.sertifikat', compact('sertifikatBahasa', 'sertifikatSkill', 'usersWithCertificates'));
     }
     
 

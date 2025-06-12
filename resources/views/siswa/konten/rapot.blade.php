@@ -66,30 +66,55 @@
 
         <!-- Prediksi Kelulusan -->
         <section class="w-full md:w-[32.5%]">
-            <div class="bg-white rounded-lg shadow p-6 h-full flex flex-col">
+            <div class="bg-white rounded-lg shadow p-6 flex flex-col h-full">
                 <div class="flex justify-between items-center mb-4">
                     <p class="text-sm md:text-lg font-semibold">Prediksi Kelulusan</p>
-                    <button class="bg-[#0A58CA] text-white px-2 py-2 rounded-lg text-sm md:text-sm hover:bg-[#0A58CA] transition">
-                        Cek Prediksi
-                    </button>
                 </div>
+
+                @php
+                    $warnaBulatan = 'bg-gray-400';
+                    $warnaTeks = 'text-gray-700';
+                    $persen = $nilaiPersen ?? 0;
+                    $saran = 'Belum ada data prediksi.';
+
+                    if ($hasilPrediksi == 'Lulus') {
+                        $warnaBulatan = 'bg-green-600';
+                        $warnaTeks = 'text-green-600';
+                        $saran = 'Pertahankan konsistensi belajar agar hasil tetap optimal.';
+                    } elseif ($hasilPrediksi == 'Beresiko') {
+                        $warnaBulatan = 'bg-yellow-500';
+                        $warnaTeks = 'text-yellow-600';
+                        $saran = 'Tingkatkan konsistensi belajar dan konsultasikan dengan tutor.';
+                    } elseif ($hasilPrediksi == 'Tidak Lulus') {
+                        $warnaBulatan = 'bg-red-600';
+                        $warnaTeks = 'text-red-600';
+                        $saran = 'Segera evaluasi proses belajar dan minta bantuan mentor.';
+                    }
+                @endphp
+
                 <div class="flex justify-around items-center mb-4">
-                    <div class="bg-[#0A58CA] text-white rounded-full w-20 h-20 flex items-center justify-center text-2xl font-bold">
-                        78%
+                    <div id="nilaiPersenBox" class="{{ $warnaBulatan }} text-white rounded-full w-24 h-24 flex items-center justify-center text-xl md:text-2xl font-bold">
+                        {{ $persen }}%
                     </div>
-                    <p class="text-green-500 font-medium text-lg text-left">
-                        Lulus
+                    <p id="hasilPrediksiTeks" class="{{ $warnaTeks }} font-medium md:text-xl">
+                        {{ $hasilPrediksi }}
                     </p>
                 </div>
-                <div class="text-sm">
-                    <p class="font-bold mb-1">Saran Perbaikan</p>
-                    <ul class="list-disc list-inside space-y-1">
-                        <li>Latihan soal lebih rutin</li>
-                        <li>Perbanyak mendengarkan percakapan Jepang</li>
-                    </ul>
+
+                <button id="btnCekPrediksi" class="bg-[#0A58CA] w-full text-white px-4 py-2 rounded-full text-sm md:text-base hover:bg-blue-600 transition flex items-center justify-center">
+                    <span id="textCek">Cek Prediksi</span>
+                    <svg id="loadingIcon" class="animate-spin ml-2 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                    </svg>
+                </button>
+
+                <div class="bg-gray-100 p-3 mt-3 rounded-md text-sm md:text-base text-gray-700">
+                    <p><strong>Saran:</strong> <span id="saranText">{{ $saran }}</span></p>
                 </div>
             </div>
         </section>
+
     </div>
 
     <section class="my-6 w-full overflow-x-auto">
@@ -108,38 +133,37 @@
                     <tr class="border-t">
                         <td class="py-3 px-6">Tugas</td>
                         <td class="py-3 px-6 text-center">{{ $rataTugas ?? '-' }}</td>
-                        <td class="py-3 px-6 text-center text-{{ $rataTugas >= 75 ? 'green' : 'red' }}-600 font-medium">
-                            {{ $rataTugas !== null ? $status($rataTugas) : '-' }}
+                        <td class="py-3 px-6 text-center text-{{ $rataTugas >= 75 ? 'green' : ($rataTugas >= 60 ? 'yellow' : 'red') }}-600 font-medium">
+                            {{ $statusTugas }}
                         </td>
                         <td class="py-3 px-6 text-center">
                             <a href="{{ route('siswa.nilai.detail', ['tipe' => 'tugas']) }}" class="text-[#0A58CA] hover:underline">Lihat</a>
                         </td>
                     </tr>
                     <tr class="border-t">
-                        <td class="py-3 px-6">Evaluasi Mingguan</td>
+                        <td class="py-3 px-6">Evaluasi</td>
                         <td class="py-3 px-6 text-center">{{ $rataEvaluasi ?? '-' }}</td>
-                        <td class="py-3 px-6 text-center text-{{ $rataEvaluasi >= 75 ? 'green' : 'red' }}-600 font-medium">
-                            {{ $rataEvaluasi !== null ? $status($rataEvaluasi) : '-' }}
+                        <td class="py-3 px-6 text-center text-{{ $rataEvaluasi >= 75 ? 'green' : ($rataEvaluasi >= 60 ? 'yellow' : 'red') }}-600 font-medium">
+                            {{ $statusEvaluasi }}
                         </td>
                         <td class="py-3 px-6 text-center">
-                            <a href="{{ route('siswa.nilai.detail', ['tipe' => 'tugas']) }}" class="text-[#0A58CA] hover:underline">Lihat</a>
+                            <a href="{{ route('siswa.nilai.detail', ['tipe' => 'evaluasi_mingguan']) }}" class="text-[#0A58CA] hover:underline">Lihat</a>
                         </td>
                     </tr>
                     <tr class="border-t">
                         <td class="py-3 px-6">Tryout</td>
                         <td class="py-3 px-6 text-center">{{ $rataTryout ?? '-' }}</td>
-                        <td class="py-3 px-6 text-center text-{{ $rataTryout >= 75 ? 'green' : 'red' }}-600 font-medium">
-                            {{ $rataTryout !== null ? $status($rataTryout) : '-' }}
+                        <td class="py-3 px-6 text-center text-{{ $rataTryout >= 75 ? 'green' : ($rataTryout >= 60 ? 'yellow' : 'red') }}-600 font-medium">
+                            {{ $statusTryout }}
                         </td>
                         <td class="py-3 px-6 text-center">
-                            <a href="{{ route('siswa.nilai.detail', ['tipe' => 'tugas']) }}" class="text-[#0A58CA] hover:underline">Lihat</a>
+                            <a href="{{ route('siswa.nilai.detail', ['tipe' => 'tryout']) }}" class="text-[#0A58CA] hover:underline">Lihat</a>
                         </td>
                     </tr>
-
                     <tr class="border-t bg-gray-100">
                         <td class="py-3 px-6 font-semibold">Rata-rata Keseluruhan</td>
                         <td class="py-3 px-6 text-center font-semibold text-[#0A58CA]">
-                            {{ $rataKeseluruhan }}
+                            {{ $nilaiPersen }}
                         </td>
                         <td class="py-3 px-6 text-center font-semibold text-{{ $warna }}-600">
                             {{ $statusKelulusan }}
@@ -160,6 +184,54 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    document.getElementById('btnCekPrediksi').addEventListener('click', function () {
+        const btn = this;
+        const loading = document.getElementById('loadingIcon');
+        const text = document.getElementById('textCek');
+
+        loading.classList.remove('hidden');
+        text.textContent = 'Memproses...';
+        btn.disabled = true;
+
+        fetch("{{ route('siswa.refresh.prediksi') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({}),
+        })
+        .then(res => res.json())
+        .then(data => {
+            const persenBox = document.getElementById('nilaiPersenBox');
+            const hasilTeks = document.getElementById('hasilPrediksiTeks');
+            const saranList = document.getElementById('saranList');
+
+            persenBox.textContent = data.persen + '%';
+
+            hasilTeks.textContent = data.hasil;
+            hasilTeks.className = 'font-medium text-lg text-left';
+            if (data.hasil === 'Lulus') {
+                hasilTeks.classList.add('text-green-500');
+                saranList.innerHTML = '<li>Pertahankan konsistensi belajar</li>';
+            } else if (data.hasil === 'Beresiko') {
+                hasilTeks.classList.add('text-yellow-500');
+                saranList.innerHTML = '<li>Latihan soal lebih rutin</li><li>Perbanyak mendengarkan percakapan Jepang</li>';
+            } else {
+                hasilTeks.classList.add('text-red-500');
+                saranList.innerHTML = '<li>Latihan soal lebih rutin</li><li>Perbanyak mendengarkan percakapan Jepang</li>';
+            }
+        })
+        .catch(err => {
+            alert('Gagal mengambil prediksi. Coba lagi.');
+            console.error(err);
+        })
+        .finally(() => {
+            loading.classList.add('hidden');
+            text.textContent = 'Cek Prediksi';
+            btn.disabled = false;
+        });
+    });
     const nilaiTugas = @json($nilaiTugas);
     const nilaiEvaluasi = @json($nilaiEvaluasi);
     const nilaiTryout = @json($nilaiTryout);
@@ -171,54 +243,62 @@
     }
 
     function getDefaultLabels(interval) {
-        const today = new Date();
         const result = [];
+        const now = new Date();
 
         if (interval === 'daily') {
-            return ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const currentDay = now.getDay();
+            const distanceFromMonday = (currentDay + 6) % 7;
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - distanceFromMonday);
+            monday.setHours(0, 0, 0, 0);
+
+            for (let i = 0; i < 6; i++) {
+                const d = new Date(monday);
+                d.setDate(monday.getDate() + i);
+                result.push(getDayName(d));
+            }
+            return result;
         }
 
         if (interval === 'weekly') {
-            const month = today.getMonth();
-            const year = today.getFullYear();
-            const date = new Date(year, month, 1);
+            const start = new Date(tanggalTerdaftar);
+            start.setHours(0, 0, 0, 0);
+            const current = new Date();
+            current.setHours(0, 0, 0, 0);
+            const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+            const totalWeeks = Math.ceil((current - start) / msPerWeek);
 
-            const weeks = new Set();
-
-            while (date.getMonth() === month) {
-                const firstDayOfMonth = new Date(year, month, 1);
-                const offset = (date.getDate() + firstDayOfMonth.getDay() - 1);
-                const weekNumber = Math.floor(offset / 7) + 1;
-                weeks.add(`Minggu ke-${weekNumber}`);
-                date.setDate(date.getDate() + 1);
+            for (let i = 1; i <= totalWeeks; i++) {
+                result.push(`Minggu ke-${i}`);
             }
-
-            return Array.from(weeks);
+            return result;
         }
 
         if (interval === 'monthly') {
             const startMonth = tanggalTerdaftar.getMonth();
             const startYear = tanggalTerdaftar.getFullYear();
-            const currentMonth = today.getMonth();
-            const currentYear = today.getFullYear();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
 
             const totalMonths = (currentYear - startYear) * 12 + (currentMonth - startMonth) + 1;
 
             for (let i = 0; i < totalMonths; i++) {
-                const labelDate = new Date(startYear, startMonth + i);
-                const monthYear = labelDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+                const d = new Date(startYear, startMonth + i);
+                const monthYear = d.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
                 result.push(monthYear.charAt(0).toUpperCase() + monthYear.slice(1));
             }
-
             return result;
         }
 
-        return [];
+        return result;
     }
 
     function formatDataByInterval(data, interval) {
         const grouped = {};
+        const labelDates = {};
         const labelMap = new Map();
+        const now = new Date();
         let index = 1;
 
         data.forEach(entry => {
@@ -226,17 +306,24 @@
             let label = '';
 
             if (interval === 'daily') {
-                label = getDayName(entry.tanggal);
+                const monday = new Date(now);
+                const day = now.getDay();
+                const distanceFromMonday = (day + 6) % 7;
+                monday.setDate(now.getDate() - distanceFromMonday);
+                monday.setHours(0, 0, 0, 0);
+                const endOfWeek = new Date(monday);
+                endOfWeek.setDate(monday.getDate() + 6);
+
+                if (date < monday || date > endOfWeek) return;
+
+                label = getDayName(date);
             } else if (interval === 'weekly') {
-                const today = new Date();
-                const currentMonth = today.getMonth();
-                const currentYear = today.getFullYear();
-
-                if (date.getMonth() !== currentMonth || date.getFullYear() !== currentYear) return;
-
-                const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-                const offset = (date.getDate() + firstDayOfMonth.getDay() - 1);
-                const weekNumber = Math.floor(offset / 7) + 1;
+                const start = new Date(tanggalTerdaftar);
+                start.setHours(0, 0, 0, 0);
+                const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+                const diffMs = date - start;
+                if (diffMs < 0) return;
+                const weekNumber = Math.floor(diffMs / msPerWeek) + 1;
                 label = `Minggu ke-${weekNumber}`;
             } else if (interval === 'monthly') {
                 const userStartMonth = tanggalTerdaftar.getMonth();
@@ -245,11 +332,8 @@
                 if (
                     date.getFullYear() < userStartYear ||
                     (date.getFullYear() === userStartYear && date.getMonth() < userStartMonth)
-                ) {
-                    return; // skip data sebelum akun dibuat
-                }
+                ) return;
 
-                const monthDiff = (date.getFullYear() - userStartYear) * 12 + (date.getMonth() - userStartMonth);
                 const labelDate = new Date(date.getFullYear(), date.getMonth());
                 const monthYear = labelDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
                 label = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
@@ -259,20 +343,38 @@
 
             if (!grouped[label]) {
                 grouped[label] = [];
-                if (!labelMap.has(label)) labelMap.set(label, index++);
+                labelDates[label] = [];
+                labelMap.set(label, index++);
             }
 
             grouped[label].push(entry.nilai);
+            labelDates[label].push(entry.tanggal);
         });
 
-        const sortedLabels = Array.from(labelMap.entries()).sort((a, b) => a[1] - b[1]).map(l => l[0]);
-
+        const sortedLabels = Array.from(labelMap.entries()).sort((a, b) => a[1] - b[1]).map(([label]) => label);
         const values = sortedLabels.map(label => {
             const nilai = grouped[label];
             return Math.round(nilai.reduce((a, b) => a + b, 0) / nilai.length);
         });
 
-        return { labels: sortedLabels, values };
+        return { labels: sortedLabels, values, dates: labelDates };
+    }
+
+    function formatTanggalID(dates, interval) {
+        if (!dates || dates.length === 0) return "";
+
+        const options = { day: 'numeric', month: 'short', year: 'numeric' };
+        const sorted = dates.map(d => new Date(d)).sort((a, b) => a - b);
+
+        if (interval === 'daily') {
+            return sorted[0].toLocaleDateString('id-ID', options);
+        }
+
+        if (interval === 'weekly') {
+            return `${sorted[0].toLocaleDateString('id-ID', options)} - ${sorted[sorted.length - 1].toLocaleDateString('id-ID', options)}`;
+        }
+
+        return "";
     }
 
     const intervalSelect = document.getElementById('intervalSelect');
@@ -341,7 +443,21 @@
                     },
                     tooltip: {
                         mode: 'index',
-                        intersect: false
+                        intersect: false,
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const index = tooltipItems[0].dataIndex;
+                                const label = tooltipItems[0].chart.data.labels[index];
+                                const tanggal = tugas.dates[label] || evaluasi.dates[label] || tryout.dates[label];
+
+                                if (interval === 'monthly') {
+                                    return label;
+                                }
+
+                                const tanggalFormat = formatTanggalID(tanggal, interval);
+                                return `${label} (${tanggalFormat})`;
+                            }
+                        }
                     }
                 }
             }

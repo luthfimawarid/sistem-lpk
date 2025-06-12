@@ -9,59 +9,56 @@
         </a>
     </div>
 
-    {{-- Sertifikat Bahasa --}}
-    <h3 class="text-lg font-semibold mb-2">Sertifikat Bahasa</h3>
-    @forelse ($sertifikatBahasa as $item)
-    <div class="bg-white rounded-lg shadow-md p-4 flex flex-col md:flex-row items-center mb-6">
-        <div class="w-full md:w-1/2 flex justify-center">
-            <img src="{{ asset('storage/' . $item->file) }}" alt="Sertifikat" class="w-60 h-48 object-cover rounded-lg">
-        </div>
-        <div class="w-full md:w-1/2 text-center md:text-left">
-            <h4 class="text-lg font-bold">{{ $item->judul }}</h4>
-            <p class="my-2 text-sm">{{ $item->deskripsi }}</p>
-            <div class="flex gap-2 mt-4 justify-center md:justify-start">
-                <a href="{{ route('sertifikat.edit', $item->id) }}" class="bg-gray-300 text-black px-4 py-2 rounded-lg">
-                    Edit Sertifikat
-                </a>
-                <form action="{{ route('sertifikat.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg">
-                        Hapus Sertifikat
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-    @empty
-        <p class="text-sm text-gray-500">Belum ada sertifikat bahasa.</p>
-    @endforelse
+    {{-- Tabel Data Siswa dengan Sertifikat --}}
+    <h3 class="text-lg font-semibold mb-3 mt-10">Daftar Siswa yang Memiliki Sertifikat</h3>
 
-    {{-- Sertifikat Skill --}}
-    <h3 class="text-lg font-semibold mb-2 mt-10">Sertifikat Skill</h3>
-    @forelse ($sertifikatSkill as $item)
-    <div class="bg-white rounded-lg shadow-md p-4 flex flex-col md:flex-row items-center mb-6">
-        <div class="w-full md:w-1/2 flex justify-center">
-            <img src="{{ asset('storage/' . $item->file) }}" alt="Sertifikat" class="w-60 h-48 object-cover rounded-lg">
-        </div>
-        <div class="w-full md:w-1/2 text-center md:text-left">
-            <h4 class="text-lg font-bold">{{ $item->judul }}</h4>
-            <p class="my-2 text-sm">{{ $item->deskripsi }}</p>
-            <div class="flex gap-2 mt-4 justify-center md:justify-start">
-                <a href="{{ route('sertifikat.edit', $item->id) }}" class="bg-gray-300 text-black px-4 py-2 rounded-lg">
-                    Edit Sertifikat
-                </a>
-                <form action="{{ route('sertifikat.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus?')">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded-lg">
-                        Hapus Sertifikat
-                    </button>
-                </form>
-            </div>
-        </div>
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
+        <table class="min-w-full text-sm table-auto">
+            <thead class="bg-gray-100 text-left text-xs md:text-sm uppercase font-semibold text-gray-600">
+                <tr>
+                    <th class="px-4 py-3">No</th>
+                    <th class="px-4 py-3">Nama</th>
+                    <th class="px-4 py-3">Sertifikat Bahasa</th>
+                    <th class="px-4 py-3">Sertifikat Skill</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($usersWithCertificates as $index => $user)
+                    @php
+                        $bahasa = $user->sertifikat->firstWhere('tipe', 'bahasa');
+                        $skill = $user->sertifikat->firstWhere('tipe', 'skill');
+                    @endphp
+                    <tr class="border-t hover:bg-gray-50">
+                        <td class="px-4 py-2">{{ $index + 1 }}</td>
+                        <td class="px-4 py-2">{{ $user->nama_lengkap }}</td>
+                        <td class="px-4 py-2">
+                            @if($bahasa)
+                                <a href="{{ asset('storage/' . $bahasa->file) }}" target="_blank" class="text-blue-600 underline">
+                                    Lihat
+                                </a>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-2">
+                            @if($skill)
+                                <a href="{{ asset('storage/' . $skill->file) }}" target="_blank" class="text-blue-600 underline">
+                                    Lihat
+                                </a>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-gray-500">Belum ada siswa yang memiliki sertifikat.</td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
     </div>
-    @empty
-        <p class="text-sm text-gray-500">Belum ada sertifikat skill.</p>
-    @endforelse
+
 </main>
 
 @endsection

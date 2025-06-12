@@ -50,6 +50,19 @@ class JobController extends Controller
         return redirect()->back()->with('success', 'Lamaran berhasil diajukan.');
     }
 
+    public function updateApplication(Request $request, $id)
+    {
+        $application = JobApplication::findOrFail($id);
+        $application->status = $request->status;
+        $application->interview_message = $request->interview_message;
+        $application->save();
+
+        // (Opsional) Kirim notifikasi ke siswa, bisa pakai event/notification
+
+        return back()->with('success', 'Lamaran diperbarui.');
+    }
+
+
     public function create()
     {
         return view('admin.konten.tambah-edit', ['job' => new JobMatching()]);
@@ -103,6 +116,37 @@ class JobController extends Controller
 
         return redirect()->route('admin.job-matching.index')->with('success', 'Lowongan berhasil dihapus.');
     }
+
+    public function index()
+    {
+        $user = auth()->user();
+        $sertifikatLulus = $user->sertifikat()->count();
+
+        $jobMatchings = JobMatching::where('status', 'terbuka')->get();
+
+        // Ambil semua aplikasi user
+        $jobApplications = JobApplication::where('user_id', $user->id)->get()->keyBy('job_matching_id');
+
+        return view('siswa.konten.job-matching', compact('jobMatchings', 'jobApplications', 'sertifikatLulus'));
+    }
+
+    // public function apply($id)
+    // {
+    //     $user = auth()->user();
+
+    //     if (JobApplication::where('user_id', $user->id)->where('job_matching_id', $id)->exists()) {
+    //         return back()->with('error', 'Kamu sudah melamar lowongan ini.');
+    //     }
+
+    //     JobApplication::create([
+    //         'user_id' => $user->id,
+    //         'job_matching_id' => $id,
+    //         'status' => 'diajukan',
+    //     ]);
+
+    //     return back()->with('success', 'Lamaran berhasil diajukan.');
+    // }
+
 
 
 }

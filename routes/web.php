@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\JobController;
+use App\Http\Controllers\NotifikasiController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MateriController;
@@ -37,6 +38,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/job-matching/{id}', [JobController::class, 'update'])->name('admin.job-matching.update');
     Route::delete('/job-matching/{id}/hapus', [JobController::class, 'destroy'])->name('admin.job-matching.destroy');
     Route::get('/admin/job-matching/{id}/pelamar', [JobController::class, 'viewApplicants'])->name('admin.job-matching.pelamar');
+    Route::post('/admin/job-matching/application/{id}/update', [JobController::class, 'updateApplication'])->name('admin.job-matching.application.update');
 
 
 
@@ -45,6 +47,7 @@ Route::middleware('auth')->group(function () {
 
 
 // Siswa
+    Route::post('/siswa/refresh-prediksi', [DashboardController::class, 'indexsiswa'])->name('siswa.refresh.prediksi');
     Route::get('/tugas', [TugasController::class, 'indexSiswa'])->name('siswa.tugas');
     Route::post('/siswa/tugas/{id}/kirim', [TugasController::class, 'kirimJawaban'])->name('siswa.kirimJawaban');
     Route::get('/siswa/tugas/{id}', [TugasController::class, 'showSiswa'])->name('siswa.tugas.detail');
@@ -59,6 +62,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/chat/{roomId}', [ChatController::class, 'show'])->name('chat.show');
     Route::post('/chat/{roomId}/send', [ChatController::class, 'sendMessage'])->name('chat.send');
     Route::post('/job-matching/apply/{jobId}', [JobController::class, 'apply'])->middleware('auth');
+    Route::post('/notifikasi/mark-as-read', [NotifikasiController::class, 'markAsRead'])->middleware('auth');
+    Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
+    Route::get('/siswa/job-matching', [JobController::class, 'index'])->name('siswa.job-matching.index');
+    Route::post('/siswa/job-matching/apply/{id}', [JobController::class, 'apply'])->name('siswa.job-matching.apply');
+
+
 
 
 });

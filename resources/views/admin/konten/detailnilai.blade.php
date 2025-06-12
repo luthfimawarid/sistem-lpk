@@ -11,8 +11,8 @@
             <p>{{ $user->nama_lengkap }}</p>
             <p class="font-semibold">Kelas :</p>
             <p>{{ $user->kelas ?? '-' }}</p>
-            <p class="font-semibold">Prediksi Kelulusan :</p>
-            <p class="text-red-600">-</p> {{-- Prediksi masih placeholder --}}
+            <!-- <p class="font-semibold">Prediksi Kelulusan :</p>
+            <p class="text-red-600">-</p> {{-- Prediksi masih placeholder --}} -->
         </div>
     </div>
 

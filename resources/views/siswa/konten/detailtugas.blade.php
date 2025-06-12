@@ -46,6 +46,8 @@
                 <a href="{{ asset('storage/jawaban_tugas/' . $userStatus->jawaban) }}" target="_blank" class="text-blue-600 hover:underline">
                     📄 Lihat / Download Jawaban
                 </a>
+            @elseif ($isExpired)
+                <p class="text-red-600 font-semibold mt-4">❌ Maaf, waktu pengumpulan tugas telah berakhir.</p>
             @else
                 <form action="{{ route('siswa.kirimJawaban', $tugas->id) }}" method="POST" enctype="multipart/form-data">
                     @csrf

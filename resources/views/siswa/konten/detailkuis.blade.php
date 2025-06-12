@@ -21,25 +21,31 @@
         <!-- Form Jawaban -->
         <div class="mt-6 p-4 bg-gray-50 rounded-lg">
             <h2 class="text-lg font-semibold">📝 Soal Kuis</h2>
-            <form id="kuisForm" action="{{ route('kuis.jawab', $tugas->id) }}" method="POST">
-                @csrf
-                @foreach ($tugas->soalKuis as $index => $soal)
-                <div class="mt-6">
-                    <p class="font-medium">{{ $index + 1 }}. {{ $soal->pertanyaan }}</p>
+            @if ($isExpired)
+                <p class="text-red-600 font-semibold mt-4">❌ Maaf, waktu kuis telah berakhir. Kamu tidak bisa lagi menjawab soal.</p>
+            @elseif ($userStatus && $userStatus->status == 'selesai')
+                <p class="text-green-600 font-semibold mt-4">✅ Kamu sudah menyelesaikan kuis ini.</p>
+            @else
+                <form id="kuisForm" action="{{ route('kuis.jawab', $tugas->id) }}" method="POST">
+                    @csrf
+                    @foreach ($tugas->soalKuis as $index => $soal)
+                    <div class="mt-6">
+                        <p class="font-medium">{{ $index + 1 }}. {{ $soal->pertanyaan }}</p>
 
-                    @foreach (['a', 'b', 'c', 'd'] as $opt)
-                    <label class="block mt-2">
-                        <input type="radio" name="jawaban[{{ $soal->id }}]" value="{{ $opt }}" class="mr-2" required>
-                        {{ strtoupper($opt) }}. {{ $soal->{'opsi_'.$opt} }}
-                    </label>
+                        @foreach (['a', 'b', 'c', 'd'] as $opt)
+                        <label class="block mt-2">
+                            <input type="radio" name="jawaban[{{ $soal->id }}]" value="{{ $opt }}" class="mr-2" required>
+                            {{ strtoupper($opt) }}. {{ $soal->{'opsi_'.$opt} }}
+                        </label>
+                        @endforeach
+                    </div>
                     @endforeach
-                </div>
-                @endforeach
 
-                <button type="submit" class="mt-6 bg-[#0A58CA] text-white px-4 py-2 rounded-lg hover:bg-blue-600">
-                    Kirim Jawaban
-                </button>
-            </form>
+                    <button type="submit" class="mt-6 bg-[#0A58CA] text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                        Kirim Jawaban
+                    </button>
+                </form>
+            @endif
 
             <!-- Modal nilai -->
             <div id="hasilModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">

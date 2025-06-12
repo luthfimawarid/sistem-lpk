@@ -7,10 +7,12 @@ use App\Models\JobMatching;
 use Illuminate\Http\Request;
 use App\Models\Materi;
 use App\Models\Sertifikat;
+use App\Models\Tugas;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TugasUser;
-// use App\Models\ChatRoom;
+use Illuminate\Support\Facades\Http;
+use App\Models\ChatRoom;
 // use App\Models\Tugas;
 
 
@@ -18,18 +20,43 @@ class dashboardController extends Controller
 {
     public function index()
     {
-        $courses = Materi::latest()->take(3)->get(); // Ongoing Courses
-        $myCourses = Materi::where('status', 'aktif')->take(2)->get(); // Kursus Saya (contoh)
+        $courses = Materi::latest()->take(3)->get();
+        $myCourses = Materi::where('status', 'aktif')->take(2)->get();
         $siswa = User::where('role', 'siswa')->latest()->take(5)->get();
+        $materi = Materi::where('tipe', 'ebook')->where('status', 'aktif')->get();
+        $tipe = 'ebook'; 
 
-        return view('admin.konten.dashboard', compact('courses', 'myCourses', 'siswa'));
+
+        // Ambil semua room milik admin saat ini (user login)
+       $rooms = Auth::user()->chatRooms()
+            ->with([
+                'users',
+                'messages' => function ($query) {
+                    $query->latest()->limit(1);
+                }
+            ])
+            ->latest('updated_at')
+            ->get();
+
+        return view('admin.konten.dashboard', compact('courses', 'myCourses', 'siswa', 'rooms', 'tipe','materi'));
     }
 
     public function indexsiswa()
     {
         $userId = Auth::id();
 
-        // Ambil data kursus, chat, nilai, dll seperti biasa...
+        $kuisBelumDikerjakan = Tugas::where('tipe', 'kuis')
+            ->whereDate('deadline', '>=', now()) // hanya kuis yang masih aktif
+            ->whereNotIn('id', function ($query) use ($userId) {
+                $query->select('tugas_id')
+                    ->from('tugas_user')
+                    ->where('user_id', $userId);
+            })
+            ->exists(); // hanya true/false
+
+            
+            // Ambil data kursus, chat, nilai, dll seperti biasa...
+        $materi = Materi::where('tipe', 'ebook')->where('status', 'aktif')->get();
         $courses = Materi::latest()->take(3)->get();
         $myCourses = Materi::where('status', 'aktif')->take(5)->get();
         $tanggalTerdaftar = Auth::user()->created_at->toDateString();
@@ -81,6 +108,33 @@ class dashboardController extends Controller
             ->latest('updated_at')
             ->get();
 
+        // Rata-rata nilai
+        $rataTugas = $nilaiTugas->avg('nilai') ?? 0;
+        $rataEvaluasi = $nilaiEvaluasi->avg('nilai') ?? 0;
+        $rataTryout = $nilaiTryout->avg('nilai') ?? 0;
+
+        $hasilPrediksi = 'Belum diprediksi';
+        $nilaiPersen = 0; // <- nilai skor dari API
+
+        try {
+            $response = Http::post('http://127.0.0.1:5001/prediksi', [
+                'tugas' => $rataTugas,
+                'evaluasi' => $rataEvaluasi,
+                'tryout' => $rataTryout,
+                'bobot_tugas' => 30,
+                'bobot_evaluasi' => 30,
+                'bobot_tryout' => 40,
+            ]);
+
+            if ($response->successful()) {
+                $json = $response->json();
+                $hasilPrediksi = $json['hasil'];
+                $nilaiPersen = round($json['skor'], 2); // <- ambil nilai akhir dari API
+            }
+        } catch (\Exception $e) {
+            $hasilPrediksi = 'Gagal memanggil API';
+        }
+
         return view('siswa.konten.dashboard', compact(
             'courses',
             'rooms',
@@ -91,7 +145,11 @@ class dashboardController extends Controller
             'tanggalTerdaftar',
             'jobMatchings',
             'jobApplications',
-            'sertifikatLulus'
+            'sertifikatLulus',
+            'hasilPrediksi',
+            'nilaiPersen',
+            'kuisBelumDikerjakan',
+            'materi'
         ));
     }
 
@@ -103,7 +161,7 @@ class dashboardController extends Controller
         $tanggalTerdaftar = Auth::user()->created_at;
         $myCourses = Materi::where('status', 'aktif')->take(5)->get();
 
-        // 🔹 Ambil data nilai lengkap (tanggal & nilai) untuk grafik
+        // 🔹 Ambil data nilai lengkap (tanggal & nilai)
         $nilaiTugas = TugasUser::join('tugas', 'tugas.id', '=', 'tugas_user.tugas_id')
             ->where('tugas_user.user_id', $userId)
             ->where('tugas.tipe', 'tugas')
@@ -128,35 +186,57 @@ class dashboardController extends Controller
             ->orderBy('tanggal')
             ->get();
 
-        // 🔹 Ambil nilai saja untuk rata-rata
+            
         $tugas = $nilaiTugas->pluck('nilai');
         $evaluasi = $nilaiEvaluasi->pluck('nilai');
         $tryout = $nilaiTryout->pluck('nilai');
+            
+        $rataTugas = $tugas->count() > 0 ? round($tugas->avg()) : 0;
+        $rataEvaluasi = $evaluasi->count() > 0 ? round($evaluasi->avg()) : 0;
+        $rataTryout = $tryout->count() > 0 ? round($tryout->avg()) : 0;
+            
+        function getStatus($nilai) {
+            if ($nilai >= 75) return 'Lulus';
+            if ($nilai >= 60) return 'Beresiko';
+            if ($nilai === 0) return '-';
+            return 'Tidak Lulus';
+        }
 
-        // 🔹 Hitung rata-rata
-        $rataTugas = $tugas->count() > 0 ? round($tugas->avg()) : null;
-        $rataEvaluasi = $evaluasi->count() > 0 ? round($evaluasi->avg()) : null;
-        $rataTryout = $tryout->count() > 0 ? round($tryout->avg()) : null;
+        $statusTugas = getStatus($rataTugas);
+        $statusEvaluasi = getStatus($rataEvaluasi);
+        $statusTryout = getStatus($rataTryout);
 
-        // 🔹 Fungsi status lulus / belum
-        $status = function ($nilai) {
-            return $nilai >= 75 ? 'Lulus' : 'Belum Lulus';
-        };
+        // 🔹 Prediksi Kelulusan pakai ML API
+        $hasilPrediksi = 'Belum diprediksi';
+        $nilaiPersen = 0;
+
+        $warna = $hasilPrediksi == 'Lulus' ? 'green' : ($hasilPrediksi == 'Beresiko' ? 'orange' : 'red');
+        $statusKelulusan = $hasilPrediksi;
+
+        try {
+            $response = Http::post('http://127.0.0.1:5001/prediksi', [
+                'tugas' => $rataTugas,
+                'evaluasi' => $rataEvaluasi,
+                'tryout' => $rataTryout,
+                'bobot_tugas' => 30,
+                'bobot_evaluasi' => 30,
+                'bobot_tryout' => 40,
+            ]);
+
+            if ($response->successful()) {
+                $json = $response->json();
+                $hasilPrediksi = $json['hasil'];
+                $nilaiPersen = round($json['skor'], 2);
+            }
+        } catch (\Exception $e) {
+            $hasilPrediksi = 'Gagal memanggil API';
+        }
 
         return view('siswa.konten.rapot', compact(
-            'courses',
-            'myCourses',
-            'nilaiTugas',
-            'nilaiEvaluasi',
-            'nilaiTryout',
-            'rataTugas',
-            'rataEvaluasi',
-            'rataTryout',
-            'status',
-            'tanggalTerdaftar'
-
+            'courses', 'myCourses', 'nilaiTugas', 'nilaiEvaluasi', 'nilaiTryout',
+            'rataTugas', 'rataEvaluasi', 'rataTryout', 'tanggalTerdaftar',
+            'hasilPrediksi', 'nilaiPersen', 'statusKelulusan', 'warna',
+            'statusTugas', 'statusEvaluasi', 'statusTryout'
         ));
     }
-
-
 }

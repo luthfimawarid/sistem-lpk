@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Tugas;
 use App\Models\SoalKuis;
 use App\Models\JawabanKuis;
+use App\Models\Notifikasi;
 use App\Models\TugasUser;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -36,25 +37,55 @@ class TugasController extends Controller
             'status' => 'required|in:belum_selesai,selesai',
             'deskripsi' => 'required',
         ]);
-        
-    
+
         $cover = null;
         if ($request->hasFile('cover')) {
             $cover = $request->file('cover')->store('cover_tugas', 'public');
         }
-    
-        // Simpan data tugas
+
         $tugas = Tugas::create([
             'judul' => $request->judul,
-            'deskripsi' => $request->deskripsi, // Tambahkan ini
+            'deskripsi' => $request->deskripsi,
             'tipe' => $request->tipe,
             'cover' => $cover,
             'deadline' => $request->deadline,
             'status' => $request->status,
         ]);
-        
-    
-        // Simpan soal jika tipe kuis atau ujian_akhir
+
+        // Judul & pesan notifikasi berdasarkan tipe
+        $judulNotif = 'Tugas Baru!';
+        $pesanNotif = 'Ada tugas baru yang harus kamu kerjakan.';
+
+        switch ($request->tipe) {
+            case 'kuis':
+                $judulNotif = 'Kuis Baru!';
+                $pesanNotif = 'Ada kuis baru yang tersedia. Jangan lupa kerjakan ya.';
+                break;
+            case 'evaluasi_mingguan':
+                $judulNotif = 'Evaluasi Mingguan Baru!';
+                $pesanNotif = 'Yuk cek evaluasi minggu ini.';
+                break;
+            case 'tryout':
+                $judulNotif = 'Tryout Baru!';
+                $pesanNotif = 'Persiapkan dirimu! Tryout baru sudah tersedia.';
+                break;
+            case 'ujian_akhir':
+                $judulNotif = 'Ujian Akhir!';
+                $pesanNotif = 'Ujian akhir sudah tersedia. Semangat mengerjakan!';
+                break;
+        }
+
+        $users = User::where('role', 'siswa')->get();
+        foreach ($users as $user) {
+            Notifikasi::create([
+                'user_id' => $user->id,
+                'judul' => $judulNotif,
+                'pesan' => $pesanNotif,
+                'tipe' => $request->tipe,
+            ]);
+        }
+
+        // Simpan soal jika ada
         if (in_array($request->tipe, ['kuis', 'ujian_akhir','tryout']) && $request->has('soal')) {
             foreach ($request->soal as $item) {
                 SoalKuis::create([
@@ -68,11 +99,11 @@ class TugasController extends Controller
                 ]);
             }
         }
-    
+
         return redirect()->route('tugas.index')->with('success', 'Tugas berhasil ditambahkan.');
     }
-    
 
+    
     public function edit($id)
     {
         $tugas = Tugas::findOrFail($id);
@@ -133,7 +164,6 @@ class TugasController extends Controller
     
         return view('siswa.konten.tugas', compact('tugas'));
     }
-    
 
     public function showSiswa($id)
     {
@@ -143,16 +173,21 @@ class TugasController extends Controller
             $query->where('user_id', $userId);
         }, 'soalKuis'])->findOrFail($id);
 
-        // Ambil userStatus dari relasi (karena hanya satu data, bisa ambil first)
         $userStatus = $tugas->tugasUser->first();
+
+        // Cek apakah sudah lewat deadline
+        $isExpired = false;
+        if ($tugas->deadline) {
+            $isExpired = \Carbon\Carbon::parse($tugas->deadline)->isPast();
+        }
 
         switch ($tugas->tipe) {
             case 'kuis':
             case 'tryout':
             case 'ujian_akhir':
-                return view('siswa.konten.detailkuis', compact('tugas', 'userStatus'));
+                return view('siswa.konten.detailkuis', compact('tugas', 'userStatus', 'isExpired'));
             default:
-                return view('siswa.konten.detailtugas', compact('tugas', 'userStatus'));
+                return view('siswa.konten.detailtugas', compact('tugas', 'userStatus', 'isExpired'));
         }
     }
     
@@ -209,6 +244,7 @@ class TugasController extends Controller
             'jawaban' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:2048',
         ]);
 
+        $tugas = Tugas::findOrFail($id);
         $userId = Auth::id();
         $tugasUser = TugasUser::where('user_id', $userId)->where('tugas_id', $id)->first();
 
@@ -216,6 +252,10 @@ class TugasController extends Controller
             $tugasUser = new TugasUser();
             $tugasUser->user_id = $userId;
             $tugasUser->tugas_id = $id;
+        }
+            
+        if ($tugas->deadline && \Carbon\Carbon::parse($tugas->deadline)->isPast()) {
+            return back()->with('error', 'Waktu pengumpulan sudah berakhir.');
         }
 
         // Simpan file

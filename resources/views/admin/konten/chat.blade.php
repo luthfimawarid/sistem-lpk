@@ -61,13 +61,13 @@
                         $messageTime = optional($lastMessage?->created_at)->format('H:i');
                         $routeName = $isGroup ? route('chat.admin.show', $room->id) : route('chat.admin.start', ['userId' => $room->users->where('id', '!=', auth()->id())->first()->id ?? 0]);
                     @endphp
-                    <a href="{{ $routeName }}" class="block hover:bg-gray-100 transition duration-200">
+                    <a href="{{ $routeName }}" class="chat-item block hover:bg-gray-100 transition duration-200">
                         <div class="flex items-center justify-between px-3 h-12 my-3">
                             <div class="flex items-center">
                                 <img src="/logo.png" alt="Room" class="w-10 h-10 md:w-12 md:h-12 border-2 rounded-full me-3 md:me-5 object-cover">
                                 <div>
-                                    <h3 class="text-sm md:text-lg font-bold">{{ $roomName }}</h3>
-                                    <p class="text-xs md:text-sm text-gray-600 truncate">{{ $messageText }}</p>
+                                    <h3 class="room-name text-sm md:text-lg font-bold">{{ $roomName }}</h3>
+                                    <p class="message-preview text-xs md:text-sm text-gray-600 truncate">{{ $messageText }}</p>
                                 </div>
                             </div>
                             <div class="text-right">
@@ -82,20 +82,21 @@
 </main>
 @endsection
 
-
 @section('scripts')
 <script>
-    document.querySelectorAll('a[href^="#tab"]').forEach(tab => {
-        tab.addEventListener('click', function(e) {
-            e.preventDefault();
+    document.getElementById('searchChat').addEventListener('input', function () {
+        const keyword = this.value.toLowerCase();
+        const chats = document.querySelectorAll('.chat-item');
 
-            // Hide all tab contents
-            document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.add('hidden'));
-            // Remove active state
-            document.querySelectorAll('a[href^="#tab"]').forEach(t => t.classList.remove('active-tab'));
-            // Show selected tab
-            document.querySelector(this.getAttribute('href')).classList.remove('hidden');
-            this.classList.add('active-tab');
+        chats.forEach(chat => {
+            const roomName = chat.querySelector('.room-name').textContent.toLowerCase();
+            const messagePreview = chat.querySelector('.message-preview').textContent.toLowerCase();
+
+            if (roomName.includes(keyword) || messagePreview.includes(keyword)) {
+                chat.style.display = 'block';
+            } else {
+                chat.style.display = 'none';
+            }
         });
     });
 </script>

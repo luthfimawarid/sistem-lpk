@@ -1,28 +1,51 @@
 @extends('siswa.main.sidebar')
 
 @section('content')
+
+@if($kuisBelumDikerjakan)
+    <div id="kuisModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div class="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h2 class="text-xl font-semibold mb-2 text-gray-800">Kuis Baru Tersedia!</h2>
+            <p class="text-gray-600 mb-4">Kamu memiliki kuis yang belum dikerjakan. Yuk kerjakan sekarang untuk meningkatkan nilai!</p>
+            <div class="flex justify-end space-x-2">
+                <button onclick="document.getElementById('kuisModal').classList.add('hidden')" class="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 text-sm">Nanti</button>
+                <a href="{{ route('siswa.tugas') }}" class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm">Kerjakan Sekarang</a>
+            </div>
+        </div>
+    </div>
+@endif
+
+
 <div class="p-5 md:p-10 bg-blue-50">
     <!-- Ongoing Courses -->
-<section class="mb-6">
-    <div class="flex justify-between items-center">
-        <p class="text-base md:text-lg font-semibold">Ongoing Courses (21)</p>
-        <a href="/ebook" class="px-3 py-1 text-sm md:text-base text-[#0A58CA] rounded-full font-semibold border border-[#0A58CA]">Lihat semua</a>
-    </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-        @foreach ($courses as $course)
-            <div class="bg-white rounded-lg shadow p-4 text-center">
-                <img src="{{ asset('storage/cover/' . $course->cover) }}" alt="Course Image" class="rounded-lg mb-2 mx-auto max-w-[150px]">
-                <p class="font-medium text-base md:text-lg">{{ $course->judul }}</p>
-            </div>
-        @endforeach
-    </div>
-</section>
+    <section class="mb-6">
+        <div class="flex justify-between items-center">
+            <p id="ebook-count" class="md:text-lg font-semibold my-2 md:my-0 md:order-1">
+                Ebook ({{ $materi->count() }})
+            </p>
+            <a href="/ebook" class="px-3 py-1 text-sm md:text-base text-[#0A58CA] rounded-full font-semibold border border-[#0A58CA]">Lihat semua</a>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+            @foreach ($courses as $course)
+                <div class="bg-white rounded-lg shadow p-4 text-center">
+                    <img src="{{ asset('/logo.png') }}" alt="Course Image" class="rounded-lg mb-2 mx-auto max-w-[150px]">
+                    <p class="font-medium text-base md:text-lg">{{ $course->judul }}</p>
+
+                    <div class="mt-3 space-x-2">
+                        <a href="{{ asset('storage/materi/' . $course->file) }}" target="_blank" class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm">Buka</a>
+                        <a href="{{ asset('storage/materi/' . $course->file) }}" download class="bg-green-500 text-white px-4 py-2 rounded-lg text-sm">Unduh</a>
+                    </div>
+                </div>
+
+            @endforeach
+        </div>
+    </section>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <section class="md:col-span-2 bg-white rounded-lg shadow p-4 md:p-6">
             <div class="flex justify-between items-center mb-4">
                 <p class="text-lg md:text-xl font-semibold">Nilai Latihan</p>
-                <select id="intervalSelect" class="border text-xs md:text-lg p-2 rounded-md">
+                <select id="intervalSelect" class="border md:text-lg p-2 rounded-md">
                     <option value="daily">Harian</option>
                     <option value="weekly" selected>Mingguan</option>
                     <option value="monthly">Bulanan</option>
@@ -76,7 +99,7 @@
                 </p>
             @else
                 @if (count($jobMatchings) > 0)
-                    <table class="w-full text-xs md:text-sm text-left mt-3">
+                    <table class="w-full text-left mt-3">
                         <thead>
                             <tr class="text-gray-600 bg-blue-50">
                                 <th class="py-2 px-3 md:py-3 md:px-6">Posisi</th>
@@ -92,12 +115,12 @@
                                     <td class="py-2 px-3 md:py-3 md:px-6">{{ $job->nama_perusahaan }}</td>
                                     <td class="py-2 px-3 md:py-3 md:px-6">
                                         @if (isset($jobApplications[$job->id]))
-                                            <span class="px-2 py-1 rounded-full text-white text-xs
+                                            <span class="px-2 py-1 rounded-full text-white px-4
                                                 {{ $jobApplications[$job->id]->status === 'lolos' ? 'bg-green-500' : ($jobApplications[$job->id]->status === 'diproses' ? 'bg-yellow-500' : 'bg-red-500') }}">
                                                 {{ ucfirst($jobApplications[$job->id]->status) }}
                                             </span>
                                         @else
-                                            <span class="px-2 py-1 rounded-full text-gray-500 text-xs">
+                                            <span class="px-2 py-1 rounded-full text-gray-500">
                                                 Belum Melamar
                                             </span>
                                         @endif
@@ -107,12 +130,12 @@
                                             <form action="{{ url('/job-matching/apply/' . $job->id) }}" method="POST">
                                                 @csrf
                                                 <button type="submit"
-                                                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
+                                                    class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded">
                                                     Ajukan Lamaran
                                                 </button>
                                             </form>
                                         @else
-                                            <button disabled class="bg-gray-300 text-gray-600 px-3 py-1 rounded text-xs">
+                                            <button disabled class="bg-gray-300 text-gray-600 px-3 py-1 rounded">
                                                 Sudah Melamar
                                             </button>
                                         @endif
@@ -132,21 +155,47 @@
         <section class="bg-white rounded-lg shadow p-4 md:p-6">
             <div class="flex justify-between items-center mb-4">
                 <p class="text-lg md:text-xl font-semibold">Prediksi Kelulusan</p>
-                <button class="bg-blue-500 text-white px-4 py-2 rounded-lg text-sm md:text-base hover:bg-blue-600 transition">
+            </div>
+
+            @php
+                $warnaBulatan = 'bg-gray-400';
+                $warnaTeks = 'text-gray-700';
+                $persen = $nilaiPersen ?? 0;
+                $saran = 'Belum ada data prediksi.';
+
+                if ($hasilPrediksi == 'Lulus') {
+                    $warnaBulatan = 'bg-green-600';
+                    $warnaTeks = 'text-green-600';
+                    $saran = 'Pertahankan konsistensi belajar agar hasil tetap optimal.';
+                } elseif ($hasilPrediksi == 'Beresiko') {
+                    $warnaBulatan = 'bg-yellow-500';
+                    $warnaTeks = 'text-yellow-600';
+                    $saran = 'Tingkatkan konsistensi belajar dan konsultasikan dengan tutor.';
+                } elseif ($hasilPrediksi == 'Tidak Lulus') {
+                    $warnaBulatan = 'bg-red-600';
+                    $warnaTeks = 'text-red-600';
+                    $saran = 'Segera evaluasi proses belajar dan minta bantuan mentor.';
+                }
+            @endphp
+
+            <div class="flex justify-around items-center mb-4">
+                <div class="{{ $warnaBulatan }} text-white rounded-full w-24 h-24 flex items-center justify-center text-lg md:text-xl font-bold">
+                    {{ $persen }}%
+                </div>
+                <p class="{{ $warnaTeks }} font-medium md:text-xl">
+                    {{ $hasilPrediksi }}
+                </p>
+            </div>
+            <form method="POST" action="{{ route('siswa.refresh.prediksi') }}">
+                @csrf
+                <button class="bg-[#0A58CA] w-full text-white px-4 py-2 rounded-full text-sm md:text-base hover:bg-blue-600 transition">
                     Cek Prediksi
                 </button>
-            </div>
-            <div class="flex justify-around items-center mb-4">
-                <div class="bg-blue-600 text-white rounded-full w-14 h-14 md:w-20 md:h-20 flex items-center justify-center text-lg md:text-2xl font-bold">
-                    62%
-                </div>
-                <p class="text-red-500 font-medium text-sm md:text-lg">Beresiko tidak lulus</p>
-            </div>
-            <div class="bg-gray-100 p-3 rounded-md text-sm md:text-base text-gray-700">
-                <p><strong>Saran:</strong> Tingkatkan konsistensi belajar dan konsultasikan dengan dosen atau tutor untuk memperbaiki pemahaman materi.</p>
+            </form>
+            <div class="bg-gray-100 p-3 mt-3 rounded-md text-sm md:text-base text-gray-700">
+                <p><strong>Saran:</strong> {{ $saran }}</p>
             </div>
         </section>
-
     </div>
 </div>
 @endsection
@@ -155,6 +204,15 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('kuisModal');
+        if (modal) {
+            setTimeout(() => {
+                modal.classList.remove('hidden');
+            }, 1000); // delay 1 detik
+        }
+    });
     const nilaiTugas = @json($nilaiTugas);
     const nilaiEvaluasi = @json($nilaiEvaluasi);
     const nilaiTryout = @json($nilaiTryout);
@@ -166,54 +224,62 @@
     }
 
     function getDefaultLabels(interval) {
-        const today = new Date();
         const result = [];
+        const now = new Date();
 
         if (interval === 'daily') {
-            return ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const currentDay = now.getDay();
+            const distanceFromMonday = (currentDay + 6) % 7;
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - distanceFromMonday);
+            monday.setHours(0, 0, 0, 0);
+
+            for (let i = 0; i < 6; i++) {
+                const d = new Date(monday);
+                d.setDate(monday.getDate() + i);
+                result.push(getDayName(d));
+            }
+            return result;
         }
 
         if (interval === 'weekly') {
-            const month = today.getMonth();
-            const year = today.getFullYear();
-            const date = new Date(year, month, 1);
+            const start = new Date(tanggalTerdaftar);
+            start.setHours(0, 0, 0, 0);
+            const current = new Date();
+            current.setHours(0, 0, 0, 0);
+            const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+            const totalWeeks = Math.ceil((current - start) / msPerWeek);
 
-            const weeks = new Set();
-
-            while (date.getMonth() === month) {
-                const firstDayOfMonth = new Date(year, month, 1);
-                const offset = (date.getDate() + firstDayOfMonth.getDay() - 1);
-                const weekNumber = Math.floor(offset / 7) + 1;
-                weeks.add(`Minggu ke-${weekNumber}`);
-                date.setDate(date.getDate() + 1);
+            for (let i = 1; i <= totalWeeks; i++) {
+                result.push(`Minggu ke-${i}`);
             }
-
-            return Array.from(weeks);
+            return result;
         }
 
         if (interval === 'monthly') {
             const startMonth = tanggalTerdaftar.getMonth();
             const startYear = tanggalTerdaftar.getFullYear();
-            const currentMonth = today.getMonth();
-            const currentYear = today.getFullYear();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
 
             const totalMonths = (currentYear - startYear) * 12 + (currentMonth - startMonth) + 1;
 
             for (let i = 0; i < totalMonths; i++) {
-                const labelDate = new Date(startYear, startMonth + i);
-                const monthYear = labelDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+                const d = new Date(startYear, startMonth + i);
+                const monthYear = d.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
                 result.push(monthYear.charAt(0).toUpperCase() + monthYear.slice(1));
             }
-
             return result;
         }
 
-        return [];
+        return result;
     }
 
     function formatDataByInterval(data, interval) {
         const grouped = {};
+        const labelDates = {};
         const labelMap = new Map();
+        const now = new Date();
         let index = 1;
 
         data.forEach(entry => {
@@ -221,17 +287,24 @@
             let label = '';
 
             if (interval === 'daily') {
-                label = getDayName(entry.tanggal);
+                const monday = new Date(now);
+                const day = now.getDay();
+                const distanceFromMonday = (day + 6) % 7;
+                monday.setDate(now.getDate() - distanceFromMonday);
+                monday.setHours(0, 0, 0, 0);
+                const endOfWeek = new Date(monday);
+                endOfWeek.setDate(monday.getDate() + 6);
+
+                if (date < monday || date > endOfWeek) return;
+
+                label = getDayName(date);
             } else if (interval === 'weekly') {
-                const today = new Date();
-                const currentMonth = today.getMonth();
-                const currentYear = today.getFullYear();
-
-                if (date.getMonth() !== currentMonth || date.getFullYear() !== currentYear) return;
-
-                const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
-                const offset = (date.getDate() + firstDayOfMonth.getDay() - 1);
-                const weekNumber = Math.floor(offset / 7) + 1;
+                const start = new Date(tanggalTerdaftar);
+                start.setHours(0, 0, 0, 0);
+                const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+                const diffMs = date - start;
+                if (diffMs < 0) return;
+                const weekNumber = Math.floor(diffMs / msPerWeek) + 1;
                 label = `Minggu ke-${weekNumber}`;
             } else if (interval === 'monthly') {
                 const userStartMonth = tanggalTerdaftar.getMonth();
@@ -240,11 +313,8 @@
                 if (
                     date.getFullYear() < userStartYear ||
                     (date.getFullYear() === userStartYear && date.getMonth() < userStartMonth)
-                ) {
-                    return; // skip data sebelum akun dibuat
-                }
+                ) return;
 
-                const monthDiff = (date.getFullYear() - userStartYear) * 12 + (date.getMonth() - userStartMonth);
                 const labelDate = new Date(date.getFullYear(), date.getMonth());
                 const monthYear = labelDate.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
                 label = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
@@ -254,20 +324,38 @@
 
             if (!grouped[label]) {
                 grouped[label] = [];
-                if (!labelMap.has(label)) labelMap.set(label, index++);
+                labelDates[label] = [];
+                labelMap.set(label, index++);
             }
 
             grouped[label].push(entry.nilai);
+            labelDates[label].push(entry.tanggal);
         });
 
-        const sortedLabels = Array.from(labelMap.entries()).sort((a, b) => a[1] - b[1]).map(l => l[0]);
-
+        const sortedLabels = Array.from(labelMap.entries()).sort((a, b) => a[1] - b[1]).map(([label]) => label);
         const values = sortedLabels.map(label => {
             const nilai = grouped[label];
             return Math.round(nilai.reduce((a, b) => a + b, 0) / nilai.length);
         });
 
-        return { labels: sortedLabels, values };
+        return { labels: sortedLabels, values, dates: labelDates };
+    }
+
+    function formatTanggalID(dates, interval) {
+        if (!dates || dates.length === 0) return "";
+
+        const options = { day: 'numeric', month: 'short', year: 'numeric' };
+        const sorted = dates.map(d => new Date(d)).sort((a, b) => a - b);
+
+        if (interval === 'daily') {
+            return sorted[0].toLocaleDateString('id-ID', options);
+        }
+
+        if (interval === 'weekly') {
+            return `${sorted[0].toLocaleDateString('id-ID', options)} - ${sorted[sorted.length - 1].toLocaleDateString('id-ID', options)}`;
+        }
+
+        return "";
     }
 
     const intervalSelect = document.getElementById('intervalSelect');
@@ -336,7 +424,21 @@
                     },
                     tooltip: {
                         mode: 'index',
-                        intersect: false
+                        intersect: false,
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const index = tooltipItems[0].dataIndex;
+                                const label = tooltipItems[0].chart.data.labels[index];
+                                const tanggal = tugas.dates[label] || evaluasi.dates[label] || tryout.dates[label];
+
+                                if (interval === 'monthly') {
+                                    return label;
+                                }
+
+                                const tanggalFormat = formatTanggalID(tanggal, interval);
+                                return `${label} (${tanggalFormat})`;
+                            }
+                        }
                     }
                 }
             }
@@ -351,4 +453,5 @@
         renderChart(intervalSelect.value);
     });
 </script>
+
 @endsection

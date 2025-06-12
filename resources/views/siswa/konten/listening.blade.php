@@ -17,7 +17,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse ($materi as $item)
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <img src="{{ asset('storage/cover/' . $item->cover) }}" alt="Cover Listening" class="w-full h-48 object-cover">
+                <img src="{{ asset('/logo.png') }}" alt="Cover Listening" class="w-full h-48 object-cover">
                 <div class="p-4">
                     <h3 class="text-lg font-semibold">{{ $item->judul }}</h3>
                     <p class="text-sm text-gray-600 mt-2">By {{ $item->author }}</p>

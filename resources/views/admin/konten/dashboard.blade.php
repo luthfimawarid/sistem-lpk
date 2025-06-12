@@ -5,13 +5,15 @@
 <div class="p-4 md:p-10 bg-blue-50">
 <section class="mb-6">
     <div class="flex justify-between items-center">
-        <p class="text-base md:text-lg font-semibold">Ongoing Courses (21)</p>
-        <a href="/" class="px-3 py-1 text-sm md:text-base text-[#0A58CA] rounded-full font-semibold border border-[#0A58CA]">Lihat semua</a>
+        <h2 id="ebook-count" class="md:text-lg font-semibold my-2 md:my-0 md:order-1">
+            {{ ucfirst($tipe) }} ({{ $materi->count() }})
+        </h2>
+        <a href="/ebook-admin" class="px-3 py-1 text-sm md:text-base text-[#0A58CA] rounded-full font-semibold border border-[#0A58CA]">Lihat semua</a>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
         @foreach ($courses as $course)
             <div class="bg-white rounded-lg shadow p-4 text-center">
-                <img src="{{ asset('storage/materi/' . $course->cover) }}" alt="Course Image" class="rounded-lg mb-2 mx-auto max-w-[150px]">
+                <img src="{{ asset('/logo.png') }}" alt="Course Image" class="rounded-lg mb-2 mx-auto max-w-[150px]">
                 <p class="font-medium text-base">{{ $course->judul }}</p>
             </div>
         @endforeach
@@ -50,26 +52,38 @@
         </section>
 
         <!-- Pesan -->
-        <section class="w-full md:w-1/3 bg-white rounded-lg shadow p-4 h-full">
-            <div class="flex justify-between items-center mb-2">
+        <section class="w-full md:w-1/3 bg-white rounded-lg shadow p-4 h-full flex flex-col">
+            <div class="flex justify-between items-center">
                 <p class="text-base md:text-lg font-medium">Pesan</p>
-                <a href="#" class="text-sm md:text-base text-blue-600 font-medium">Pergi ke pesan</a>
+                <a href="{{ route('chat.admin') }}" class="text-sm text-blue-600 font-medium">Lihat semua</a>
             </div>
-            <p class="text-lg md:text-xl font-bold mb-4">Kelas NIRUMA</p>
-            <div id="chat-box" class="h-40 md:h-60 overflow-y-auto space-y-3">
-                <div class="flex items-start space-x-3">
-                    <div class="w-8 h-8 md:w-10 md:h-10 bg-gray-300 rounded-full flex items-center justify-center font-medium">A</div>
-                    <div class="bg-gray-100 rounded-lg p-3 w-full">
-                        <p class="text-sm md:text-base font-medium">~ Alamsyah</p>
-                        <p class="text-sm md:text-base">Jangan lupa tugas hari ini guys!!</p>
-                        <p class="text-xs text-right text-[#0A58CA] mt-1">18.42</p>
-                    </div>
-                </div>
+
+            <div id="chat-list" class="mt-4 space-y-3 overflow-y-auto h-60">
+                @if($rooms->isEmpty())
+                    <p class="text-center text-gray-500 text-sm">Belum ada chat</p>
+                @else
+                    @foreach ($rooms as $room)
+                        @php
+                            $lastMessage = $room->messages->first();
+                            $otherUser = $room->users->where('id', '!=', auth()->id())->first();
+                            $roomName = $room->type === 'group' ? $room->name : ($otherUser->nama_lengkap ?? 'Private Chat');
+                            $messageText = $lastMessage->message ?? 'Belum ada pesan';
+                            $messageTime = optional($lastMessage?->created_at)->format('H:i');
+                            $link = $room->type === 'group'
+                                ? route('chat.admin.show', $room->id)
+                                : route('chat.admin.start', ['userId' => $otherUser->id ?? 0]);
+                        @endphp
+                        <a href="{{ $link }}" class="flex items-center hover:bg-gray-100 transition p-2 rounded-lg">
+                            <img src="/logo.png" class="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover mr-3" alt="Avatar">
+                            <div class="flex-1">
+                                <p class="text-xs md:text-sm font-semibold truncate">{{ $roomName }}</p>
+                                <p class="text-xs text-gray-600 truncate">{{ $messageText }}</p>
+                            </div>
+                            <span class="text-xs text-gray-400 ml-2">{{ $messageTime }}</span>
+                        </a>
+                    @endforeach
+                @endif
             </div>
-            <form id="chat-form" class="flex mt-4">
-                <input type="text" id="chat-input" class="w-full bg-blue-50 rounded-l-full p-2 text-sm md:text-base" placeholder="Ketik pesan...">
-                <button type="submit" class="bg-blue-600 text-white px-4 rounded-r-full flex items-center">➤</button>
-            </form>
         </section>
     </div>
 

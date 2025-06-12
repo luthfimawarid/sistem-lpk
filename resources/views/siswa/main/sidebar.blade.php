@@ -1,9 +1,23 @@
+@php
+use App\Models\Notifikasi;
+
+$notifikasi = Notifikasi::where('user_id', Auth::id())
+    ->where('dibaca', false)
+    ->latest()
+    ->take(5)
+    ->get();
+
+$adaNotif = $notifikasi->count() > 0;
+@endphp
+
+
 <!DOCTYPE html>
 <html lang="en" class="font-[Poppins]">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,8 +25,9 @@
 </head>
 <body>
 
+
     <!-- Button to open sidebar (mobile view) -->
-    <div class="flex justify-between items-center bg-white p-3 md:p-5 shadow">
+    <div class="flex justify-between items-center bg-white p-3 md:p-5">
             <!-- Tombol Hamburger -->
             <button id="sidebar-toggle" type="button"
                 class="p-2 text-gray-500 rounded-lg sm:hidden hover:bg-[#A6CDC6] focus:ring-2 focus:ring-gray-300">
@@ -29,9 +44,30 @@
 
             <!-- Ikon Profil & Search -->
             <div class="flex items-center space-x-3 md:space-x-3">
-                <!-- <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
-                </svg> -->
+                <!-- Notifikasi -->
+                <div class="relative">
+                    <a href="/notifikasi" id="notifBtn" class="focus:outline-none relative">
+                        <span id="notifIcon">
+                            @if ($adaNotif)
+                                <!-- ICON BERGETAR -->
+                                <svg class="w-8 h-8 text-gray-800 dark:text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17.133 12.632v-1.8a5.407 5.407 0 0 0-4.154-5.262.955.955 0 0 0 .021-.106V3.1a1 1 0 0 0-2 0v2.364a.933.933 0 0 0 .021.106 5.406 5.406 0 0 0-4.154 5.262v1.8C6.867 15.018 5 15.614 5 16.807 5 17.4 5 18 5.538 18h12.924C19 18 19 17.4 19 16.807c0-1.193-1.867-1.789-1.867-4.175ZM8.823 19a3.453 3.453 0 0 0 6.354 0H8.823Z"/>
+                                </svg>
+                            @else
+                                <!-- ICON NORMAL -->
+                                <svg class="w-8 h-8 text-gray-800 dark:text-white" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M17.133 12.632v-1.8a5.406 5.406 0 0 0-4.154-5.262V3.1a1 1 0 0 0-2 0v2.364a5.406 5.406 0 0 0-4.154 5.262v1.8C6.867 15.018 5 15.614 5 16.807c0 .593 0 1.193.538 1.193h12.924c.538 0 .538-.6.538-1.193 0-1.193-1.867-1.789-1.867-4.175ZM8.823 19a3.453 3.453 0 0 0 6.354 0H8.823Z"/>
+                                </svg>
+                            @endif
+                        </span>
+
+                        @if ($adaNotif)
+                            <span id="notifBadge" class="absolute top-0 right-0 bg-red-600 rounded-full w-2 h-2 animate-ping"></span>
+                        @endif
+                    </a>
+                </div>
+
+                <!-- profil -->
                 <div class="relative">
                     <button id="profileBtn" class="focus:outline-none">
                         <svg class="w-8 h-8 mt-1.5 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -50,6 +86,32 @@
                     </div>
                 </div>
             </div>
+
+            @if ($notifikasi->isNotEmpty())
+                @php $notifPertama = $notifikasi->first(); @endphp
+
+                <div id="alert-notifikasi" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" style="display: none;">
+                    <div class="p-4 max-w-md w-full text-blue-800 border border-blue-300 rounded-lg bg-white shadow-lg dark:bg-gray-800 dark:text-blue-400 dark:border-blue-800">
+                        <div class="flex items-center">
+                            <svg class="shrink-0 w-4 h-4 me-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                            </svg>
+                            <h3 class="text-lg font-medium">Pemberitahuan Baru</h3>
+                        </div>
+                        <div class="mt-2 mb-4 text-sm">
+                            {{ $notifPertama->judul }} - {{ $notifPertama->pesan }}
+                        </div>
+                        <div class="flex">
+                            <a href="/notifikasi" id="lihatDetailBtn" class="text-white bg-blue-800 hover:bg-blue-900 font-medium rounded-lg text-xs px-3 py-1.5 me-2 inline-flex items-center">
+                                Lihat Detail
+                            </a>
+                            <button type="button" id="dismiss-alert" class="text-blue-800 border border-blue-800 hover:bg-blue-900 hover:text-white font-medium rounded-lg text-xs px-3 py-1.5">
+                                Tutup
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @endif
     </div>
 
     <!-- Sidebar -->
@@ -152,6 +214,15 @@
                         <span class="w-2 h-2 rounded-full bg-white opacity-0 group-[.active-link]:opacity-100"></span>
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('siswa.job-matching.index') }}" class="flex items-center p-2 rounded-lg hover:bg-[#A6CDC6]">
+                        <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M10 2a3 3 0 0 0-3 3v1H5a3 3 0 0 0-3 3v2.382l1.447.723.005.003.027.013.12.056c.108.05.272.123.486.212.429.177 1.056.416 1.834.655C7.481 13.524 9.63 14 12 14c2.372 0 4.52-.475 6.08-.956.78-.24 1.406-.478 1.835-.655a14.028 14.028 0 0 0 .606-.268l.027-.013.005-.002L22 11.381V9a3 3 0 0 0-3-3h-2V5a3 3 0 0 0-3-3h-4Zm5 4V5a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v1h6Zm6.447 7.894.553-.276V19a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-5.382l.553.276.002.002.004.002.013.006.041.02.151.07c.13.06.318.144.557.242.478.198 1.163.46 2.01.72C7.019 15.476 9.37 16 12 16c2.628 0 4.98-.525 6.67-1.044a22.95 22.95 0 0 0 2.01-.72 15.994 15.994 0 0 0 .707-.312l.041-.02.013-.006.004-.002.001-.001-.431-.866.432.865ZM12 10a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H12Z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="ml-3">Job Matching</span>
+                        <span class="w-2 h-2 rounded-full bg-white opacity-0 group-[.active-link]:opacity-100"></span>
+                    </a>
+                </li>
             </ul>
         </div>
     </aside>
@@ -163,6 +234,69 @@
 
     <!-- JavaScript -->
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentNotifId = "{{ $notifikasi->first()?->id ?? '' }}";
+
+            function markAsRead(callback) {
+                fetch('/notifikasi/mark-as-read', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    }
+                }).then(res => {
+                    if (!res.ok) throw new Error('Gagal update');
+                    localStorage.setItem('lastSeenNotifId', currentNotifId);
+                    document.getElementById('notifBadge')?.remove();
+                    const icon = document.getElementById('notifIcon');
+                    if (icon) {
+                        icon.innerHTML = `
+                        <svg class="w-8 h-8 text-gray-800 dark:text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.133 12.632v-1.8a5.406 5.406 0 0 0-4.154-5.262V3.1a1 1 0 0 0-2 0v2.364a5.406 5.406 0 0 0-4.154 5.262v1.8C6.867 15.018 5 15.614 5 16.807c0 .593 0 1.193.538 1.193h12.924c.538 0 .538-.6.538-1.193 0-1.193-1.867-1.789-1.867-4.175ZM8.823 19a3.453 3.453 0 0 0 6.354 0H8.823Z"/>
+                        </svg>`;
+                    }
+                    if (callback) callback();
+                }).catch(err => {
+                    console.error('Gagal menandai terbaca:', err);
+                    if (callback) callback(); // Tetap lanjutkan walau gagal
+                });
+            }
+
+            const alertBox = document.getElementById('alert-notifikasi');
+            const dismissBtn = document.getElementById('dismiss-alert');
+            const detailBtn = document.getElementById('lihatDetailBtn');
+            const notifBtn = document.getElementById('notifBtn');
+
+            const lastSeen = localStorage.getItem('lastSeenNotifId');
+            if (currentNotifId && currentNotifId !== lastSeen) {
+                if (alertBox) alertBox.style.display = 'flex';
+
+                dismissBtn?.addEventListener('click', () => {
+                    if (alertBox) alertBox.style.display = 'none';
+                    markAsRead();
+                });
+
+                detailBtn?.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    markAsRead(() => {
+                        window.location.href = '/notifikasi';
+                    });
+                });
+
+                // Auto close after 10 seconds
+                setTimeout(() => {
+                    if (alertBox) alertBox.style.display = 'none';
+                    markAsRead();
+                }, 10000);
+            }
+
+            notifBtn?.addEventListener('click', function (e) {
+                e.preventDefault();
+                markAsRead(() => {
+                    window.location.href = '/notifikasi';
+                });
+            });
+        });
         const profileBtn = document.getElementById('profileBtn');
             const profileDropdown = document.getElementById('profileDropdown');
 
