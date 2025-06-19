@@ -26,6 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/siswa/{id}/edit', [AuthController::class, 'edit'])->name('admin.siswa.edit');
     Route::post('/admin/siswa/{id}/update', [AuthController::class, 'update'])->name('admin.siswa.update');
     Route::delete('/admin/siswa/{id}', [AuthController::class, 'destroy'])->name('admin.siswa.destroy');
+    Route::delete('/admin/siswa/{siswa}/dokumen/{dokumen}', [AuthController::class, 'deleteDokumen'])->name('admin.siswa.delete_dokumen');
     Route::get('/siswa', [AuthController::class, 'index'])->name('admin.siswa.index');
     Route::get('/rapot-siswa', [TugasController::class, 'nilaiRaporAdmin'])->name('admin.nilai');
     Route::get('/rapot-siswa/detail/{id}', [TugasController::class, 'detailNilai'])->name('detail.nilai');
@@ -60,15 +61,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/siswa/nilai/detail', [TugasController::class, 'detailNilaiSiswa'])->name('siswa.nilai.detail');
     Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
     Route::get('/chat/{roomId}', [ChatController::class, 'show'])->name('chat.show');
+    Route::get('/siswa/chat/start/{userId}', [ChatController::class, 'startChatBetweenStudents'])->name('chat.start');
     Route::post('/chat/{roomId}/send', [ChatController::class, 'sendMessage'])->name('chat.send');
     Route::post('/job-matching/apply/{jobId}', [JobController::class, 'apply'])->middleware('auth');
     Route::post('/notifikasi/mark-as-read', [NotifikasiController::class, 'markAsRead'])->middleware('auth');
     Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
     Route::get('/siswa/job-matching', [JobController::class, 'index'])->name('siswa.job-matching.index');
     Route::post('/siswa/job-matching/apply/{id}', [JobController::class, 'apply'])->name('siswa.job-matching.apply');
-
-
-
+    Route::get('/siswa/unduh-rapor', [DashboardController::class, 'unduhRapor'])->name('siswa.unduh.rapor');
+    Route::get('/siswa/tugas/ujian-akhir/{id}/soal/{nomor}', [TugasController::class, 'showSoalUjian'])->name('siswa.tugas.ujian.soal');
+    Route::post('/siswa/tugas/ujian-akhir/{id}/jawab', [TugasController::class, 'simpanJawaban'])->name('siswa.tugas.ujian.jawab'); // Ubah nama route
+    Route::get('/siswa/tugas/ujian-akhir/{id}/selesai', [TugasController::class, 'selesaiUjian'])->name('siswa.tugas.ujian.selesai');
+    Route::get('/admin/ujian-akhir/{id}', [TugasController::class, 'showDetailUjian'])->name('admin.ujian.detail');
 
 });
 
@@ -162,6 +166,8 @@ Route::post('/chat-admin/room/{id}/send', [ChatController::class, 'sendMessageAd
 Route::get('/chat-admin/start/{userId}', [ChatController::class, 'startChatWithUser'])->name('chat.admin.start');
 Route::post('/chat-admin/create-group', [ChatController::class, 'createGroup'])->name('chat.admin.createGroup');
 Route::post('/chat-admin/room/{id}/add-user', [ChatController::class, 'addUserToGroup'])->name('chat.admin.addUserToGroup');
+Route::put('/admin/chat/group/{room}', [ChatController::class, 'updateGroup'])->name('chat.admin.updateGroup');
+Route::delete('/admin/chat/group/{room}/remove/{user}', [ChatController::class, 'removeUser'])->name('chat.admin.removeUser');
 
 
 Route::get('/input-nilai/{id}', [TugasController::class, 'formInputNilai'])->name('nilai.form');

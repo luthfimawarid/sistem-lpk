@@ -10,13 +10,15 @@ class Tugas extends Model
     use HasFactory;
 
     protected $fillable = [
-        'judul',
-        'deskripsi',
-        'tipe',
-        'cover',
+        'judul', 
+        'deskripsi', 
+        'tipe', 
+        'cover', 
         'deadline',
-        'status',
+        'durasi_menit', // <-- Tambahkan ini
+        'status'
     ];
+
     public function soalKuis()
     {
         return $this->hasMany(SoalKuis::class);

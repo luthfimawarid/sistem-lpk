@@ -106,6 +106,45 @@ class AuthController extends Controller
         return view('admin.konten.detailsiswa', compact('siswa', 'statusLengkap'));
     }
 
+    // Edit Dokumen
+    public function editDokumen($siswaId, $dokumenId)
+    {
+        $siswa = User::findOrFail($siswaId);
+        $dokumen = $siswa->dokumen()->findOrFail($dokumenId);
+
+        return view('admin.konten.edit_dokumen', compact('siswa', 'dokumen'));
+    }
+
+    // Hapus Dokumen
+    public function deleteDokumen($siswaId, $dokumenId)
+    {
+        $siswa = User::findOrFail($siswaId);
+        $dokumen = $siswa->dokumen()->findOrFail($dokumenId);
+        $dokumen->delete();
+
+        return redirect()->route('admin.siswa.detail', $siswaId)->with('success', 'Dokumen berhasil dihapus.');
+    }
+
+    // Edit Sertifikat
+    public function editSertifikat($siswaId, $sertifikatId)
+    {
+        $siswa = User::findOrFail($siswaId);
+        $sertifikat = $siswa->sertifikat()->findOrFail($sertifikatId);
+
+        return view('admin.konten.edit_sertifikat', compact('siswa', 'sertifikat'));
+    }
+
+    // Hapus Sertifikat
+    public function deleteSertifikat($siswaId, $sertifikatId)
+    {
+        $siswa = User::findOrFail($siswaId);
+        $sertifikat = $siswa->sertifikat()->findOrFail($sertifikatId);
+        $sertifikat->delete();
+
+        return redirect()->route('admin.siswa.detail', $siswaId)->with('success', 'Sertifikat berhasil dihapus.');
+    }
+
+
 
     public function uploadDokumen(Request $request, $id) {
         $request->validate([
@@ -165,6 +204,55 @@ class AuthController extends Controller
         return redirect()->route('admin.siswa.index')->with('success', 'Siswa berhasil dihapus');
     }
 
+    public function updateProfil(Request $request)
+    {
+        $user = Auth::user();
 
+        $request->validate([
+            'nama_lengkap' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'no_hp' => 'nullable|string|max:20',
+            'status' => 'nullable|string|max:255',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
+        $user->nama_lengkap = $request->nama_lengkap;
+        $user->email = $request->email;
+        $user->no_hp = $request->no_hp;
+        $user->status = $request->status;
+
+        if ($request->hasFile('photo')) {
+            // Hapus file lama jika ada
+            if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+                Storage::disk('public')->delete($user->photo);
+            }
+
+            $photoPath = $request->file('photo')->store('profile', 'public');
+            $user->photo = $photoPath;
+        }
+
+        $user->save();
+
+        return back()->with('success', 'Profil berhasil diperbarui');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|min:6|confirmed',
+        ]);
+
+        $user = Auth::user();
+
+        if (!Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors(['current_password' => 'Password lama salah']);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return back()->with('success', 'Password berhasil diubah');
+    }
 
 }

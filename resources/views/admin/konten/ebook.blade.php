@@ -2,12 +2,12 @@
 
 @section('content')
 <main class="p-6">
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+    <div class="flex flex-row justify-between items-center mb-6">
         <h2 id="ebook-count" class="md:text-lg font-semibold my-2 md:my-0 md:order-1">
             {{ ucfirst($tipe) }} ({{ $materi->count() }})
         </h2>
         <div class="flex space-x-2 md:order-2">
-            <a href="{{ route('materi.create', ['tipe' => 'ebook']) }}" class="bg-[#0A58CA] text-white font-semibold px-4 py-2 flex items-center rounded-lg">
+            <a href="{{ route('materi.create', ['tipe' => 'ebook']) }}" class="bg-[#0A58CA] text-white lg:text-md font-semibold px-4 py-2 flex items-center rounded-lg">
                 Tambah {{ ucfirst($tipe) }}
                 <svg class="w-6 h-6 ml-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-7 7V5"/>

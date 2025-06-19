@@ -172,9 +172,11 @@
                 </tbody>
             </table>
             <div class="p-6 flex justify-end">
-                <button class="bg-[#0A58CA] text-white px-6 py-2 rounded-lg shadow-md hover:bg-[#0A58CA]">
-                    Unduh Rapor
-                </button>
+                <a href="{{ route('siswa.unduh.rapor') }}">
+                    <button class="bg-[#0A58CA] text-white px-6 py-2 rounded-lg shadow-md hover:bg-[#084298]">
+                        Unduh Rapor
+                    </button>
+                </a>
             </div>
         </div>
     </section>

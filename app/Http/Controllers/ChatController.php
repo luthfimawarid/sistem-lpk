@@ -103,9 +103,17 @@ class ChatController extends Controller
         $room = ChatRoom::with(['users', 'messages.user'])->findOrFail($id);
         $allStudents = User::where('role', 'siswa')->get();
 
+        $otherUser = null;
+
+        // Jika bukan grup, ambil user lain selain admin
+        if ($room->type === 'private') {
+            $otherUser = $room->users->where('id', '!=', auth()->id())->first();
+        }
+
         return view('admin.konten.isichat', [
             'room' => $room,
-            'allStudents' => $allStudents
+            'allStudents' => $allStudents,
+            'otherUser' => $otherUser
         ]);
     }
 
@@ -126,6 +134,31 @@ class ChatController extends Controller
 
         return redirect()->route('chat.admin.show', $roomId);
     }
+
+    public function startChatBetweenStudents($userId)
+    {
+        $currentUser = auth()->user();
+        $targetUser = User::where('role', 'siswa')->findOrFail($userId);
+
+        // Cek apakah room private sudah ada antara siswa
+        $room = ChatRoom::whereHas('users', fn($q) => $q->where('user_id', $currentUser->id))
+            ->whereHas('users', fn($q) => $q->where('user_id', $targetUser->id))
+            ->withCount('users')
+            ->get()
+            ->filter(fn($r) => $r->users_count === 2 && $r->type === 'private') // hanya room private berdua
+            ->first();
+
+        // Buat room baru jika belum ada
+        if (!$room) {
+            $room = ChatRoom::create([
+                'type' => 'private',
+            ]);
+            $room->users()->attach([$currentUser->id, $targetUser->id]);
+        }
+
+        return redirect()->route('chat.show', $room->id);
+    }
+
 
     public function startChatWithUser($userId)
     {
@@ -194,6 +227,34 @@ class ChatController extends Controller
         }
 
         return redirect()->route('chat.admin.show', $roomId)->with('success', 'Peserta berhasil ditambahkan!');
+    }
+
+    public function updateGroup(Request $request, $roomId)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'photo' => 'nullable|image|max:2048',
+        ]);
+
+        $room = ChatRoom::findOrFail($roomId);
+        $room->name = $request->name;
+
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('group_photos', 'public');
+            $room->photo = $path;
+        }
+
+        $room->save();
+
+        return back()->with('success', 'Grup berhasil diperbarui');
+    }
+
+    public function removeUser($roomId, $userId)
+    {
+        $room = ChatRoom::findOrFail($roomId);
+        $room->users()->detach($userId);
+
+        return back()->with('success', 'Anggota dikeluarkan dari grup');
     }
 
 }

@@ -33,9 +33,16 @@
                 <textarea id="deskripsi" name="deskripsi" rows="4" class="mt-1 p-2 w-full border rounded-md" placeholder="Masukkan deskripsi" required></textarea>
             </div>
 
-            <div class="mb-4">
+            <!-- Input Deadline/Tanggal -->
+            <div id="deadline-group" class="mb-4">
                 <label for="deadline" class="block text-sm font-medium text-gray-700">Deadline</label>
-                <input type="date" id="deadline" name="deadline" class="mt-1 p-2 w-full border rounded-md" required>
+                <input type="date" id="deadline" name="deadline" class="mt-1 p-2 w-full border rounded-md">
+            </div>
+
+            <!-- Input Durasi Ujian (Muncul saat pilih Ujian Akhir) -->
+            <div id="durasi-group" class="mb-4 hidden">
+                <label for="durasi" class="block text-sm font-medium text-gray-700">Durasi Ujian (menit)</label>
+                <input type="number" id="durasi" name="durasi" min="1" class="mt-1 p-2 w-full border rounded-md" placeholder="Masukkan durasi dalam menit">
             </div>
 
             <div class="mb-4">
@@ -97,7 +104,6 @@
                 </button>
             </div>
 
-
             <!-- Status -->
             <div class="mb-4">
                 <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
@@ -119,13 +125,30 @@
         const tipe = document.getElementById('tipe').value;
         const fileUpload = document.getElementById('file-upload');
         const soalGroup = document.getElementById('soal-group');
+        const deadlineGroup = document.getElementById('deadline-group');
+        const durasiGroup = document.getElementById('durasi-group');
 
         if (tipe === 'tugas' || tipe === 'evaluasi_mingguan') {
             fileUpload.classList.remove('hidden');
             soalGroup.classList.add('hidden');
-        } else {
+            deadlineGroup.classList.remove('hidden');
+            durasiGroup.classList.add('hidden');
+            document.getElementById('deadline').required = true;
+            document.getElementById('durasi').required = false;
+        } else if (tipe === 'ujian_akhir') {
             fileUpload.classList.add('hidden');
             soalGroup.classList.remove('hidden');
+            deadlineGroup.classList.add('hidden');
+            durasiGroup.classList.remove('hidden');
+            document.getElementById('deadline').required = false;
+            document.getElementById('durasi').required = true;
+        } else { // Kuis atau Tryout
+            fileUpload.classList.add('hidden');
+            soalGroup.classList.remove('hidden');
+            deadlineGroup.classList.remove('hidden');
+            durasiGroup.classList.add('hidden');
+            document.getElementById('deadline').required = true;
+            document.getElementById('durasi').required = false;
         }
     }
 

@@ -9,11 +9,16 @@
         <h2 class="text-2xl font-semibold mb-4">Ujian Akhir ({{ $ujianAkhir->count() }})</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             @forelse ($ujianAkhir as $item)
-            <a href="{{ route('siswa.tugas.detail', $item->id) }}" class="block bg-white rounded-lg shadow p-4 text-center hover:shadow-md transition h-full">
+            <a href="{{ route('siswa.tugas.ujian.soal', ['id' => $item->id, 'nomor' => 1]) }}" class="block bg-white rounded-lg shadow p-4 text-center hover:shadow-md transition h-full">
                 <img src="{{ $item->cover ? asset('storage/cover_tugas/'.$item->cover) : '/logo.png' }}" class="mx-auto rounded-md h-40 object-cover" alt="{{ $item->judul }}">
                 <p class="mt-2 font-medium text-blue-600">{{ $item->judul }}</p>
                 <p class="text-sm text-gray-600">Deadline: {{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('d M Y') : '-' }}</p>
-                <p class="text-sm text-green-600">Status: {{ ucfirst(str_replace('_', ' ', $item->status)) }}</p>
+                @php
+                    $userStatus = $item->tugasUser->where('user_id', Auth::id())->first();
+                @endphp
+                <p class="text-sm {{ $userStatus && $userStatus->status == 'selesai' ? 'text-green-600' : 'text-red-600' }}">
+                    Status: {{ $userStatus && $userStatus->status == 'selesai' ? 'Selesai' : 'Belum Selesai' }}
+                </p>
             </a>
             @empty
             <p class="text-gray-500">Belum ada ujian akhir.</p>

@@ -4,7 +4,7 @@
 
 <main class="p-6">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row justify-between items-center mb-6">
+    <div class="flex flex-row justify-between items-center mb-6">
         <h2 id="ebook-count" class="md:text-lg font-semibold my-2 md:my-0 md:order-1">
             {{ ucfirst($tipe) }} ({{ $materi->count() }})
         </h2>

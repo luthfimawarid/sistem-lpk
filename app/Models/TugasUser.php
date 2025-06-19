@@ -20,6 +20,12 @@ class TugasUser extends Model
         return $this->belongsTo(Tugas::class);
     }
 
+    public function jawabanKuis()
+    {
+        return $this->hasMany(JawabanKuis::class, 'user_id', 'user_id')
+            ->where('tugas_id', $this->tugas_id);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id');

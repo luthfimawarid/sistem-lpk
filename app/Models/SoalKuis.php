@@ -13,5 +13,10 @@ class SoalKuis extends Model
     {
         return $this->belongsTo(Tugas::class);
     }
-}
 
+    // Tambahkan relasi ke jawaban kuis
+    public function jawabanKuis()
+    {
+        return $this->hasMany(JawabanKuis::class, 'soal_kuis_id');
+    }
+}

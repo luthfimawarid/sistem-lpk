@@ -1,26 +1,27 @@
 @extends('siswa.main.sidebar')
 
 @section('content')
-<main class="p-6 bg-[#F2F8FF] min-h-screen">
+<main class="px-4 py-6 md:px-8 lg:px-16 bg-[#F2F8FF] min-h-screen">
     <div class="bg-white p-6 rounded-lg shadow">
         <!-- Tabs -->
-        <div class="flex border-b mb-6">
-            <button class="tab-btn text-blue-600 font-semibold border-b-2 border-blue-600 px-4 py-2 focus:outline-none" data-tab="tab-data-diri">Data Diri</button>
-            <button class="tab-btn text-gray-600 hover:text-blue-600 px-4 py-2 ml-4 focus:outline-none" data-tab="tab-nilai">Nilai</button>
-            <button class="tab-btn text-gray-600 hover:text-blue-600 px-4 py-2 ml-4 focus:outline-none" data-tab="tab-password">Ubah Password</button>
+        <div class="flex flex-wrap gap-2 border-b mb-6 text-sm md:text-base">
+            <button class="tab-btn text-blue-600 font-semibold border-b-2 border-blue-600 px-2 md:px-4 py-1 md:py-2 focus:outline-none" data-tab="tab-data-diri">Data Diri</button>
+            <button class="tab-btn text-gray-600 hover:text-blue-600 px-2 md:px-4 py-1 md:py-2 focus:outline-none" data-tab="tab-nilai">Nilai</button>
+            <button class="tab-btn text-gray-600 hover:text-blue-600 px-2 md:px-4 py-1 md:py-2 focus:outline-none" data-tab="tab-password">Ubah Password</button>
         </div>
 
         <!-- Tab Content -->
         <div id="tab-data-diri" class="tab-content">
-            <!-- ISI DATA DIRI -->
             <form action="{{ route('siswa.update.profil') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="col-span-2 flex justify-center">
+                <div class="max-w-screen-lg mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <!-- Foto Profil -->
+                    <div class="col-span-1 md:col-span-2 flex justify-center">
                         <div class="text-center">
                             <div class="w-24 h-24 rounded-full bg-gray-300 mx-auto mb-2 overflow-hidden">
                                 @if ($user->photo)
-                                    <img src="{{ asset('storage/' . $user->photo) }}" alt="Foto Profil" class="w-24 h-24 object-cover rounded-full">
+                                    <img src="{{ asset('storage/' . $user->photo) }}" alt="Foto Profil" class="w-24 h-24 object-cover rounded-full max-w-full">
                                 @endif
                             </div>
                             <label class="font-semibold cursor-pointer">
@@ -30,108 +31,132 @@
                         </div>
                     </div>
 
+                    <!-- Nama Lengkap -->
                     <div>
-                        <label class="text-gray-500 text-sm">Nama Lengkap</label>
-                        <input type="text" name="nama_lengkap" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent" value="{{ $user->nama_lengkap }}">
+                        <label class="text-gray-500 text-xs sm:text-sm">Nama Lengkap</label>
+                        <input type="text" name="nama_lengkap" class="w-full border-b border-gray-300 p-2 text-sm bg-transparent" value="{{ $user->nama_lengkap }}" required>
                     </div>
 
+                    <!-- NISN -->
                     <div>
-                        <label class="text-gray-500 text-sm">NISN</label>
-                        <input type="text" class="w-full border-b border-gray-300 p-1 text-sm bg-transparent" value="{{ $user->id }}" readonly>
+                        <label class="text-gray-500 text-xs sm:text-sm">NISN</label>
+                        <input type="text" class="w-full border-b border-gray-300 p-2 text-sm bg-transparent" value="{{ $user->id }}" readonly>
                     </div>
 
+                    <!-- Email -->
                     <div>
-                        <label class="text-gray-500 text-sm">Email</label>
-                        <input type="email" name="email" class="w-full border-b border-gray-300 p-1 text-sm bg-transparent" value="{{ $user->email }}">
+                        <label class="text-gray-500 text-xs sm:text-sm">Email</label>
+                        <input type="email" name="email" class="w-full border-b border-gray-300 p-2 text-sm bg-transparent" value="{{ $user->email }}" required>
                     </div>
 
+                    <!-- Tanggal Lahir -->
                     <div>
-                        <label class="text-gray-500 text-sm">No HP</label>
-                        <input type="text" name="no_hp" class="w-full border-b border-gray-300 p-1 text-sm bg-transparent" value="{{ $user->no_hp ?? '' }}">
+                        <label class="text-gray-500 text-xs sm:text-sm">Tanggal Lahir</label>
+                        <input type="date" name="tanggal_lahir" class="w-full border-b border-gray-300 p-2 text-sm bg-transparent" value="{{ $user->tanggal_lahir }}">
                     </div>
 
+                    <!-- No HP -->
                     <div>
-                        <label class="text-gray-500 text-sm">Kelas</label>
-                        <input type="text" name="kelas" class="w-full border-b border-gray-300 p-1 text-sm bg-transparent" value="{{ $user->kelas ?? '' }}">
+                        <label class="text-gray-500 text-xs sm:text-sm">No HP</label>
+                        <input type="text" name="no_hp" class="w-full border-b border-gray-300 p-2 text-sm bg-transparent" value="{{ $user->no_hp ?? '' }}">
                     </div>
 
+                    <!-- Kelas -->
                     <div>
-                        <label class="text-gray-500 text-sm">Status</label>
-                        <input type="text" name="status" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent" value="{{ $user->status ?? 'Aktif' }}">
+                        <label class="text-gray-500 text-xs sm:text-sm">Kelas</label>
+                        <input type="text" name="kelas" class="w-full border-b border-gray-300 p-2 text-sm bg-transparent" value="{{ $user->kelas ?? '' }}">
                     </div>
 
+                    <!-- Angkatan -->
                     <div>
-                        <label class="text-gray-500 text-sm">Angkatan</label>
-                        <input type="text" name="angkatan" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent" value="{{ $user->angkatan ?? $user->created_at->format('Y') }}">
+                        <label class="text-gray-500 text-xs sm:text-sm">Angkatan</label>
+                        <input type="text" name="angkatan" class="w-full border-b border-gray-300 p-2 text-sm bg-transparent" value="{{ $user->angkatan ?? $user->created_at->format('Y') }}">
                     </div>
 
-                    <div class="col-span-2 text-right mt-4">
-                        <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Simpan Perubahan</button>
+                    <!-- Status -->
+                    <div>
+                        <label class="text-gray-500 text-xs sm:text-sm">Status</label>
+                        <input type="text" name="status" class="w-full border-b border-gray-300 p-2 text-sm bg-transparent" value="{{ $user->status ?? 'Aktif' }}">
+                    </div>
+
+                    <!-- Tombol Simpan -->
+                    <div class="col-span-1 md:col-span-2 text-center mt-6">
+                        <button class="w-full md:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Simpan Perubahan</button>
                     </div>
                 </div>
             </form>
         </div>
 
+
+
+        <!-- Nilai -->
         <div id="tab-nilai" class="tab-content hidden">
-            <!-- ISI NILAI -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                    <label class="text-gray-500 text-sm">Rata-rata Nilai Tugas</label>
-                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent" value="{{ $nilaiTugas ?? '-' }}" readonly>
+                    <label class="text-gray-500 text-xs sm:text-sm">Rata-rata Nilai Tugas</label>
+                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm bg-transparent" value="{{ $nilaiTugas ?? '-' }}" readonly>
                 </div>
 
                 <div>
-                    <label class="text-gray-500 text-sm">Rata-rata Nilai Evaluasi</label>
-                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent" value="{{ $nilaiEvaluasi ?? '-' }}" readonly>
+                    <label class="text-gray-500 text-xs sm:text-sm">Rata-rata Nilai Evaluasi</label>
+                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm bg-transparent" value="{{ $nilaiEvaluasi ?? '-' }}" readonly>
                 </div>
 
                 <div>
-                    <label class="text-gray-500 text-sm">Rata-rata Nilai Kuis</label>
-                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent" value="{{ $nilaiKuis ?? '-' }}" readonly>
+                    <label class="text-gray-500 text-xs sm:text-sm">Rata-rata Nilai Kuis</label>
+                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm bg-transparent" value="{{ $nilaiKuis ?? '-' }}" readonly>
                 </div>
 
                 <div>
-                    <label class="text-gray-500 text-sm">Rata-rata Nilai Tryout</label>
-                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent" value="{{ $nilaiTryout ?? '-' }}" readonly>
+                    <label class="text-gray-500 text-xs sm:text-sm">Rata-rata Nilai Tryout</label>
+                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm bg-transparent" value="{{ $nilaiTryout ?? '-' }}" readonly>
                 </div>
 
                 <div>
-                    <label class="text-gray-500 text-sm">Prediksi Kelulusan</label>
-                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent text-green-600" value="Lulus" readonly>
+                    <label class="text-gray-500 text-xs sm:text-sm">Prediksi Kelulusan</label>
+                    <input type="text" class="w-full border-b border-gray-300 p-1 text-sm bg-transparent text-green-600" value="Lulus" readonly>
                 </div>
             </div>
         </div>
 
+        <!-- Ubah Password -->
         <div id="tab-password" class="tab-content hidden">
-            <!-- UBAH PASSWORD -->
             <form action="{{ route('siswa.update.password') }}" method="POST">
                 @csrf
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="max-w-screen-md mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <!-- Password Lama -->
                     <div>
                         <label class="text-gray-500 text-sm">Password Lama</label>
-                        <input type="password" name="old_password" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent" required>
+                        <input type="password" name="old_password" class="w-full border-b border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
                     </div>
 
+                    <!-- Password Baru -->
                     <div>
                         <label class="text-gray-500 text-sm">Password Baru</label>
-                        <input type="password" name="new_password" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent" required>
+                        <input type="password" name="new_password" class="w-full border-b border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
                     </div>
 
-                    <div>
+                    <!-- Konfirmasi Password Baru -->
+                    <div class="md:col-span-2">
                         <label class="text-gray-500 text-sm">Konfirmasi Password Baru</label>
-                        <input type="password" name="new_password_confirmation" class="w-full border-b border-gray-300 p-1 text-sm outline-none bg-transparent" required>
+                        <input type="password" name="new_password_confirmation" class="w-full border-b border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
                     </div>
 
-                    <div class="col-span-2 text-right mt-4">
-                        <button class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Simpan Perubahan</button>
+                    <!-- Tombol Simpan -->
+                    <div class="md:col-span-2 text-center mt-6">
+                        <button class="w-full md:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
+                            Simpan Perubahan
+                        </button>
                     </div>
                 </div>
             </form>
         </div>
+
     </div>
 </main>
 
-<!-- SCRIPT TAB -->
+<!-- Script Tab -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const tabButtons = document.querySelectorAll(".tab-btn");
@@ -141,11 +166,9 @@
             btn.addEventListener("click", function () {
                 const target = this.getAttribute("data-tab");
 
-                // Reset semua tab
                 tabButtons.forEach((b) => {
-                    b.classList.remove("text-blue-600", "font-semibold", "border-blue-600");
+                    b.classList.remove("text-blue-600", "font-semibold", "border-blue-600", "border-b-2");
                     b.classList.add("text-gray-600");
-                    b.classList.remove("border-b-2");
                 });
 
                 tabContents.forEach((content) => {

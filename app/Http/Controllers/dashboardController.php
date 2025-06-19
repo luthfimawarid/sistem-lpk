@@ -12,6 +12,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Models\TugasUser;
 use Illuminate\Support\Facades\Http;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Collection;
 use App\Models\ChatRoom;
 // use App\Models\Tugas;
 
@@ -239,4 +241,80 @@ class dashboardController extends Controller
             'statusTugas', 'statusEvaluasi', 'statusTryout'
         ));
     }
+
+    private function getNilaiTugas($userId): Collection
+    {
+        return TugasUser::with('tugas')
+            ->where('user_id', $userId)
+            ->whereHas('tugas', function ($query) {
+                $query->where('tipe', 'tugas');
+            })
+            ->orderBy('id')
+            ->pluck('nilai');
+    }
+
+    private function getNilaiEvaluasi($userId)
+    {
+        $nilai = TugasUser::join('tugas', 'tugas.id', '=', 'tugas_user.tugas_id')
+            ->where('tugas_user.user_id', $userId)
+            ->where('tugas.tipe', 'evaluasi_mingguan')
+            ->whereNotNull('tugas_user.nilai')
+            ->orderBy('tugas_user.id')
+            ->pluck('tugas_user.nilai')
+            ->toArray();
+
+        // Isi default untuk 5 nilai evaluasi
+        $nilaiLengkap = array_pad($nilai, 5, null); // null agar nanti ditampilkan sebagai '-'
+
+        $rata = count(array_filter($nilaiLengkap, fn($n) => $n !== null)) > 0
+            ? round(array_sum(array_filter($nilaiLengkap, fn($n) => $n !== null)) / count(array_filter($nilaiLengkap, fn($n) => $n !== null)), 2)
+            : 0;
+
+        return [
+            'nilai' => $nilaiLengkap,
+            'rata' => $rata,
+        ];
+    }
+
+    private function getNilaiTryout($userId): array
+    {
+        $tryout = TugasUser::with('tugas')
+            ->where('user_id', $userId)
+            ->whereHas('tugas', function ($query) {
+                $query->where('tipe', 'tryout');
+            })
+            ->orderBy('id')
+            ->pluck('nilai');
+
+        $choka1 = $tryout->get(0) ?? 0;
+        $choka2 = $tryout->get(1) ?? 0;
+
+        return [
+            'nilai' => [round($choka1, 2), round($choka2, 2)],
+            'rata' => round(($choka1 + $choka2) / 2, 2),
+        ];
+    }
+
+    public function unduhRapor()
+    {
+        $user = auth()->user();
+
+        $tugas = $this->getNilaiTugas($user->id);
+        $evaluasi = $this->getNilaiEvaluasi($user->id);
+        $tryout = $this->getNilaiTryout($user->id);
+
+        $pdf = Pdf::loadView('siswa.konten.unduh', [
+            'user' => $user,
+            'tugas' => $tugas, // Collection
+            'evaluasi' => $evaluasi['nilai'], // Array
+            'tryout' => $tryout['nilai'],     // Array
+            'rataTugas' => round($tugas->avg(), 2),
+            'rataEvaluasi' => $evaluasi['rata'],
+            'rataTryout' => $tryout['rata'],
+        ]);
+
+        return $pdf->download('Rapor-' . $user->nama_lengkap . '.pdf');
+    }
+
+
 }

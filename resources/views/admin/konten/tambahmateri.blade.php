@@ -25,7 +25,7 @@
 
         <div class="my-6">
             <label for="file" class="block text-sm font-medium text-gray-700">File (PDF/MP3/MP4)</label>
-            <input type="file" id="file" name="file" accept=".pdf, audio/*, video/*" class="mt-1 block w-full" required>
+            <input type="file" id="fileInput" name="file" class="mt-1 block w-full" required>
         </div>
 
         <div class="my-6">
@@ -37,7 +37,15 @@
         </div>
 
         <!-- Hidden Tipe -->
-        <input type="hidden" name="tipe" value="{{ $tipe }}">
+        <div class="my-6">
+            <label for="tipe" class="block text-sm font-medium text-gray-700">Tipe Materi</label>
+            <select id="tipe" name="tipe" class="mt-1 block w-full border-b py-1 text-sm border-gray-400" required>
+                <option value="" disabled selected>Pilih Tipe</option>
+                <option value="ebook" {{ old('tipe', $tipe ?? '') == 'ebook' ? 'selected' : '' }}>Ebook</option>
+                <option value="listening" {{ old('tipe', $tipe ?? '') == 'listening' ? 'selected' : '' }}>Listening</option>
+                <option value="video" {{ old('tipe', $tipe ?? '') == 'video' ? 'selected' : '' }}>Video</option>
+            </select>
+        </div>
 
         <div class="flex justify-end space-x-4 mt-6">
             <a href="{{ url()->previous() }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg">Batal</a>
@@ -45,5 +53,31 @@
         </div>
     </form>
 </main>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tipeSelect = document.getElementById('tipe');
+        const fileInput = document.getElementById('fileInput');
+
+        function updateFileAccept() {
+            const selectedTipe = tipeSelect.value;
+            if (selectedTipe === 'ebook') {
+                fileInput.accept = '.pdf';
+                fileInput.placeholder = 'Unggah file PDF';
+            } else if (selectedTipe === 'listening') {
+                fileInput.accept = 'audio/*';
+                fileInput.placeholder = 'Unggah file MP3';
+            } else if (selectedTipe === 'video') {
+                fileInput.accept = 'video/*';
+                fileInput.placeholder = 'Unggah file MP4';
+            }
+        }
+
+        // Set default jika ada value saat load
+        updateFileAccept();
+
+        // Update saat tipe dipilih ulang
+        tipeSelect.addEventListener('change', updateFileAccept);
+    });
+</script>
 
 @endsection

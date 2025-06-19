@@ -30,64 +30,94 @@ class TugasController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'judul' => 'required',
+            'judul' => 'required|string|max:255',
             'tipe' => 'required|in:tugas,kuis,ujian_akhir,evaluasi_mingguan,tryout',
             'cover' => 'nullable|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
             'deadline' => 'nullable|date',
+            'durasi' => 'nullable|integer|min:1',
             'status' => 'required|in:belum_selesai,selesai',
-            'deskripsi' => 'required',
+            'deskripsi' => 'required|string',
         ]);
 
+        // Validasi khusus ujian akhir
+        if ($request->tipe === 'ujian_akhir') {
+            $request->validate([
+                'durasi' => 'required|integer|min:1'
+            ]);
+        }
+
+        // Handle upload cover
         $cover = null;
         if ($request->hasFile('cover')) {
             $cover = $request->file('cover')->store('cover_tugas', 'public');
         }
 
-        $tugas = Tugas::create([
+        // Hitung deadline dan durasi
+        $durasiMenit = null;
+        if ($request->tipe === 'ujian_akhir') {
+            $durasiMenit = (int)$request->durasi;
+            $deadline = now()->addMinutes($durasiMenit);
+        } else {
+            $deadline = $request->deadline;
+            
+            // Reset durasi menit jika bukan ujian akhir
+            if ($request->has('durasi')) {
+                $durasiMenit = null;
+            }
+        }
+
+        // Buat tugas
+        $tugasData = [
             'judul' => $request->judul,
             'deskripsi' => $request->deskripsi,
             'tipe' => $request->tipe,
             'cover' => $cover,
-            'deadline' => $request->deadline,
+            'deadline' => $deadline,
+            'durasi_menit' => $durasiMenit,
             'status' => $request->status,
-        ]);
+        ];
 
-        // Judul & pesan notifikasi berdasarkan tipe
-        $judulNotif = 'Tugas Baru!';
-        $pesanNotif = 'Ada tugas baru yang harus kamu kerjakan.';
+        $tugas = Tugas::create($tugasData);
+
+        // Notifikasi
+        $notification = [
+            'judul' => 'Tugas Baru!',
+            'pesan' => 'Ada tugas baru yang harus kamu kerjakan.',
+            'tipe' => $request->tipe
+        ];
 
         switch ($request->tipe) {
             case 'kuis':
-                $judulNotif = 'Kuis Baru!';
-                $pesanNotif = 'Ada kuis baru yang tersedia. Jangan lupa kerjakan ya.';
+                $notification['judul'] = 'Kuis Baru!';
+                $notification['pesan'] = 'Ada kuis baru yang tersedia. Jangan lupa kerjakan ya.';
                 break;
             case 'evaluasi_mingguan':
-                $judulNotif = 'Evaluasi Mingguan Baru!';
-                $pesanNotif = 'Yuk cek evaluasi minggu ini.';
+                $notification['judul'] = 'Evaluasi Mingguan Baru!';
+                $notification['pesan'] = 'Yuk cek evaluasi minggu ini.';
                 break;
             case 'tryout':
-                $judulNotif = 'Tryout Baru!';
-                $pesanNotif = 'Persiapkan dirimu! Tryout baru sudah tersedia.';
+                $notification['judul'] = 'Tryout Baru!';
+                $notification['pesan'] = 'Persiapkan dirimu! Tryout baru sudah tersedia.';
                 break;
             case 'ujian_akhir':
-                $judulNotif = 'Ujian Akhir!';
-                $pesanNotif = 'Ujian akhir sudah tersedia. Semangat mengerjakan!';
+                $notification['judul'] = 'Ujian Akhir!';
+                $notification['pesan'] = 'Ujian akhir sudah tersedia. Waktu pengerjaan: '.$durasiMenit.' menit';
                 break;
         }
 
-        $users = User::where('role', 'siswa')->get();
-        foreach ($users as $user) {
+        // Kirim notifikasi ke siswa
+        User::where('role', 'siswa')->each(function ($user) use ($notification) {
             Notifikasi::create([
                 'user_id' => $user->id,
-                'judul' => $judulNotif,
-                'pesan' => $pesanNotif,
-                'tipe' => $request->tipe,
+                'judul' => $notification['judul'],
+                'pesan' => $notification['pesan'],
+                'tipe' => $notification['tipe'],
             ]);
-        }
+        });
 
-        // Simpan soal jika ada
+        // Simpan soal jika diperlukan
         if (in_array($request->tipe, ['kuis', 'ujian_akhir','tryout']) && $request->has('soal')) {
-            foreach ($request->soal as $item) {
+            collect($request->soal)->each(function ($item) use ($tugas) {
                 SoalKuis::create([
                     'tugas_id' => $tugas->id,
                     'pertanyaan' => $item['pertanyaan'],
@@ -97,13 +127,13 @@ class TugasController extends Controller
                     'opsi_d' => $item['opsi_d'],
                     'jawaban' => $item['jawaban'],
                 ]);
-            }
+            });
         }
 
-        return redirect()->route('tugas.index')->with('success', 'Tugas berhasil ditambahkan.');
+        return redirect()->route('tugas.index')
+            ->with('success', 'Tugas berhasil ditambahkan.');
     }
 
-    
     public function edit($id)
     {
         $tugas = Tugas::findOrFail($id);
@@ -152,6 +182,7 @@ class TugasController extends Controller
 
         return redirect()->route('tugas.index')->with('success', 'Tugas berhasil dihapus.');
     }
+
     public function indexSiswa()
     {
         $userId = Auth::id();
@@ -184,11 +215,159 @@ class TugasController extends Controller
         switch ($tugas->tipe) {
             case 'kuis':
             case 'tryout':
-            case 'ujian_akhir':
+            // case 'ujian_akhir':
                 return view('siswa.konten.detailkuis', compact('tugas', 'userStatus', 'isExpired'));
             default:
                 return view('siswa.konten.detailtugas', compact('tugas', 'userStatus', 'isExpired'));
         }
+    }
+
+    public function showSoalUjian($id, $nomor)
+    {
+        $userId = Auth::id();
+        $tugas = Tugas::with(['soalKuis.jawabanKuis' => function($query) use ($userId) {
+            $query->where('user_id', $userId);
+        }])->findOrFail($id);
+
+        // Set waktu mulai di session jika belum ada
+        if (!session()->has('ujian_waktu_mulai_'.$id)) {
+            session(['ujian_waktu_mulai_'.$id => now()->toISOString()]); // Format ISO
+        }
+
+        $soal = $tugas->soalKuis->sortBy('id')->values()->get($nomor - 1);
+
+        if (!$soal) {
+            return redirect()->route('siswa.tugas.ujian.selesai', $id);
+        }
+
+        $totalSoal = $tugas->soalKuis->count();
+        $jawabanUser = $soal->jawabanKuis->where('user_id', $userId)->first();
+
+        return view('siswa.konten.ujiansoal', [
+            'tugas' => $tugas,
+            'soal' => $soal,
+            'nomor' => $nomor,
+            'totalSoal' => $totalSoal,
+            'jawabanUser' => $jawabanUser,
+            'waktuMulai' => session('ujian_waktu_mulai_'.$id)
+        ]);
+    }
+
+    public function simpanJawaban(Request $request, $id)
+    {
+        $userId = Auth::id();
+        $soalId = $request->input('soal_id');
+        $jawaban = $request->input('jawaban');
+
+        \Log::info('Menyimpan jawaban', [
+            'user_id' => $userId,
+            'soal_id' => $soalId,
+            'jawaban' => $jawaban
+        ]);
+
+        try {
+            // Simpan jawaban
+            $jawaban = JawabanKuis::updateOrCreate(
+                [
+                    'user_id' => $userId,
+                    'soal_kuis_id' => $soalId
+                ],
+                [
+                    'tugas_id' => $id,
+                    'jawaban' => $jawaban,
+                    'updated_at' => now()
+                ]
+            );
+
+            \Log::info('Jawaban tersimpan', ['jawaban_id' => $jawaban->id]);
+
+            // Hitung nilai
+            $nilai = $this->hitungNilaiUjian($id, $userId);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Jawaban berhasil disimpan',
+                'nilai' => $nilai // Tambahkan nilai dalam response untuk debugging
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Gagal menyimpan jawaban', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Gagal menyimpan jawaban'], 500);
+        }
+    }
+
+    protected function hitungNilaiUjian($tugasId, $userId)
+    {
+        // Load data dengan relasi yang diperlukan
+        $tugas = Tugas::with(['soalKuis' => function($query) {
+            $query->select('id', 'tugas_id', 'jawaban');
+        }])->find($tugasId);
+
+        $jawabanUser = JawabanKuis::where('tugas_id', $tugasId)
+                                ->where('user_id', $userId)
+                                ->get(['id', 'soal_kuis_id', 'jawaban']);
+
+        $totalSoal = $tugas->soalKuis->count();
+        $jawabanBenar = 0;
+
+        foreach ($jawabanUser as $jawaban) {
+            $soal = $tugas->soalKuis->firstWhere('id', $jawaban->soal_kuis_id);
+            
+            // Debugging - log perbandingan jawaban
+            \Log::info('Comparing answers', [
+                'user_answer' => $jawaban->jawaban,
+                'correct_answer' => $soal->jawaban ?? null,
+                'is_correct' => $soal && strtoupper(trim($jawaban->jawaban)) === strtoupper(trim($soal->jawaban))
+            ]);
+
+            if ($soal && strtoupper(trim($jawaban->jawaban)) === strtoupper(trim($soal->jawaban))) {
+                $jawabanBenar++;
+            }
+        }
+
+        $nilai = $totalSoal > 0 ? round(($jawabanBenar / $totalSoal) * 100, 2) : 0;
+
+        // Debugging - log sebelum menyimpan
+        \Log::info('Saving nilai', [
+            'user_id' => $userId,
+            'tugas_id' => $tugasId,
+            'nilai' => $nilai,
+            'jawaban_benar' => $jawabanBenar,
+            'total_soal' => $totalSoal
+        ]);
+
+        // Simpan nilai
+        TugasUser::updateOrCreate(
+            [
+                'user_id' => $userId,
+                'tugas_id' => $tugasId
+            ],
+            [
+                'nilai' => $nilai,
+                'status' => 'selesai',
+                'updated_at' => now()
+            ]
+        );
+        
+        return $nilai;
+    }
+
+    public function selesaiUjian($id)
+    {
+        $tugas = Tugas::findOrFail($id);
+        
+        // Update status user menjadi selesai dan ambil data nilai
+        $tugasUser = TugasUser::updateOrCreate(
+            [
+                'user_id' => Auth::id(),
+                'tugas_id' => $id
+            ],
+            [
+                'status' => 'selesai',
+                'updated_at' => now()
+            ]
+        );
+
+        return view('siswa.konten.ujianselesai', compact('tugas', 'tugasUser'));
     }
     
     public function submitKuis(Request $request, $id)
@@ -291,6 +470,19 @@ class TugasController extends Controller
 
 
         return view('admin.konten.detailtugas', compact('tugas', 'pengumpulan'));
+    }
+
+    public function showDetailUjian($id)
+    {
+        $tugas = Tugas::with([
+            'tugasUser.user',
+            'soalKuis',
+            'tugasUser.jawabanKuis' // Tambahkan eager loading untuk jawaban
+        ])->findOrFail($id);
+        
+        return view('admin.konten.detailujian', [
+            'tugas' => $tugas
+        ]);
     }
 
     public function formInputNilai($id)
@@ -447,7 +639,7 @@ class TugasController extends Controller
         $tipe = $request->query('tipe');
 
         // Validasi tipe
-        if (!in_array($tipe, ['tugas', 'evaluasi', 'tryout'])) {
+        if (!in_array($tipe, ['tugas', 'evaluasi_mingguan', 'tryout'])) {
             abort(404);
         }
 

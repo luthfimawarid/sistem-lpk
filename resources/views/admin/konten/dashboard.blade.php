@@ -11,11 +11,25 @@
         <a href="/ebook-admin" class="px-3 py-1 text-sm md:text-base text-[#0A58CA] rounded-full font-semibold border border-[#0A58CA]">Lihat semua</a>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-        @foreach ($courses as $course)
-            <div class="bg-white rounded-lg shadow p-4 text-center">
-                <img src="{{ asset('/logo.png') }}" alt="Course Image" class="rounded-lg mb-2 mx-auto max-w-[150px]">
-                <p class="font-medium text-base">{{ $course->judul }}</p>
+        @foreach ($materi as $item)
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <img src="{{ asset('/logo.png') }}" alt="Cover {{ $item->judul }}" class="w-full h-48 object-cover">
+            <div class="p-4">
+                <h3 class="text-lg font-semibold">{{ $item->judul }}</h3>
+                <p class=" text-gray-600 mt-2">By {{ $item->author }}</p>
+                <div class="mt-4 flex justify-between items-center">
+                    <div class="flex space-x-2">
+                        <a href="{{ route('materi.edit', $item->id) }}" class="bg-[#0A58CA] text-white px-4 py-2 rounded-lg ">Edit</a>
+                        <form action="{{ route('materi.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Apakah yakin ingin menghapus?');">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg ">Hapus</button>
+                        </form>
+                    </div>
+                    <p class="text-sm italic">{{ ucfirst($item->status) }}</p>
+                </div>
             </div>
+        </div>
         @endforeach
     </div>
 </section>
@@ -38,7 +52,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($myCourses as $materi)
+                            @foreach ($courses as $materi)
                             <tr class="border-t">
                                 <td class="py-2 px-4">{{ $materi->judul }}</td>
                                 <td class="py-2 px-4 text-center">{{ ucfirst($materi->tipe) }}</td>
@@ -109,10 +123,29 @@
                     <td class="py-2 px-4">{{ $user->nama_lengkap }}</td>
                     <td class="py-2 px-4 text-center">{{ $user->kelas ?? '-' }}</td>
                     <td class="py-2 px-4 text-center">Aktif</td>
-                    <td class="py-2 px-4 text-center flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                        </svg>
+                    <td class="py-2 px-4 text-center relative">
+                        <div class="relative inline-block">
+                            <!-- Icon Aksi -->
+                            <svg onclick="toggleDropdown(this)" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-700 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+                            </svg>
+
+                            <!-- Dropdown Menu -->
+                            <div class="dropdown hidden absolute right-0 mt-2 w-40 bg-white border rounded-md shadow-lg z-50">
+                                <ul class="py-1 text-gray-700">
+                                    <li>
+                                        <a href="{{ route('admin.siswa.edit', $user->id) }}" class="block text-left px-4 py-2 hover:bg-gray-100">Edit</a>
+                                    </li>
+                                    <li>
+                                        <form action="{{ route('admin.siswa.destroy', $user->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus siswa ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-100">Hapus</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 @endforeach
@@ -121,5 +154,28 @@
         </div>
     </section>
 </div>
+
+<script>
+    function toggleDropdown(element) {
+        // Tutup semua dropdown lainnya
+        document.querySelectorAll('.dropdown').forEach(drop => {
+            if (drop !== element.nextElementSibling) {
+                drop.classList.add('hidden');
+            }
+        });
+
+        // Toggle dropdown saat ini
+        const dropdown = element.nextElementSibling;
+        dropdown.classList.toggle('hidden');
+    }
+
+    // Tutup dropdown saat klik di luar
+    document.addEventListener('click', function (e) {
+        const isDropdownButton = e.target.closest('svg');
+        if (!isDropdownButton) {
+            document.querySelectorAll('.dropdown').forEach(drop => drop.classList.add('hidden'));
+        }
+    });
+</script>
 
 @endsection

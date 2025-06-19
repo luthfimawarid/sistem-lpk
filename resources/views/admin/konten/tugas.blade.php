@@ -15,14 +15,22 @@
         <h2 class="text-2xl font-semibold mb-4">Ujian Akhir ({{ $ujianAkhir->count() }})</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             @forelse ($ujianAkhir as $item)
-            <div class="bg-white rounded-lg shadow p-4 text-center relative group">
-                <img src="{{ asset('/logo.png') }}" alt="Evaluasi" class="mx-auto rounded-md h-40 object-cover">
-                <p class="mt-2 font-medium">{{ $item->judul }}</p>
-                <p class="text-sm text-gray-600">Deadline: {{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('d M Y') : '-' }}</p>
-
+            <div class="bg-white rounded-lg shadow p-4 text-center hover:shadow-md transition h-full flex flex-col">
+                <!-- Bagian yang bisa diklik -->
+                <a href="{{ route('admin.ujian.detail', $item->id) }}" class="flex-grow">
+                    <img src="{{ asset('/logo.png') }}" alt="Evaluasi" class="mx-auto rounded-md h-40 object-cover">
+                    <p class="mt-2 font-medium text-blue-600">{{ $item->judul }}</p>
+                    <p class="text-sm text-gray-600">Deadline: {{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('d M Y') : '-' }}</p>
+                </a>
+                
+                <!-- Tombol Edit dan Hapus di bagian bawah card -->
                 <div class="flex justify-center gap-2 mt-4">
-                    <a href="{{ route('tugas.edit', $item->id) }}" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Edit</a>
-                    <form action="{{ route('tugas.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data ini?')">
+                    <a href="{{ route('tugas.edit', $item->id) }}" 
+                    class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                    onclick="event.stopPropagation()">Edit</a>
+                    <form action="{{ route('tugas.destroy', $item->id) }}" method="POST" 
+                        onsubmit="return confirm('Yakin ingin menghapus data ini?')"
+                        onclick="event.stopPropagation()">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">Hapus</button>

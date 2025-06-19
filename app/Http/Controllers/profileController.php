@@ -28,14 +28,26 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
+        $request->validate([
+            'nama_lengkap' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'status' => 'nullable|string|max:255',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
+
         $user->nama_lengkap = $request->nama_lengkap;
         $user->email = $request->email;
         $user->phone = $request->phone;
         $user->status = $request->status;
 
         if ($request->hasFile('photo')) {
-            $photo = $request->file('photo')->store('profile', 'public');
-            $user->photo = $photo;
+            if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+                Storage::disk('public')->delete($user->photo);
+            }
+
+            $photoPath = $request->file('photo')->store('profile', 'public');
+            $user->photo = $photoPath;
         }
 
         $user->save();
@@ -82,23 +94,31 @@ class ProfileController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'nama_lengkap' => 'required|string|max:255',
-            'email' => 'required|email',
-            'no_hp' => 'nullable|string',
-            'kelas' => 'nullable|string',
-            'status' => 'nullable|string',
-            'angkatan' => 'nullable|numeric|min:2000|max:' . date('Y'),
-            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'nama_lengkap'   => 'required|string|max:255',
+            'email'          => 'required|email|max:255',
+            'tanggal_lahir'  => 'nullable|date',
+            'no_hp'          => 'nullable|string|max:20',
+            'kelas'          => 'nullable|string|max:50',
+            'status'         => 'nullable|string|max:50',
+            'angkatan'       => 'nullable|numeric|min:2000|max:' . date('Y'),
+            'photo'          => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $user->nama_lengkap = $request->nama_lengkap;
-        $user->email = $request->email;
-        $user->no_hp = $request->no_hp;
-        $user->kelas = $request->kelas;
-        $user->status = $request->status;
-        $user->angkatan = $request->angkatan;
+        $user->nama_lengkap  = $request->nama_lengkap;
+        $user->email         = $request->email;
+        $user->tanggal_lahir = $request->tanggal_lahir;
+        $user->no_hp         = $request->no_hp;
+        $user->kelas         = $request->kelas;
+        $user->status        = $request->status;
+        $user->angkatan      = $request->angkatan;
 
+        // Proses upload photo jika ada
         if ($request->hasFile('photo')) {
+            // Hapus foto lama jika ada
+            if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+                Storage::disk('public')->delete($user->photo);
+            }
+
             $photoPath = $request->file('photo')->store('profile', 'public');
             $user->photo = $photoPath;
         }

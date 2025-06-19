@@ -4,7 +4,7 @@
 <div class="p-10 bg-blue-50 min-h-screen">
     <h1 class="text-2xl font-semibold mb-6">Edit Data Siswa: {{ $siswa->nama_lengkap }}</h1>
 
-    <form action="{{ route('admin.siswa.update', $siswa->id) }}" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow-md w-full max-w-lg">
+    <form action="{{ route('admin.siswa.update', $siswa->id) }}" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-lg shadow-md w-full">
         @csrf
 
         <div class="mb-4">
