@@ -27,7 +27,7 @@
     <div class="grid mt-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
         @foreach ($materi as $item)
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <img src="{{ asset('storage/cover/'.$item->coverPath) }}" alt="Cover {{ $item->judul }}" class="w-full h-48 object-cover">
+                <img src="{{ asset('/logo.png') }}" alt="Cover {{ $item->judul }}" class="w-full h-48 object-cover">
                 <div class="p-4">
                     <h3 class="text-lg font-semibold">{{ $item->judul }}</h3>
                     <p class="text-xs text-gray-600 mt-2">By {{ $item->author }}</p>

@@ -59,21 +59,28 @@
             @else
                 @foreach ($rooms as $room)
                     @php
-                        $lastMessage = $room->messages->first();
                         $isGroup = $room->type === 'group';
-                        $roomName = $isGroup ? $room->name : ($room->users->where('id', '!=', auth()->id())->first()->nama_lengkap ?? 'Private Chat');
+                        $otherUser = $room->users->where('id', '!=', auth()->id())->first();
+                        $roomName = $isGroup 
+                            ? $room->name 
+                            : ($otherUser ? $otherUser->nama_lengkap : 'User tidak tersedia');
+
+                        $lastMessage = $room->messages->first();
                         $messageText = $lastMessage->message ?? 'Belum ada pesan';
                         $messageTime = optional($lastMessage?->created_at)->format('H:i');
+
                         $routeName = $isGroup
                             ? route('chat.admin.show', $room->id)
-                            : route('chat.admin.start', ['userId' => $room->users->where('id', '!=', auth()->id())->first()->id ?? 0]);
+                            : ($otherUser 
+                                ? route('chat.admin.start', ['userId' => $otherUser->id])
+                                : '#');
                     @endphp
 
                     <a href="{{ $routeName }}" class="chat-item block hover:bg-gray-100 transition duration-200">
                         <div class="flex items-center justify-between px-3 py-3 md:py-4">
                             <div class="flex items-center gap-3 md:gap-5">
                                 <img src="/logo.png" alt="Room"
-                                     class="w-10 h-10 md:w-12 md:h-12 border-2 rounded-full object-cover" />
+                                    class="w-10 h-10 md:w-12 md:h-12 border-2 rounded-full object-cover" />
                                 <div>
                                     <h3 class="room-name text-sm md:text-lg font-bold truncate w-[160px] md:w-[240px]">
                                         {{ $roomName }}

@@ -56,6 +56,30 @@
                 </select>
             </div>
 
+            <div class="mb-4">
+                <label for="bidang" class="block text-sm font-medium text-gray-700">Bidang</label>
+                <select id="bidang" name="bidang" class="mt-1 p-2 w-full border rounded-md" required>
+                    <option value="" disabled selected>Pilih Bidang</option>
+                    @php
+                        $listBidang = [
+                            'Perawatan (Kaigo/Caregiver)',
+                            'Pembersihan Gedung',
+                            'Konstruksi',
+                            'Manufaktur Mesin Industri',
+                            'Elektronik dan Listrik',
+                            'Perhotelan',
+                            'Pertanian',
+                            'Perikanan',
+                            'Pengolahan Makanan dan Minuman',
+                            'Jasa Makanan'
+                        ];
+                    @endphp
+                    @foreach($listBidang as $bidang)
+                        <option value="{{ $bidang }}">{{ $bidang }}</option>
+                    @endforeach
+                </select>
+            </div>
+
             <!-- Upload File Tugas -->
             <div id="file-upload" class="mb-4">
                 <label for="cover" class="block text-sm font-medium text-gray-700">Unggah File (PDF/Gambar)</label>

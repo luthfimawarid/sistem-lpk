@@ -46,6 +46,8 @@ class dashboardController extends Controller
     public function indexsiswa()
     {
         $userId = Auth::id();
+        $bidangUser = Auth::user()->bidang;
+
 
         $kuisBelumDikerjakan = Tugas::where('tipe', 'kuis')
             ->whereDate('deadline', '>=', now()) // hanya kuis yang masih aktif
@@ -58,9 +60,22 @@ class dashboardController extends Controller
 
             
             // Ambil data kursus, chat, nilai, dll seperti biasa...
-        $materi = Materi::where('tipe', 'ebook')->where('status', 'aktif')->get();
-        $courses = Materi::latest()->take(3)->get();
-        $myCourses = Materi::where('status', 'aktif')->take(5)->get();
+        $materi = Materi::where('tipe', 'ebook')
+            ->where('status', 'aktif')
+            ->where('bidang', $bidangUser)
+            ->get();
+
+        $courses = Materi::where('status', 'aktif')
+            ->where('bidang', $bidangUser)
+            ->latest()
+            ->take(3)
+            ->get();
+
+        $myCourses = Materi::where('status', 'aktif')
+            ->where('bidang', $bidangUser)
+            ->take(5)
+            ->get();
+
         $tanggalTerdaftar = Auth::user()->created_at->toDateString();
 
         $jobMatchings = [];

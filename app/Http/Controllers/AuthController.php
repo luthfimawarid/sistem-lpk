@@ -60,18 +60,22 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string',
             'kelas' => 'required|string',
+            'bidang' => 'required|string|in:Perawatan (Kaigo/Caregiver),Pembersihan Gedung,Konstruksi,Manufaktur Mesin Industri,Elektronik dan Listrik,Perhotelan,Pertanian,Perikanan,Pengolahan Makanan dan Minuman,Jasa Makanan',
             'foto' => 'nullable|image',
             'tanggal_lahir' => 'nullable|date',
             'dokumen.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png'
         ]);
+
 
         $user = new User();
         $user->nama_lengkap = $request->nama_lengkap;
         $user->email = $request->email;
         $user->password = Hash::make($request->password);
         $user->kelas = $request->kelas;
+        $user->bidang = $request->bidang;
         $user->role = 'siswa';
         $user->tanggal_lahir = $request->tanggal_lahir;
+
 
         if ($request->hasFile('foto')) {
             $user->foto = $request->file('foto')->store('foto_siswa', 'public');
@@ -95,7 +99,6 @@ class AuthController extends Controller
 
         return redirect()->route('admin.siswa.index')->with('success', 'Siswa dan dokumen berhasil ditambahkan');
     }
-
 
     public function show($id) {
         $siswa = User::with(['dokumen', 'sertifikat'])->findOrFail($id);
@@ -143,8 +146,6 @@ class AuthController extends Controller
 
         return redirect()->route('admin.siswa.detail', $siswaId)->with('success', 'Sertifikat berhasil dihapus.');
     }
-
-
 
     public function uploadDokumen(Request $request, $id) {
         $request->validate([

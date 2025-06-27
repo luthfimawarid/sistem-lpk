@@ -78,7 +78,6 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
 
-        // Ambil nilai berdasarkan tipe tugas
         $tugasUser = $user->TugasUser()->with('tugas')->get();
 
         $nilaiTugas = $tugasUser->where('tugas.tipe', 'tugas')->pluck('nilai')->filter()->avg();
@@ -86,7 +85,17 @@ class ProfileController extends Controller
         $nilaiKuis = $tugasUser->where('tugas.tipe', 'kuis')->pluck('nilai')->filter()->avg();
         $nilaiTryout = $tugasUser->where('tugas.tipe', 'tryout')->pluck('nilai')->filter()->avg();
 
-        return view('siswa.konten.profil', compact('user', 'nilaiTugas', 'nilaiEvaluasi', 'nilaiKuis', 'nilaiTryout'));
+        // Tambahkan dokumen
+        $dokumenSiswa = $user->dokumenSiswa()->get()->keyBy('jenis_dokumen');
+
+        return view('siswa.konten.profil', compact(
+            'user',
+            'nilaiTugas',
+            'nilaiEvaluasi',
+            'nilaiKuis',
+            'nilaiTryout',
+            'dokumenSiswa'
+        ));
     }
 
     public function updateProfilSiswa(Request $request)

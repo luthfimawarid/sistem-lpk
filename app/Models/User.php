@@ -25,7 +25,8 @@ class User extends Authenticatable
         'role',
         'kelas',
         'tanggal_lahir',
-        'foto'
+        'foto',
+        'bidang'
     ];
 
     /**
@@ -73,5 +74,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Notifikasi::class);
     }
+
+    public function dokumenSiswa()
+    {
+        return $this->hasMany(DokumenSiswa::class);
+    }
+
 
 }

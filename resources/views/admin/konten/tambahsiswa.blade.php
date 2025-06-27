@@ -34,6 +34,31 @@
                     <input type="text" name="kelas" id="kelas" class="w-full border rounded p-2" required>
                 </div>
 
+                @php
+                    $listBidang = [
+                        'Perawatan (Kaigo/Caregiver)',
+                        'Pembersihan Gedung',
+                        'Konstruksi',
+                        'Manufaktur Mesin Industri',
+                        'Elektronik dan Listrik',
+                        'Perhotelan',
+                        'Pertanian',
+                        'Perikanan',
+                        'Pengolahan Makanan dan Minuman',
+                        'Jasa Makanan'
+                    ];
+                @endphp
+
+                <div>
+                    <label for="bidang" class="block font-medium mb-1">Bidang</label>
+                    <select name="bidang" id="bidang" class="w-full border rounded p-2" required>
+                        <option value="">-- Pilih Bidang --</option>
+                        @foreach($listBidang as $bidang)
+                            <option value="{{ $bidang }}">{{ $bidang }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
                 <div>
                     <label for="foto" class="block font-medium mb-1">Foto (Opsional)</label>
                     <input type="file" name="foto" id="foto" class="w-full">

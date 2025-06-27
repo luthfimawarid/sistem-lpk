@@ -3,24 +3,68 @@
 @section('content')
 
 <main class="p-6">
+    <!-- ALERT NOTIF -->
+    @if ($errors->any())
+        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            <strong>Terjadi kesalahan:</strong>
+            <ul class="mt-2 list-disc list-inside text-sm">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if (session('success'))
+        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <form class="bg-white p-6 rounded-lg shadow-md" action="{{ route('materi.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
 
-        <h1 class="text-xl font-semibold mb-10">Tambah {{ ucfirst($tipe) }}</h1>
+        <h1 class="text-xl font-semibold mb-10">Tambah Materi</h1>
 
         <div class="my-6">
             <label for="judul" class="block text-sm font-medium text-gray-700">Judul</label>
-            <input type="text" id="judul" name="judul" class="mt-1 block w-full border-b py-1 text-sm border-gray-400" required placeholder="Masukkan Judul">
+            <input type="text" id="judul" name="judul" class="mt-1 block w-full border-b py-1 text-sm border-gray-400" required placeholder="Masukkan Judul" value="{{ old('judul') }}">
         </div>
 
         <div class="my-6">
             <label for="penulis" class="block text-sm font-medium text-gray-700">Penulis / Author</label>
-            <input type="text" id="penulis" name="author" class="mt-1 block w-full border-b py-1 text-sm border-gray-400" required placeholder="Masukkan Nama Penulis">
+            <input type="text" id="penulis" name="author" class="mt-1 block w-full border-b py-1 text-sm border-gray-400" required placeholder="Masukkan Nama Penulis" value="{{ old('author') }}">
         </div>
 
+        @php
+            $listBidang = [
+                'Perawatan (Kaigo/Caregiver)',
+                'Pembersihan Gedung',
+                'Konstruksi',
+                'Manufaktur Mesin Industri',
+                'Elektronik dan Listrik',
+                'Perhotelan',
+                'Pertanian',
+                'Perikanan',
+                'Pengolahan Makanan dan Minuman',
+                'Jasa Makanan'
+            ];
+        @endphp
+
         <div class="my-6">
-            <label for="cover" class="block text-sm font-medium text-gray-700">Cover</label>
-            <input type="file" id="cover" name="cover" accept="image/png,image/jpeg,image/jpg" class="mt-1 block w-full" required>
+            <label for="bidang" class="block text-sm font-medium text-gray-700">Bidang</label>
+            <select id="bidang" name="bidang" class="mt-1 block w-full border-b py-1 text-sm border-gray-400" required>
+                <option value="" disabled {{ old('bidang') ? '' : 'selected' }}>-- Pilih Bidang --</option>
+                @foreach($listBidang as $bidang)
+                    <option value="{{ $bidang }}" {{ old('bidang') == $bidang ? 'selected' : '' }}>{{ $bidang }}</option>
+                @endforeach
+            </select>
         </div>
 
         <div class="my-6">
@@ -31,19 +75,18 @@
         <div class="my-6">
             <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
             <select id="status" name="status" class="mt-1 block w-full border-b py-1 text-sm border-gray-400" required>
-                <option value="aktif" selected>Aktif</option>
-                <option value="nonaktif">Nonaktif</option>
+                <option value="aktif" {{ old('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                <option value="nonaktif" {{ old('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
             </select>
         </div>
 
-        <!-- Hidden Tipe -->
         <div class="my-6">
             <label for="tipe" class="block text-sm font-medium text-gray-700">Tipe Materi</label>
             <select id="tipe" name="tipe" class="mt-1 block w-full border-b py-1 text-sm border-gray-400" required>
-                <option value="" disabled selected>Pilih Tipe</option>
-                <option value="ebook" {{ old('tipe', $tipe ?? '') == 'ebook' ? 'selected' : '' }}>Ebook</option>
-                <option value="listening" {{ old('tipe', $tipe ?? '') == 'listening' ? 'selected' : '' }}>Listening</option>
-                <option value="video" {{ old('tipe', $tipe ?? '') == 'video' ? 'selected' : '' }}>Video</option>
+                <option value="" disabled {{ old('tipe') ? '' : 'selected' }}>-- Pilih Tipe --</option>
+                <option value="ebook" {{ old('tipe') == 'ebook' ? 'selected' : '' }}>Ebook</option>
+                <option value="listening" {{ old('tipe') == 'listening' ? 'selected' : '' }}>Listening</option>
+                <option value="video" {{ old('tipe') == 'video' ? 'selected' : '' }}>Video</option>
             </select>
         </div>
 
@@ -53,6 +96,7 @@
         </div>
     </form>
 </main>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const tipeSelect = document.getElementById('tipe');
@@ -61,21 +105,17 @@
         function updateFileAccept() {
             const selectedTipe = tipeSelect.value;
             if (selectedTipe === 'ebook') {
-                fileInput.accept = '.pdf';
-                fileInput.placeholder = 'Unggah file PDF';
+                fileInput.accept = 'application/pdf';
             } else if (selectedTipe === 'listening') {
                 fileInput.accept = 'audio/*';
-                fileInput.placeholder = 'Unggah file MP3';
             } else if (selectedTipe === 'video') {
                 fileInput.accept = 'video/*';
-                fileInput.placeholder = 'Unggah file MP4';
+            } else {
+                fileInput.accept = '';
             }
         }
 
-        // Set default jika ada value saat load
         updateFileAccept();
-
-        // Update saat tipe dipilih ulang
         tipeSelect.addEventListener('change', updateFileAccept);
     });
 </script>

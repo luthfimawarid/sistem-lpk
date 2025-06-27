@@ -83,6 +83,30 @@
                     <div class="col-span-1 md:col-span-2 text-center mt-6">
                         <button class="w-full md:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Simpan Perubahan</button>
                     </div>
+
+                    <!-- Dokumen Siswa -->
+                    <div class="col-span-1 md:col-span-2">
+                        <h3 class="font-semibold text-base mb-2">Dokumen</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            @php
+                                $daftarDokumen = ['ijazah', 'kartu_keluarga', 'akte_kelahiran', 'rapor', 'ktp_orang_tua'];
+                            @endphp
+
+                            @foreach($daftarDokumen as $dokumen)
+                                <div class="border p-3 rounded-lg bg-gray-50">
+                                    <p class="text-sm font-medium capitalize">{{ str_replace('_', ' ', $dokumen) }}</p>
+                                    @if($dokumenSiswa->has($dokumen))
+                                        <a href="{{ asset('storage/' . $dokumenSiswa[$dokumen]->file) }}" target="_blank" class="text-blue-600 text-sm underline">
+                                            Lihat Dokumen
+                                        </a>
+                                    @else
+                                        <p class="text-red-500 text-sm">Belum diunggah</p>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
                 </div>
             </form>
         </div>

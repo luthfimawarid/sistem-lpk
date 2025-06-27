@@ -36,7 +36,22 @@
                 <a href="{{ route('chat.show', $room->id) }}" class="chat-item block hover:bg-gray-100 transition duration-200">
                     <div class="flex items-center justify-between px-3 h-12 my-3">
                         <div class="flex items-center">
-                            <img src="/logo.png" alt="Room" class="w-10 h-10 md:w-12 md:h-12 border-2 rounded-full me-3 md:me-5 object-cover">
+                           @php
+                                $isGroup = $room->type === 'group';
+
+                                if ($isGroup) {
+                                    $photo = $room->avatar
+                                        ? asset('storage/profile/' . $room->avatar)
+                                        : asset('default-group.png');
+                                } else {
+                                    $otherUser = $room->users->where('id', '!=', auth()->id())->first();
+                                    $photo = $otherUser && $otherUser->photo
+                                        ? asset('storage/' . $otherUser->photo)
+                                        : asset('default-user.png');
+                                }
+                            @endphp
+
+                            <img src="{{ $photo }}" alt="Room" class="w-10 h-10 md:w-12 md:h-12 border-2 rounded-full me-3 md:me-5 object-cover">
                             <div>
                                 <h3 class="room-name text-sm md:text-lg font-bold">{{ $roomName }}</h3>
                                 <p class="message-preview text-xs md:text-sm text-gray-600">{{ $messageText }}</p>

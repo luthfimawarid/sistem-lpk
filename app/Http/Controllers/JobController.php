@@ -125,10 +125,13 @@ class JobController extends Controller
         $jobMatchings = JobMatching::where('status', 'terbuka')->get();
 
         // Ambil semua aplikasi user
-        $jobApplications = JobApplication::where('user_id', $user->id)->get()->keyBy('job_matching_id');
+        $jobApplications = JobApplication::where('user_id', $user->id)
+            ->get()
+            ->keyBy('job_matching_id'); // agar bisa diakses pakai $job->id
 
         return view('siswa.konten.job-matching', compact('jobMatchings', 'jobApplications', 'sertifikatLulus'));
     }
+
 
     // public function apply($id)
     // {

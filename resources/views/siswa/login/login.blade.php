@@ -17,9 +17,9 @@
             </div>
 
             <!-- Bagian Kanan -->
-            <div class="md:w-1/2 w-full p-6 md:p-8 flex flex-col justify-center bg-white">
-                <p class="font-semibold text-lg text-center">Masuk</p>
-                <p class="text-xs md:text-sm text-center mt-1 mb-5">“Masuk sekarang untuk mengakses materi, latihan soal, dan prediksi kelulusan berbasis performa”</p>
+            <div class="md:w-1/2 w-full p-6 md:p-8 justify-center bg-white">
+                <p class="font-semibold text-lg text-center mt-4">Masuk</p>
+                <p class="text-xs md:text-sm text-center mt-1 mb-14">“Masuk sekarang untuk mengakses materi, latihan soal, dan prediksi kelulusan berbasis performa”</p>
 
                 @if ($errors->has('login'))
                     <div class="bg-red-100 text-red-700 text-sm p-2 rounded mb-3">
@@ -34,7 +34,7 @@
                     </div>
 
                     <div class="relative mb-3">
-                        <input id="password" name="password" type="password" class="border-b border-gray-300 p-2 w-full text-sm outline-none pr-10" placeholder="Password" required>
+                        <input id="password" name="password" type="password" class="border-b border-gray-300 p-2 w-full text-sm outline-none pr-10 mb-5" placeholder="Password" required>
                         <span class="absolute right-2 top-3 cursor-pointer" onclick="togglePassword()">
                             <svg class="w-5 h-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

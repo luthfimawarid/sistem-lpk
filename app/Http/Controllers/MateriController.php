@@ -33,42 +33,42 @@ class MateriController extends Controller
         return view('admin.konten.tambahmateri', compact('tipe'));
     }
     
-
     public function store(Request $request)
     {
         $request->validate([
             'judul' => 'required|string|max:255',
             'author' => 'required|string|max:255',
-            'cover' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-            'file' => 'required|mimes:pdf,mp3,mp4|max:100000',
+            'bidang' => 'required|string|in:Perawatan (Kaigo/Caregiver),Pembersihan Gedung,Konstruksi,Manufaktur Mesin Industri,Elektronik dan Listrik,Perhotelan,Pertanian,Perikanan,Pengolahan Makanan dan Minuman,Jasa Makanan',
+            'file' => 'required|mimetypes:application/pdf,audio/mpeg,video/mp4|max:200000',
             'tipe' => 'required|in:ebook,listening,video',
+            'status' => 'required|in:aktif,nonaktif',
         ]);
 
-        // Upload cover
-        $coverPath = $request->file('cover')->store('cover', 'public');
+        try {
+            // Upload file
+            $filePath = $request->file('file')->store('materi', 'public');
 
-        // Upload file materi
-        $filePath = $request->file('file')->store('materi', 'public');
+            // Simpan ke database
+            Materi::create([
+                'judul' => $request->judul,
+                'author' => $request->author,
+                'bidang' => $request->bidang,
+                'file' => basename($filePath),
+                'tipe' => $request->tipe,
+                'status' => $request->status,
+            ]);
 
-        // Simpan ke database
-        Materi::create([
-            'judul' => $request->judul,
-            'author' => $request->author,
-            'cover' => basename($coverPath),
-            'file' => basename($filePath),
-            'tipe' => $request->tipe,
-            'status' => 'aktif',
-        ]);
-
-        switch ($request->tipe) {
-            case 'ebook':
-                return redirect()->route('materi.ebook')->with('success', 'Materi berhasil ditambahkan.');
-            case 'listening':
-                return redirect()->route('materi.listening')->with('success', 'Materi berhasil ditambahkan.');
-            case 'video':
-                return redirect()->route('materi.video')->with('success', 'Materi berhasil ditambahkan.');
-            default:
-                return redirect()->back()->with('error', 'Tipe materi tidak dikenali.');
+            // Redirect sesuai tipe
+            switch ($request->tipe) {
+                case 'ebook':
+                    return redirect()->route('materi.ebook')->with('success', 'Materi berhasil ditambahkan.');
+                case 'listening':
+                    return redirect()->route('materi.listening')->with('success', 'Materi berhasil ditambahkan.');
+                case 'video':
+                    return redirect()->route('materi.video')->with('success', 'Materi berhasil ditambahkan.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan materi: ' . $e->getMessage());
         }
     }
 
@@ -133,7 +133,12 @@ class MateriController extends Controller
 
     public function siswaEbook()
     {
-        $materi = Materi::where('tipe', 'ebook')->where('status', 'aktif')->get();
+        $user = auth()->user();
+        $materi = Materi::where('tipe', 'ebook')
+            ->where('status', 'aktif')
+            ->where('bidang', $user->bidang)
+            ->get();
+
         $tipe = 'ebook'; 
 
         return view('siswa.konten.ebook', compact('materi', 'tipe'));
@@ -141,19 +146,30 @@ class MateriController extends Controller
 
     public function siswaListening()
     {
-        $materi = Materi::where('tipe', 'listening')->where('status', 'aktif')->get();
+        $user = auth()->user();
+        $materi = Materi::where('tipe', 'listening')
+            ->where('status', 'aktif')
+            ->where('bidang', $user->bidang)
+            ->get();
+
         $tipe = 'listening'; 
 
-        return view('siswa.konten.listening', compact('materi','tipe'));
+        return view('siswa.konten.listening', compact('materi', 'tipe'));
     }
 
     public function siswaVideo()
     {
-        $materi = Materi::where('tipe', 'video')->where('status', 'aktif')->get();
+        $user = auth()->user();
+        $materi = Materi::where('tipe', 'video')
+            ->where('status', 'aktif')
+            ->where('bidang', $user->bidang)
+            ->get();
+
         $tipe = 'video'; 
 
-        return view('siswa.konten.video', compact('materi','tipe'));
+        return view('siswa.konten.video', compact('materi', 'tipe'));
     }
+
 
 
 }

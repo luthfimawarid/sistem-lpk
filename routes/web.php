@@ -48,6 +48,14 @@ Route::middleware('auth')->group(function () {
 
 
 // Siswa
+    Route::get('/notifikasi/jumlah', function () {
+        $jumlah = \App\Models\Notifikasi::where('user_id', auth()->id())
+            ->where('dibaca', false)
+            ->count();
+
+        return response()->json(['jumlah' => $jumlah]);
+    })->middleware('auth');
+
     Route::post('/siswa/refresh-prediksi', [DashboardController::class, 'indexsiswa'])->name('siswa.refresh.prediksi');
     Route::get('/tugas', [TugasController::class, 'indexSiswa'])->name('siswa.tugas');
     Route::post('/siswa/tugas/{id}/kirim', [TugasController::class, 'kirimJawaban'])->name('siswa.kirimJawaban');
@@ -64,7 +72,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/siswa/chat/start/{userId}', [ChatController::class, 'startChatBetweenStudents'])->name('chat.start');
     Route::post('/chat/{roomId}/send', [ChatController::class, 'sendMessage'])->name('chat.send');
     Route::post('/job-matching/apply/{jobId}', [JobController::class, 'apply'])->middleware('auth');
-    Route::post('/notifikasi/mark-as-read', [NotifikasiController::class, 'markAsRead'])->middleware('auth');
+    Route::post('/notifikasi/{id}/baca', function ($id) {
+        $notif = \App\Models\Notifikasi::where('user_id', auth()->id())->findOrFail($id);
+        $notif->update(['dibaca' => true]);
+
+        return redirect()->route('siswa.tugas', ['id' => $notif->tugas_id]);
+    })->name('notifikasi.baca')->middleware('auth');
     Route::get('/notifikasi', [NotifikasiController::class, 'index'])->name('notifikasi.index');
     Route::get('/siswa/job-matching', [JobController::class, 'index'])->name('siswa.job-matching.index');
     Route::post('/siswa/job-matching/apply/{id}', [JobController::class, 'apply'])->name('siswa.job-matching.apply');

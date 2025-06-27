@@ -27,6 +27,7 @@
                             <th class="py-3 px-4 md:px-6">Email</th>
                             <th class="py-3 px-4 md:px-6">Tanggal Lahir</th>
                             <th class="py-3 px-4 md:px-6">Kelas</th>
+                            <th class="py-3 px-4 md:px-6">Bidang</th>
                             <th class="py-3 px-4 md:px-6">Aksi</th>
                         </tr>
                     </thead>
@@ -35,10 +36,11 @@
                             <tr class="border-t">
                                 <td class="py-3 px-4 md:px-6">{{ $index + 1 }}</td>
                                 <td class="py-3 px-4 md:px-6">{{ $siswa->nama_lengkap }}</td>
-                                <td class="py-3 px-4 md:px-6">{{ $siswa->password }}</td>
+                                <td class="py-3 px-4 md:px-6">********</td>
                                 <td class="py-3 px-4 md:px-6">{{ $siswa->email }}</td>
                                 <td class="py-3 px-4 md:px-6">{{ $siswa->tanggal_lahir ?? '-' }}</td>
                                 <td class="py-3 px-4 md:px-6">{{ $siswa->kelas }}</td>
+                                <td class="py-3 px-4 md:px-6">{{ $siswa->bidang }}</td>
                                 <td class="py-3 px-4 md:px-6 relative">
                                     <div class="relative inline-block text-left">
                                         <svg class="w-6 h-6 text-gray-800 cursor-pointer" onclick="toggleDropdown(this)" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">

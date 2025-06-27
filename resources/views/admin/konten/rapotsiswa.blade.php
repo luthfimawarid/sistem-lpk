@@ -18,6 +18,7 @@
                         <tr class="text-gray-600 bg-blue-50">
                             <th class="py-3 px-4 text-left whitespace-nowrap">Nama</th>
                             <th class="py-3 px-4 text-left whitespace-nowrap">Kelas</th>
+                            <th class="py-3 px-4 text-left whitespace-nowrap">Bidang</th>
                             <th class="py-3 px-4 text-left whitespace-nowrap">Nilai Tugas</th>
                             <th class="py-3 px-4 text-left whitespace-nowrap">Nilai Evaluasi</th>
                             <th class="py-3 px-4 text-left whitespace-nowrap">Nilai Tryout</th>
@@ -30,6 +31,7 @@
                         <tr class="border-t">
                             <td class="py-3 px-4 whitespace-nowrap">{{ $item['nama'] }}</td>
                             <td class="py-3 px-4 whitespace-nowrap">{{ $item['kelas'] }}</td>
+                            <td class="py-3 px-4 whitespace-nowrap">{{ $item['bidang'] }}</td>
                             <td class="py-3 px-4 whitespace-nowrap">{{ $item['nilai_tugas'] }}</td>
                             <td class="py-3 px-4 whitespace-nowrap">{{ $item['nilai_evaluasi'] }}</td>
                             <td class="py-3 px-4 whitespace-nowrap">{{ $item['nilai_tryout'] }}</td>

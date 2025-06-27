@@ -37,6 +37,7 @@ class TugasController extends Controller
             'durasi' => 'nullable|integer|min:1',
             'status' => 'required|in:belum_selesai,selesai',
             'deskripsi' => 'required|string',
+            'bidang' => 'required|string'
         ]);
 
         // Validasi khusus ujian akhir
@@ -75,6 +76,7 @@ class TugasController extends Controller
             'deadline' => $deadline,
             'durasi_menit' => $durasiMenit,
             'status' => $request->status,
+            'bidang' => $request->bidang
         ];
 
         $tugas = Tugas::create($tugasData);
@@ -106,14 +108,18 @@ class TugasController extends Controller
         }
 
         // Kirim notifikasi ke siswa
-        User::where('role', 'siswa')->each(function ($user) use ($notification) {
-            Notifikasi::create([
-                'user_id' => $user->id,
-                'judul' => $notification['judul'],
-                'pesan' => $notification['pesan'],
-                'tipe' => $notification['tipe'],
-            ]);
-        });
+        User::where('role', 'siswa')
+            ->where('bidang', $request->bidang)
+            ->each(function ($user) use ($notification, $request) {
+                Notifikasi::create([
+                    'user_id' => $user->id,
+                    'judul' => $notification['judul'],
+                    'pesan' => $notification['pesan'],
+                    'tipe' => $notification['tipe'],
+                    'bidang' => $request->bidang, // pastikan kolom ini ada di tabel
+                ]);
+            });
+
 
         // Simpan soal jika diperlukan
         if (in_array($request->tipe, ['kuis', 'ujian_akhir','tryout']) && $request->has('soal')) {
@@ -185,14 +191,16 @@ class TugasController extends Controller
 
     public function indexSiswa()
     {
-        $userId = Auth::id();
-    
-        $tugas = Tugas::with(['tugasUser' => function ($query) use ($userId) {
-            $query->where('user_id', $userId);
-        }])
-        ->orderBy('deadline', 'asc')
-        ->get();
-    
+        $user = Auth::user();
+
+        // Ambil semua tugas yang bidang-nya sesuai dengan bidang siswa
+        $tugas = Tugas::with(['tugasUser' => function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            }])
+            ->where('bidang', $user->bidang)
+            ->orderBy('deadline', 'asc')
+            ->get();
+
         return view('siswa.konten.tugas', compact('tugas'));
     }
 
@@ -544,6 +552,7 @@ class TugasController extends Controller
             return [
                 'nama' => $user->nama_lengkap,
                 'kelas' => $user->kelas ?? '-',
+                'bidang' => $user->bidang ?? '-',
                 'nilai_tugas' => $nilaiTugas ? round($nilaiTugas) : '-',
                 'nilai_evaluasi' => $nilaiEvaluasi ? round($nilaiEvaluasi) : '-',
                 'nilai_tryout' => $nilaiTryout ? round($nilaiTryout) : '-',

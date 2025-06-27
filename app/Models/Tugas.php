@@ -16,7 +16,8 @@ class Tugas extends Model
         'cover', 
         'deadline',
         'durasi_menit', // <-- Tambahkan ini
-        'status'
+        'status',
+        'bidang'
     ];
 
     public function soalKuis()

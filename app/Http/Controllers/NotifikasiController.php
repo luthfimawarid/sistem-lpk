@@ -11,21 +11,33 @@ class NotifikasiController extends Controller
 {
     public function index()
     {
-
         $user = Auth::user();
-        $notifikasi = Notifikasi::where('user_id', $user->id)
-                        ->latest()
-                        ->get();
-        // Notifikasi::where('user_id', $user->id)->update(['dibaca' => true]);
+
+        // Ambil bidang siswa
+        $bidangSiswa = $user->bidang;
+
+        // Update notifikasi yang dibaca oleh user berdasarkan bidang mereka (jika ingin tandai dibaca semua dari bidangnya)
+        Notifikasi::where('bidang', $bidangSiswa)
+                ->where('user_id', $user->id)
+                ->update(['dibaca' => true]);
+
+        // Ambil notifikasi yang sesuai bidang siswa
+        $notifikasi = Notifikasi::where('bidang', $bidangSiswa)
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
 
         return view('siswa.konten.notifikasi', compact('notifikasi'));
     }
+
+
     public function markAsRead(Request $request)
     {
         $user = Auth::user();
 
-        // Update semua yang belum dibaca
-        $user->notifikasi()->where('dibaca', false)->update(['dibaca' => true]);
+        $notif = Notifikasi::where('user_id', $user->id)->where('id', $id)->firstOrFail();
+        $notif->dibaca = true;
+        $notif->save();
 
         return response()->json(['message' => 'Notifikasi sudah ditandai terbaca']);
     }

@@ -22,7 +22,7 @@
             <a href="/ebook" class="px-3 py-1 text-sm md:text-base text-[#0A58CA] border border-[#0A58CA] rounded-full font-semibold">Lihat semua</a>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-            @foreach ($courses as $course)
+            @foreach ($materi->take(3) as $course)
                 <div class="bg-white rounded-lg shadow p-4 text-center">
                     <img src="{{ asset('/logo.png') }}" alt="Course Image" class="rounded-lg mb-2 mx-auto max-w-[120px] sm:max-w-[140px]">
                     <p class="font-medium text-sm md:text-base">{{ $course->judul }}</p>

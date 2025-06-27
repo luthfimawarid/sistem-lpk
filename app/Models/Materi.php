@@ -11,7 +11,6 @@ class Materi extends Model
 
     protected $table = 'materi';
 
-    protected $fillable = [
-        'judul', 'author', 'file', 'tipe', 'status'
-    ];
+    protected $fillable = ['judul', 'author', 'bidang', 'cover', 'file', 'tipe', 'status'];
+
 }

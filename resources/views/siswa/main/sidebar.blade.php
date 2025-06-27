@@ -1,14 +1,20 @@
 @php
 use App\Models\Notifikasi;
 
-$notifikasi = Notifikasi::where('user_id', Auth::id())
-    ->where('dibaca', false)
+$user = Auth::user();
+
+$notifikasi = Notifikasi::where('user_id', $user->id)
+    ->where(function ($query) use ($user) {
+        $query->whereNull('bidang')
+              ->orWhere('bidang', $user->bidang);
+    })
     ->latest()
     ->take(5)
     ->get();
 
-$adaNotif = $notifikasi->count() > 0;
+$adaNotif = $notifikasi->where('dibaca', false)->isNotEmpty();
 @endphp
+
 
 
 <!DOCTYPE html>
@@ -38,9 +44,12 @@ $adaNotif = $notifikasi->count() > 0;
             </button>
 
             <!-- Teks Welcome Back -->
-            <h1 class="text-sm md:text-xl md:ml-64 font-semibold">
-                Welcome Back, {{ Auth::user()->nama_lengkap }}!
-            </h1>
+             <div class="atas">
+                <h1 class="text-sm md:text-xl md:ml-64 font-semibold">
+                    Welcome Back, {{ Auth::user()->nama_lengkap }}!
+                </h1>
+                <p class="text-sm md:ml-64 my-1">Bidang Anda: <strong>{{ Auth::user()->bidang }}</strong></p>
+            </div>
 
             <!-- Ikon Profil & Search -->
             <div class="flex items-center space-x-3 md:space-x-3">
@@ -61,9 +70,11 @@ $adaNotif = $notifikasi->count() > 0;
                             @endif
                         </span>
 
-                        @if ($adaNotif)
-                            <span id="notifBadge" class="absolute top-0 right-0 bg-red-600 rounded-full w-2 h-2 animate-ping"></span>
-                        @endif
+                        <span id="notifBadge" class="hidden absolute -top-1 -right-1 bg-red-600 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
+                            0
+                        </span>
+
+
                     </a>
                 </div>
 
@@ -102,7 +113,7 @@ $adaNotif = $notifikasi->count() > 0;
                             {{ $notifPertama->judul }} - {{ $notifPertama->pesan }}
                         </div>
                         <div class="flex">
-                            <a href="/notifikasi" id="lihatDetailBtn" class="text-white bg-blue-800 hover:bg-blue-900 font-medium rounded-lg text-xs px-3 py-1.5 me-2 inline-flex items-center">
+                            <a href="/tugas" id="lihatDetailBtn" class="text-white bg-blue-800 hover:bg-blue-900 font-medium rounded-lg text-xs px-3 py-1.5 me-2 inline-flex items-center">
                                 Lihat Detail
                             </a>
                             <button type="button" id="dismiss-alert" class="text-blue-800 border border-blue-800 hover:bg-blue-900 hover:text-white font-medium rounded-lg text-xs px-3 py-1.5">
@@ -234,123 +245,88 @@ $adaNotif = $notifikasi->count() > 0;
 
     <!-- JavaScript -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const currentNotifId = "{{ $notifikasi->first()?->id ?? '' }}";
-
-            function markAsRead(callback) {
-                fetch('/notifikasi/mark-as-read', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                        'Accept': 'application/json'
-                    }
-                }).then(res => {
-                    if (!res.ok) throw new Error('Gagal update');
-                    localStorage.setItem('lastSeenNotifId', currentNotifId);
-                    document.getElementById('notifBadge')?.remove();
-                    const icon = document.getElementById('notifIcon');
-                    if (icon) {
-                        icon.innerHTML = `
-                        <svg class="w-8 h-8 text-gray-800 dark:text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M17.133 12.632v-1.8a5.406 5.406 0 0 0-4.154-5.262V3.1a1 1 0 0 0-2 0v2.364a5.406 5.406 0 0 0-4.154 5.262v1.8C6.867 15.018 5 15.614 5 16.807c0 .593 0 1.193.538 1.193h12.924c.538 0 .538-.6.538-1.193 0-1.193-1.867-1.789-1.867-4.175ZM8.823 19a3.453 3.453 0 0 0 6.354 0H8.823Z"/>
-                        </svg>`;
-                    }
-                    if (callback) callback();
-                }).catch(err => {
-                    console.error('Gagal menandai terbaca:', err);
-                    if (callback) callback(); // Tetap lanjutkan walau gagal
-                });
-            }
-
-            const alertBox = document.getElementById('alert-notifikasi');
-            const dismissBtn = document.getElementById('dismiss-alert');
-            const detailBtn = document.getElementById('lihatDetailBtn');
-            const notifBtn = document.getElementById('notifBtn');
-
-            const lastSeen = localStorage.getItem('lastSeenNotifId');
-            if (currentNotifId && currentNotifId !== lastSeen) {
-                if (alertBox) alertBox.style.display = 'flex';
-
-                dismissBtn?.addEventListener('click', () => {
-                    if (alertBox) alertBox.style.display = 'none';
-                    markAsRead();
-                });
-
-                detailBtn?.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    markAsRead(() => {
-                        window.location.href = '/notifikasi';
-                    });
-                });
-
-                // Auto close after 10 seconds
-                setTimeout(() => {
-                    if (alertBox) alertBox.style.display = 'none';
-                    markAsRead();
-                }, 10000);
-            }
-
-            notifBtn?.addEventListener('click', function (e) {
-                e.preventDefault();
-                markAsRead(() => {
-                    window.location.href = '/notifikasi';
-                });
-            });
-        });
+    document.addEventListener('DOMContentLoaded', function () {
+        const notifBadge = document.getElementById('notifBadge');
+        const currentNotifId = "{{ $notifikasi->first()?->id ?? '' }}";
+        const alertBox = document.getElementById('alert-notifikasi');
+        const dismissBtn = document.getElementById('dismiss-alert');
+        const detailBtn = document.getElementById('lihatDetailBtn');
+        const notifBtn = document.getElementById('notifBtn');
         const profileBtn = document.getElementById('profileBtn');
-            const profileDropdown = document.getElementById('profileDropdown');
+        const profileDropdown = document.getElementById('profileDropdown');
 
-            profileBtn.addEventListener('click', function () {
-                profileDropdown.classList.toggle('hidden');
+        // ==== 1. BADGE LOGIC ====
+        function updateNotifBadge() {
+            fetch('/notifikasi/jumlah')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.jumlah > 0) {
+                        notifBadge.textContent = data.jumlah;
+                        notifBadge.classList.remove('hidden');
+                    } else {
+                        notifBadge.classList.add('hidden');
+                    }
+                })
+                .catch(err => {
+                    console.error('Gagal mengambil jumlah notifikasi:', err);
+                });
+        }
+
+        updateNotifBadge();
+
+        // ==== 2. POPUP LOGIC ====
+        const lastSeen = localStorage.getItem('lastSeenNotifId');
+        if (currentNotifId && currentNotifId !== lastSeen) {
+            if (alertBox) alertBox.style.display = 'flex';
+
+            dismissBtn?.addEventListener('click', () => {
+                // ✅ Simpan ID notifikasi ke localStorage agar tidak muncul lagi
+                localStorage.setItem('lastSeenNotifId', currentNotifId);
+                if (alertBox) alertBox.style.display = 'none';
             });
 
-            // Tutup dropdown saat klik di luar area
-            window.addEventListener('click', function (e) {
-                if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
-                    profileDropdown.classList.add('hidden');
-                }
+            detailBtn?.addEventListener('click', (e) => {
+                // ✅ Simpan juga ketika klik "Lihat Detail"
+                e.preventDefault();
+                localStorage.setItem('lastSeenNotifId', currentNotifId);
+                window.location.href = '/notifikasi';
             });
-       document.addEventListener("DOMContentLoaded", function () {
-        // Menandai link aktif berdasarkan URL saat ini
+
+            // ✅ Auto-close setelah 10 detik
+            setTimeout(() => {
+                localStorage.setItem('lastSeenNotifId', currentNotifId);
+                if (alertBox) alertBox.style.display = 'none';
+            }, 10000);
+        }
+
+        notifBtn?.addEventListener('click', function (e) {
+            e.preventDefault();
+            window.location.href = '/notifikasi';
+        });
+
+        // ==== 3. PROFILE DROPDOWN ====
+        profileBtn.addEventListener('click', function () {
+            profileDropdown.classList.toggle('hidden');
+        });
+
+        window.addEventListener('click', function (e) {
+            if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                profileDropdown.classList.add('hidden');
+            }
+        });
+
+        // ==== 4. HIGHLIGHT ACTIVE LINK ====
         const links = document.querySelectorAll('a[href]');
         const currentURL = window.location.pathname;
-
         links.forEach(link => {
             if (link.getAttribute('href') === currentURL) {
                 link.classList.add('active-link');
             }
         });
-
-        // Dropdown menu toggle
-        const dropdownBtn = document.getElementById('dropdown-btn');
-        const dropdownMenu = document.getElementById('dropdown-menu');
-        const chevron = document.getElementById('chevron');
-
-        if (dropdownBtn && dropdownMenu && chevron) {
-            dropdownBtn.addEventListener('click', () => {
-                dropdownMenu.classList.toggle('hidden');
-                chevron.classList.toggle('rotate-90'); // Animasi rotasi ikon
-            });
-        }
-
-        // Sidebar toggle untuk tampilan mobile
-        const sidebarToggle = document.getElementById('sidebar-toggle');
-        const sidebar = document.getElementById('sidebar');
-
-        if (sidebarToggle && sidebar) {
-            sidebarToggle.addEventListener('click', function () {
-                sidebar.classList.toggle('-translate-x-full');
-            });
-        }
-
-        // Menutup sidebar jika klik di luar sidebar (untuk UX yang lebih baik)
-        document.addEventListener('click', function (event) {
-            if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
-                sidebar.classList.add('-translate-x-full');
-            }
-        });
     });
     </script>
+
+
 
 </body>
 </html>

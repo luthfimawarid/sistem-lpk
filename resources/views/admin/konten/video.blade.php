@@ -27,10 +27,13 @@
     <div class="grid mt-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
         @foreach ($materi as $item)
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <video controls class="w-full">
-                    <source src="{{ asset('storage/materi/'.$item->file) }}" type="video/mp4">
-                    Browser Anda tidak mendukung pemutar video.
-                </video>
+                <div class="aspect-video bg-black">
+                    <video controls class="w-full h-full object-cover">
+                        <source src="{{ asset('storage/materi/'.$item->file) }}" type="video/mp4">
+                        Browser Anda tidak mendukung pemutar video.
+                    </video>
+                </div>
+
 
                 <div class="p-4">
                     <h3 class="text-lg font-semibold">{{ $item->judul }}</h3>

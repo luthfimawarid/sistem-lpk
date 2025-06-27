@@ -20,18 +20,6 @@
             <input type="text" id="author" name="author" value="{{ $materi->author }}" class="mt-1 block w-full border-b py-1 text-sm border-gray-400" required>
         </div>
 
-        <!-- Cover Lama -->
-        <div class="my-6">
-            <label class="block text-sm font-medium text-gray-700">Cover Saat Ini</label>
-            <img src="{{ Storage::url('cover/'.$materi->cover) }}" alt="Cover" class="w-40 h-40 object-cover my-2">
-        </div>
-
-        <!-- Upload Cover Baru -->
-        <div class="my-6">
-            <label for="cover" class="block text-sm font-medium text-gray-700">Ganti Cover (Opsional)</label>
-            <input type="file" id="cover" name="cover" accept="image/png,image/jpeg,image/jpg" class="mt-1 block w-full">
-        </div>
-
         <!-- File Lama -->
         <div class="my-6">
             <label class="block text-sm font-medium text-gray-700">File Saat Ini</label>

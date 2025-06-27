@@ -66,36 +66,67 @@ class ChatController extends Controller
 
     public function indexAdmin()
     {
-        // Ambil semua siswa
-        $allStudents = User::where('role', 'siswa')->get();
+        $admin = Auth::user();
 
-        // Ambil semua grup
-        $allGroups = ChatRoom::with('users')
-            ->where('type', 'group')
-            ->get();
+        // Ambil semua siswa aktif
+        $allStudents = User::where('role', 'like', 'siswa%')->get();
 
-        // Kelompokkan berdasarkan kelas
-        $groupedByClass = $allStudents->groupBy('kelas');
-
-        // Ambil semua chat room yang dimiliki admin (baik grup maupun private),
-        // beserta user dan pesan terakhir, urut berdasarkan waktu terbaru
-        $rooms = Auth::user()->chatRooms()
+        // Ambil semua private chat room yang dimiliki admin
+        $privateRooms = $admin->chatRooms()
             ->with([
-                'users',
+                'users' => function ($q) {
+                    $q->whereNotNull('users.id');
+                },
                 'messages' => function ($query) {
                     $query->latest()->limit(1);
                 }
             ])
-            ->latest('updated_at')
+            ->where('type', 'private')
+            ->get()
+            ->filter(function ($room) use ($admin) {
+                // Pastikan masih ada user lain yang valid
+                return $room->users->where('id', '!=', $admin->id)->isNotEmpty();
+            });
+
+
+        // Ambil ID siswa yang sudah punya chat dengan admin
+        $studentIdsWithChat = $privateRooms->map(function ($room) use ($admin) {
+            return $room->users->where('id', '!=', $admin->id)->first()?->id;
+        })->filter()->values();
+
+        // Buat daftar chat gabungan:
+        // - Room yang sudah ada
+        // - Plus siswa yang belum pernah chatting
+        $additionalChats = $allStudents
+            ->whereNotIn('id', $studentIdsWithChat)
+            ->map(function ($siswa) use ($admin) {
+                return (object)[
+                    'type' => 'private',
+                    'users' => collect([(object)[
+                        'id' => $siswa->id,
+                        'nama_lengkap' => $siswa->nama_lengkap,
+                    ]]),
+                    'messages' => collect(),
+                    'id' => null, // Tidak ada room ID
+                ];
+            });
+
+        $rooms = $privateRooms->concat($additionalChats);
+
+        // Grup tetap
+        $allGroups = ChatRoom::with('users')
+            ->where('type', 'group')
             ->get();
 
-        // Kirim semua data ke view
+        $groupedByClass = $allStudents->groupBy('kelas');
+
         return view('admin.konten.chat', [
             'groupedStudents' => $groupedByClass,
             'allStudents' => $allStudents,
             'allGroups' => $allGroups,
-            'rooms' => $rooms, // <-- penting! biar bisa ditampilkan di blade
+            'rooms' => $rooms,
         ]);
+
     }
 
     public function showAdmin($id)
