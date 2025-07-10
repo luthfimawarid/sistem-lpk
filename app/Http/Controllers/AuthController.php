@@ -194,7 +194,7 @@ class AuthController extends Controller
 
         $siswa->save();
 
-        return redirect()->route('admin.konten.detail', $siswa->id)->with('success', 'Data siswa berhasil diupdate');
+        return redirect()->route('admin.siswa.index', $siswa->id)->with('success', 'Data siswa berhasil diupdate');
     }
 
     public function destroy($id)

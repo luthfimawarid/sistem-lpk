@@ -244,87 +244,95 @@ $adaNotif = $notifikasi->where('dibaca', false)->isNotEmpty();
     @yield('scripts')
 
     <!-- JavaScript -->
-    <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const notifBadge = document.getElementById('notifBadge');
-        const currentNotifId = "{{ $notifikasi->first()?->id ?? '' }}";
-        const alertBox = document.getElementById('alert-notifikasi');
-        const dismissBtn = document.getElementById('dismiss-alert');
-        const detailBtn = document.getElementById('lihatDetailBtn');
-        const notifBtn = document.getElementById('notifBtn');
-        const profileBtn = document.getElementById('profileBtn');
-        const profileDropdown = document.getElementById('profileDropdown');
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const notifBadge = document.getElementById('notifBadge');
+    const currentNotifId = "{{ $notifikasi->first()?->id ?? '' }}";
+    const alertBox = document.getElementById('alert-notifikasi');
+    const dismissBtn = document.getElementById('dismiss-alert');
+    const detailBtn = document.getElementById('lihatDetailBtn');
+    const notifBtn = document.getElementById('notifBtn');
+    const profileBtn = document.getElementById('profileBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
 
-        // ==== 1. BADGE LOGIC ====
-        function updateNotifBadge() {
-            fetch('/notifikasi/jumlah')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.jumlah > 0) {
-                        notifBadge.textContent = data.jumlah;
-                        notifBadge.classList.remove('hidden');
-                    } else {
-                        notifBadge.classList.add('hidden');
-                    }
-                })
-                .catch(err => {
-                    console.error('Gagal mengambil jumlah notifikasi:', err);
-                });
-        }
-
-        updateNotifBadge();
-
-        // ==== 2. POPUP LOGIC ====
-        const lastSeen = localStorage.getItem('lastSeenNotifId');
-        if (currentNotifId && currentNotifId !== lastSeen) {
-            if (alertBox) alertBox.style.display = 'flex';
-
-            dismissBtn?.addEventListener('click', () => {
-                // ✅ Simpan ID notifikasi ke localStorage agar tidak muncul lagi
-                localStorage.setItem('lastSeenNotifId', currentNotifId);
-                if (alertBox) alertBox.style.display = 'none';
+    // ==== 1. BADGE LOGIC ====
+    function updateNotifBadge() {
+        fetch('/notifikasi/jumlah')
+            .then(res => res.json())
+            .then(data => {
+                if (data.jumlah > 0) {
+                    notifBadge.textContent = data.jumlah;
+                    notifBadge.classList.remove('hidden');
+                } else {
+                    notifBadge.classList.add('hidden');
+                }
+            })
+            .catch(err => {
+                console.error('Gagal mengambil jumlah notifikasi:', err);
             });
+    }
 
-            detailBtn?.addEventListener('click', (e) => {
-                // ✅ Simpan juga ketika klik "Lihat Detail"
-                e.preventDefault();
-                localStorage.setItem('lastSeenNotifId', currentNotifId);
-                window.location.href = '/notifikasi';
-            });
+    updateNotifBadge();
 
-            // ✅ Auto-close setelah 10 detik
-            setTimeout(() => {
-                localStorage.setItem('lastSeenNotifId', currentNotifId);
-                if (alertBox) alertBox.style.display = 'none';
-            }, 10000);
-        }
+    // ==== 2. POPUP LOGIC ====
+    const lastSeen = localStorage.getItem('lastSeenNotifId');
+    if (currentNotifId && currentNotifId !== lastSeen) {
+        if (alertBox) alertBox.style.display = 'flex';
 
-        notifBtn?.addEventListener('click', function (e) {
+        dismissBtn?.addEventListener('click', () => {
+            localStorage.setItem('lastSeenNotifId', currentNotifId);
+            if (alertBox) alertBox.style.display = 'none';
+        });
+
+        detailBtn?.addEventListener('click', (e) => {
             e.preventDefault();
+            localStorage.setItem('lastSeenNotifId', currentNotifId);
             window.location.href = '/notifikasi';
         });
 
-        // ==== 3. PROFILE DROPDOWN ====
-        profileBtn.addEventListener('click', function () {
-            profileDropdown.classList.toggle('hidden');
-        });
+        setTimeout(() => {
+            localStorage.setItem('lastSeenNotifId', currentNotifId);
+            if (alertBox) alertBox.style.display = 'none';
+        }, 10000);
+    }
 
-        window.addEventListener('click', function (e) {
-            if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
-                profileDropdown.classList.add('hidden');
-            }
-        });
-
-        // ==== 4. HIGHLIGHT ACTIVE LINK ====
-        const links = document.querySelectorAll('a[href]');
-        const currentURL = window.location.pathname;
-        links.forEach(link => {
-            if (link.getAttribute('href') === currentURL) {
-                link.classList.add('active-link');
-            }
-        });
+    notifBtn?.addEventListener('click', function (e) {
+        e.preventDefault();
+        window.location.href = '/notifikasi';
     });
-    </script>
+
+    // ==== 3. PROFILE DROPDOWN ====
+    profileBtn.addEventListener('click', function () {
+        profileDropdown.classList.toggle('hidden');
+    });
+
+    window.addEventListener('click', function (e) {
+        if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+            profileDropdown.classList.add('hidden');
+        }
+    });
+
+    // ==== 4. HIGHLIGHT ACTIVE LINK ====
+    const links = document.querySelectorAll('a[href]');
+    const currentURL = window.location.pathname;
+    links.forEach(link => {
+        if (link.getAttribute('href') === currentURL) {
+            link.classList.add('active-link');
+        }
+    });
+
+    // ==== 5. MATERI DROPDOWN ====
+    const dropdownBtn = document.getElementById('dropdown-btn');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+    const chevron = document.getElementById('chevron');
+
+    dropdownBtn?.addEventListener('click', function () {
+        dropdownMenu.classList.toggle('hidden');
+        chevron.classList.toggle('rotate-90');
+    });
+});
+</script>
+
 
 
 

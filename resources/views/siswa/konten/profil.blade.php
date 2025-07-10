@@ -2,6 +2,23 @@
 
 @section('content')
 <main class="px-4 py-6 md:px-8 lg:px-16 bg-[#F2F8FF] min-h-screen">
+
+    @if(session('success'))
+        <div class="mb-4 px-4 py-3 bg-green-100 text-green-800 rounded-lg shadow text-sm md:text-base">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="mb-4 px-4 py-3 bg-red-100 text-red-800 rounded-lg shadow text-sm md:text-base">
+            <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="bg-white p-6 rounded-lg shadow">
         <!-- Tabs -->
         <div class="flex flex-wrap gap-2 border-b mb-6 text-sm md:text-base">
@@ -89,7 +106,7 @@
                         <h3 class="font-semibold text-base mb-2">Dokumen</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                             @php
-                                $daftarDokumen = ['ijazah', 'kartu_keluarga', 'akte_kelahiran', 'rapor', 'ktp_orang_tua'];
+                                $daftarDokumen = ['Paspor', 'Visa', 'MCU', 'TTD Kontrak', 'Izin Tinggal', 'E-KTLN', 'Tiket Pesawat'];
                             @endphp
 
                             @foreach($daftarDokumen as $dokumen)
@@ -147,7 +164,7 @@
         <div id="tab-password" class="tab-content hidden">
             <form action="{{ route('siswa.update.password') }}" method="POST">
                 @csrf
-                <div class="max-w-screen-md mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
 
                     <!-- Password Lama -->
                     <div>
@@ -182,6 +199,13 @@
 
 <!-- Script Tab -->
 <script>
+    setTimeout(() => {
+        document.querySelectorAll('.bg-green-100, .bg-red-100').forEach(el => {
+            el.style.transition = 'opacity 0.5s ease';
+            el.style.opacity = '0';
+            setTimeout(() => el.remove(), 500);
+        });
+    }, 4000);
     document.addEventListener("DOMContentLoaded", function () {
         const tabButtons = document.querySelectorAll(".tab-btn");
         const tabContents = document.querySelectorAll(".tab-content");

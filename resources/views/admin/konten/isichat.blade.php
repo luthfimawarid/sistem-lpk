@@ -61,20 +61,31 @@
                 <p class="text-center text-gray-500 mt-10">Belum ada pesan</p>
             @else
                 @foreach ($room->messages as $message)
-                    <div class="flex items-start space-x-3 {{ $message->user_id == auth()->id() ? 'justify-end' : '' }}">
-                        @if($message->user_id != auth()->id())
-                            <img src="/logo.png" alt="" class="w-8 h-8 sm:w-10 sm:h-10 border rounded-full">
+                    @php
+                        $isOwn = $message->user_id == auth()->id();
+                        $fotoUser = $message->user->photo
+                            ? asset('storage/' . $message->user->photo)
+                            : asset('default-user.png');
+                    @endphp
+
+                    <div class="flex items-start space-x-3 {{ $isOwn ? 'justify-end' : '' }}">
+                        @if(!$isOwn)
+                            <a href="{{ route('chat.start', $message->user_id) }}">
+                                <img src="{{ $fotoUser }}" alt="{{ $message->user->nama_lengkap }}" class="w-8 h-8 md:w-10 md:h-10 border rounded-full hover:opacity-80 transition object-cover">
+                            </a>
                         @endif
-                        <div class="{{ $message->user_id == auth()->id() ? 'text-right' : '' }}">
+
+                        <div class="{{ $isOwn ? 'text-right' : '' }} max-w-[80%]">
                             @if($room->type === 'group')
-                                <h4 class="font-semibold text-xs sm:text-sm">{{ $message->user->nama_lengkap }}</h4>
+                                <h4 class="font-semibold text-xs md:text-sm">{{ $message->user->nama_lengkap }}</h4>
                             @endif
-                            <p class="text-sm {{ $message->user_id == auth()->id() ? 'bg-[#0A58CA] text-white' : 'bg-gray-100' }} p-2 rounded-lg inline-block max-w-[90vw] sm:max-w-md md:max-w-xl">
+                            <p class="text-sm md:text-base {{ $isOwn ? 'bg-[#0A58CA] text-white' : 'bg-gray-100' }} p-2 rounded-lg inline-block break-words">
                                 {{ $message->message }}
                             </p>
                         </div>
-                        @if($message->user_id == auth()->id())
-                            <img src="/logo.png" alt="" class="w-8 h-8 sm:w-10 sm:h-10 border rounded-full">
+
+                        @if($isOwn)
+                            <img src="{{ $fotoUser }}" alt="Saya" class="w-8 h-8 md:w-10 md:h-10 border rounded-full object-cover">
                         @endif
                     </div>
                 @endforeach

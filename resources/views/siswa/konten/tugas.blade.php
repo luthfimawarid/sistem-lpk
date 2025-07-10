@@ -9,19 +9,24 @@
         <h2 class="text-2xl font-semibold mb-4">Ujian Akhir ({{ $ujianAkhir->count() }})</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             @forelse ($ujianAkhir as $item)
-            <a href="{{ route('siswa.tugas.ujian.soal', ['id' => $item->id, 'nomor' => 1]) }}" class="block bg-white rounded-lg shadow p-4 text-center hover:shadow-md transition h-full">
-                <img src="{{ $item->cover ? asset('storage/cover_tugas/'.$item->cover) : '/logo.png' }}" class="mx-auto rounded-md h-40 object-cover" alt="{{ $item->judul }}">
-                <p class="mt-2 font-medium text-blue-600">{{ $item->judul }}</p>
-                <p class="text-sm text-gray-600">Deadline: {{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('d M Y') : '-' }}</p>
                 @php
                     $userStatus = $item->tugasUser->where('user_id', Auth::id())->first();
+                    $isSelesai = $userStatus && $userStatus->status === 'selesai';
+                    $link = $isSelesai 
+                        ? route('siswa.tugas.ujian.selesai', ['id' => $item->id]) 
+                        : route('siswa.tugas.ujian.soal', ['id' => $item->id, 'nomor' => 1]);
                 @endphp
-                <p class="text-sm {{ $userStatus && $userStatus->status == 'selesai' ? 'text-green-600' : 'text-red-600' }}">
-                    Status: {{ $userStatus && $userStatus->status == 'selesai' ? 'Selesai' : 'Belum Selesai' }}
-                </p>
-            </a>
+
+                <a href="{{ $link }}" class="block bg-white rounded-lg shadow p-4 text-center hover:shadow-md transition h-full">
+                    <img src="{{ $item->cover ? asset('storage/cover_tugas/'.$item->cover) : '/logo.png' }}" class="mx-auto rounded-md h-40 object-cover" alt="{{ $item->judul }}">
+                    <p class="mt-2 font-medium text-blue-600">{{ $item->judul }}</p>
+                    <p class="text-sm text-gray-600">Deadline: {{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('d M Y') : '-' }}</p>
+                    <p class="text-sm {{ $isSelesai ? 'text-green-600' : 'text-red-600' }}">
+                        Status: {{ $isSelesai ? 'Selesai' : 'Belum Selesai' }}
+                    </p>
+                </a>
             @empty
-            <p class="text-gray-500">Belum ada ujian akhir.</p>
+                <p class="text-gray-500">Belum ada ujian akhir.</p>
             @endforelse
         </div>
     </section>

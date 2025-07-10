@@ -18,10 +18,12 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @forelse ($materi as $item)
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <video controls class="w-full">
-                    <source src="{{ asset('storage/materi/' . $item->file) }}" type="video/mp4">
-                    Browser Anda tidak mendukung pemutar video.
-                </video>
+                <div class="aspect-video bg-black">
+                    <video controls class="w-full h-full object-cover">
+                        <source src="{{ asset('storage/materi/'.$item->file) }}" type="video/mp4">
+                        Browser Anda tidak mendukung pemutar video.
+                    </video>
+                </div>
                 <div class="p-4">
                     <h3 class="text-lg font-semibold">{{ $item->judul }}</h3>
                     <p class="text-sm text-gray-600 mt-2">By {{ $item->author }}</p>

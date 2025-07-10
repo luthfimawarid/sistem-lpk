@@ -22,6 +22,7 @@
                     <th class="px-4 py-3 whitespace-nowrap">Nama</th>
                     <th class="px-4 py-3 whitespace-nowrap">Sertifikat Bahasa</th>
                     <th class="px-4 py-3 whitespace-nowrap">Sertifikat Skill</th>
+                    <th class="px-4 py-3 whitespace-nowrap">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -49,6 +50,31 @@
                                 </a>
                             @else
                                 <span class="text-gray-400">-</span>
+                            @endif
+                        </td>
+                        <td class="px-4 py-2 whitespace-nowrap">
+                            @if($bahasa)
+                                <div class="mb-2">
+                                    <a href="{{ route('sertifikat.edit', $bahasa->id) }}"
+                                    class="text-yellow-600 hover:underline text-sm">Edit Bahasa</a>
+                                    <form action="{{ route('sertifikat.destroy', $bahasa->id) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus sertifikat bahasa?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:underline text-sm ml-2">Hapus</button>
+                                    </form>
+                                </div>
+                            @endif
+
+                            @if($skill)
+                                <div>
+                                    <a href="{{ route('sertifikat.edit', $skill->id) }}"
+                                    class="text-yellow-600 hover:underline text-sm">Edit Skill</a>
+                                    <form action="{{ route('sertifikat.destroy', $skill->id) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus sertifikat skill?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:underline text-sm ml-2">Hapus</button>
+                                    </form>
+                                </div>
                             @endif
                         </td>
                     </tr>

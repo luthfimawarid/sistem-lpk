@@ -76,6 +76,7 @@
                                 : '#');
                     @endphp
 
+
                     <a href="{{ $routeName }}" class="chat-item block hover:bg-gray-100 transition duration-200">
                         <div class="flex items-center justify-between px-3 py-3 md:py-4">
                             <div class="flex items-center gap-3 md:gap-5">
@@ -92,6 +93,15 @@
                             </div>
                             <div class="text-right">
                                 <span class="text-xs md:text-sm text-gray-400">{{ $messageTime }}</span>
+                                @if($isGroup)
+                                    <form action="{{ route('chat.admin.deleteGroup', $room->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus grup ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-800 text-xs md:text-sm ml-3">
+                                            Hapus
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     </a>

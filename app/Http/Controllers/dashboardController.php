@@ -22,7 +22,7 @@ class dashboardController extends Controller
 {
     public function index()
     {
-        $courses = Materi::latest()->take(3)->get();
+        $courses = Materi::latest()->take(5)->get();
         $myCourses = Materi::where('status', 'aktif')->take(2)->get();
         $siswa = User::where('role', 'siswa')->latest()->take(5)->get();
         $materi = Materi::where('tipe', 'ebook')->where('status', 'aktif')->get();
@@ -30,15 +30,22 @@ class dashboardController extends Controller
 
 
         // Ambil semua room milik admin saat ini (user login)
-       $rooms = Auth::user()->chatRooms()
+        $rooms = Auth::user()->chatRooms()
             ->with([
-                'users',
+                'users' => function ($q) {
+                    $q->where('role', 'siswa'); // ambil hanya siswa
+                },
                 'messages' => function ($query) {
                     $query->latest()->limit(1);
                 }
             ])
             ->latest('updated_at')
-            ->get();
+            ->get()
+            ->filter(function ($room) {
+                // hanya tampilkan room jika siswa masih terdaftar
+                return $room->users->isNotEmpty();
+            });
+
 
         return view('admin.konten.dashboard', compact('courses', 'myCourses', 'siswa', 'rooms', 'tipe','materi'));
     }
@@ -130,6 +137,14 @@ class dashboardController extends Controller
         $rataEvaluasi = $nilaiEvaluasi->avg('nilai') ?? 0;
         $rataTryout = $nilaiTryout->avg('nilai') ?? 0;
 
+        // Hitung jumlah jenis nilai yang tersedia
+        $jumlahNilaiAktif = 0;
+        $jumlahNilaiAktif += $rataTugas > 0 ? 1 : 0;
+        $jumlahNilaiAktif += $rataEvaluasi > 0 ? 1 : 0;
+        $jumlahNilaiAktif += $rataTryout > 0 ? 1 : 0;
+
+        $hanyaSatuNilai = $jumlahNilaiAktif === 1;
+
         $hasilPrediksi = 'Belum diprediksi';
         $nilaiPersen = 0; // <- nilai skor dari API
 
@@ -166,8 +181,10 @@ class dashboardController extends Controller
             'hasilPrediksi',
             'nilaiPersen',
             'kuisBelumDikerjakan',
-            'materi'
+            'materi',
+            'hanyaSatuNilai' // ← Tambahan ini
         ));
+
     }
 
     public function nilaisiswa()
@@ -178,7 +195,6 @@ class dashboardController extends Controller
         $tanggalTerdaftar = Auth::user()->created_at;
         $myCourses = Materi::where('status', 'aktif')->take(5)->get();
 
-        // 🔹 Ambil data nilai lengkap (tanggal & nilai)
         $nilaiTugas = TugasUser::join('tugas', 'tugas.id', '=', 'tugas_user.tugas_id')
             ->where('tugas_user.user_id', $userId)
             ->where('tugas.tipe', 'tugas')
@@ -203,15 +219,14 @@ class dashboardController extends Controller
             ->orderBy('tanggal')
             ->get();
 
-            
         $tugas = $nilaiTugas->pluck('nilai');
         $evaluasi = $nilaiEvaluasi->pluck('nilai');
         $tryout = $nilaiTryout->pluck('nilai');
-            
+
         $rataTugas = $tugas->count() > 0 ? round($tugas->avg()) : 0;
         $rataEvaluasi = $evaluasi->count() > 0 ? round($evaluasi->avg()) : 0;
         $rataTryout = $tryout->count() > 0 ? round($tryout->avg()) : 0;
-            
+
         function getStatus($nilai) {
             if ($nilai >= 75) return 'Lulus';
             if ($nilai >= 60) return 'Beresiko';
@@ -223,12 +238,11 @@ class dashboardController extends Controller
         $statusEvaluasi = getStatus($rataEvaluasi);
         $statusTryout = getStatus($rataTryout);
 
-        // 🔹 Prediksi Kelulusan pakai ML API
+        // Prediksi
         $hasilPrediksi = 'Belum diprediksi';
         $nilaiPersen = 0;
-
-        $warna = $hasilPrediksi == 'Lulus' ? 'green' : ($hasilPrediksi == 'Beresiko' ? 'orange' : 'red');
-        $statusKelulusan = $hasilPrediksi;
+        $warna = 'gray';
+        $statusKelulusan = '-';
 
         try {
             $response = Http::post('http://127.0.0.1:5001/prediksi', [
@@ -244,17 +258,30 @@ class dashboardController extends Controller
                 $json = $response->json();
                 $hasilPrediksi = $json['hasil'];
                 $nilaiPersen = round($json['skor'], 2);
+
+                $warna = $hasilPrediksi === 'Lulus' ? 'green' :
+                        ($hasilPrediksi === 'Beresiko' ? 'yellow' : 'red');
+                $statusKelulusan = $hasilPrediksi;
             }
         } catch (\Exception $e) {
             $hasilPrediksi = 'Gagal memanggil API';
         }
 
+        // 🔔 Cek jika hanya ada nilai tugas
+        $jumlahNilaiAktif = 0;
+        $jumlahNilaiAktif += $rataTugas > 0 ? 1 : 0;
+        $jumlahNilaiAktif += $rataEvaluasi > 0 ? 1 : 0;
+        $jumlahNilaiAktif += $rataTryout > 0 ? 1 : 0;
+
+        $hanyaSatuNilai = $jumlahNilaiAktif === 1;
+
         return view('siswa.konten.rapot', compact(
             'courses', 'myCourses', 'nilaiTugas', 'nilaiEvaluasi', 'nilaiTryout',
             'rataTugas', 'rataEvaluasi', 'rataTryout', 'tanggalTerdaftar',
             'hasilPrediksi', 'nilaiPersen', 'statusKelulusan', 'warna',
-            'statusTugas', 'statusEvaluasi', 'statusTryout'
+            'statusTugas', 'statusEvaluasi', 'statusTryout', 'hanyaSatuNilai'
         ));
+
     }
 
     private function getNilaiTugas($userId): Collection

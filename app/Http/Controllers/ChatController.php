@@ -84,19 +84,15 @@ class ChatController extends Controller
             ->where('type', 'private')
             ->get()
             ->filter(function ($room) use ($admin) {
-                // Pastikan masih ada user lain yang valid
                 return $room->users->where('id', '!=', $admin->id)->isNotEmpty();
             });
-
 
         // Ambil ID siswa yang sudah punya chat dengan admin
         $studentIdsWithChat = $privateRooms->map(function ($room) use ($admin) {
             return $room->users->where('id', '!=', $admin->id)->first()?->id;
         })->filter()->values();
 
-        // Buat daftar chat gabungan:
-        // - Room yang sudah ada
-        // - Plus siswa yang belum pernah chatting
+        // Siswa yang belum pernah chatting
         $additionalChats = $allStudents
             ->whereNotIn('id', $studentIdsWithChat)
             ->map(function ($siswa) use ($admin) {
@@ -107,17 +103,27 @@ class ChatController extends Controller
                         'nama_lengkap' => $siswa->nama_lengkap,
                     ]]),
                     'messages' => collect(),
-                    'id' => null, // Tidak ada room ID
+                    'id' => null,
                 ];
             });
 
-        $rooms = $privateRooms->concat($additionalChats);
-
-        // Grup tetap
-        $allGroups = ChatRoom::with('users')
+        // Ambil semua grup yang melibatkan admin
+        $allGroups = ChatRoom::with([
+                'users',
+                'messages' => function ($q) {
+                    $q->latest()->limit(1);
+                }
+            ])
             ->where('type', 'group')
+            ->whereHas('users', function ($q) use ($admin) {
+                $q->where('users.id', $admin->id);
+            })
             ->get();
 
+        // Gabungkan semua room: private + siswa belum chatting + grup
+        $rooms = $privateRooms->concat($additionalChats)->concat($allGroups);
+
+        // Kelompokkan siswa berdasarkan kelas
         $groupedByClass = $allStudents->groupBy('kelas');
 
         return view('admin.konten.chat', [
@@ -126,8 +132,8 @@ class ChatController extends Controller
             'allGroups' => $allGroups,
             'rooms' => $rooms,
         ]);
-
     }
+
 
     public function showAdmin($id)
     {
@@ -286,6 +292,31 @@ class ChatController extends Controller
         $room->users()->detach($userId);
 
         return back()->with('success', 'Anggota dikeluarkan dari grup');
+    }
+
+    public function deleteGroup($id)
+    {
+        $admin = Auth::user();
+
+        $group = ChatRoom::where('id', $id)
+            ->where('type', 'group')
+            ->whereHas('users', function ($q) use ($admin) {
+                $q->where('users.id', $admin->id);
+            })
+            ->first();
+
+        if (!$group) {
+            return redirect()->back()->with('error', 'Grup tidak ditemukan atau Anda tidak memiliki akses.');
+        }
+
+        // Hapus relasi user dan pesan dulu jika pakai foreign key constraint
+        $group->messages()->delete();
+        $group->users()->detach();
+
+        // Hapus grup
+        $group->delete();
+
+        return redirect()->route('chat.admin')->with('success', 'Grup berhasil dihapus.');
     }
 
 }

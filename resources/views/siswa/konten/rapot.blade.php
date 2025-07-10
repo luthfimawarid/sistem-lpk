@@ -66,7 +66,7 @@
 
         <!-- Prediksi Kelulusan -->
         <section class="w-full md:w-[32.5%]">
-            <div class="bg-white rounded-lg shadow p-6 flex flex-col h-full">
+            <div class="bg-white rounded-lg shadow p-6 flex flex-col h-full">            
                 <div class="flex justify-between items-center mb-4">
                     <p class="text-sm md:text-lg font-semibold">Prediksi Kelulusan</p>
                 </div>
@@ -109,9 +109,17 @@
                     </svg>
                 </button>
 
-                <div class="bg-gray-100 p-3 mt-3 rounded-md text-sm md:text-base text-gray-700">
-                    <p><strong>Saran:</strong> <span id="saranText">{{ $saran }}</span></p>
-                </div>
+                @if ($hanyaSatuNilai)
+                    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 my-4 rounded-md text-sm md:text-base">
+                        <strong>Catatan:</strong> Saat ini prediksi hanya dihitung berdasarkan satu jenis nilai. Untuk hasil prediksi yang lebih akurat, lengkapi nilai dari Tugas, Evaluasi, dan Tryout.
+                    </div>
+                @endif
+
+                @if (!$hanyaSatuNilai && $rataTugas > 0 && $rataEvaluasi > 0 && $rataTryout > 0)
+                    <div class="bg-gray-100 p-3 mt-3 rounded-md text-sm md:text-base text-gray-700">
+                        <p><strong>Saran:</strong> <span id="saranText">{{ $saran }}</span></p>
+                    </div>
+                @endif
             </div>
         </section>
 

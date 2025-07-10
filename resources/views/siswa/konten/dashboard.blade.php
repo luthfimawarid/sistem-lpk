@@ -1,7 +1,7 @@
 @extends('siswa.main.sidebar')
 
 @section('content')
-@if($kuisBelumDikerjakan)
+<!-- @if($kuisBelumDikerjakan)
     <div id="kuisModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
         <div class="bg-white rounded-lg shadow-lg w-full max-w-sm sm:max-w-md p-4 sm:p-6">
             <h2 class="text-lg sm:text-xl font-semibold mb-2 text-gray-800">Kuis Baru Tersedia!</h2>
@@ -12,7 +12,7 @@
             </div>
         </div>
     </div>
-@endif
+@endif -->
 
 <div class="p-4 sm:p-5 md:p-10 bg-blue-50">
     {{-- Ebook --}}
@@ -170,9 +170,15 @@
                 @csrf
                 <button class="bg-[#0A58CA] w-full text-white px-4 py-2 rounded-full text-sm sm:text-base hover:bg-blue-600 transition">Cek Prediksi</button>
             </form>
-            <div class="bg-gray-100 p-3 mt-3 rounded-md text-sm sm:text-base text-gray-700">
-                <p><strong>Saran:</strong> {{ $saran }}</p>
-            </div>
+            @if ($hanyaSatuNilai)
+                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 my-4 rounded-md text-sm sm:text-base">
+                    <strong>Catatan:</strong> Saat ini prediksi hanya dihitung berdasarkan satu jenis nilai. Untuk hasil prediksi yang lebih akurat, lengkapi nilai dari Tugas, Evaluasi, dan Tryout.
+                </div>
+            @elseif (!$hanyaSatuNilai && $rataTugas > 0 && $rataEvaluasi > 0 && $rataTryout > 0)
+                <div class="bg-gray-100 p-3 mt-3 rounded-md text-sm sm:text-base text-gray-700">
+                    <p><strong>Saran:</strong> {{ $saran }}</p>
+                </div>
+            @endif
         </section>
     </div>
 </div>
@@ -182,15 +188,6 @@
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const modal = document.getElementById('kuisModal');
-        if (modal) {
-            setTimeout(() => {
-                modal.classList.remove('hidden');
-            }, 1000); // delay 1 detik
-        }
-    });
     const nilaiTugas = @json($nilaiTugas);
     const nilaiEvaluasi = @json($nilaiEvaluasi);
     const nilaiTryout = @json($nilaiTryout);
@@ -206,13 +203,14 @@
         const now = new Date();
 
         if (interval === 'daily') {
+            // Cari Senin minggu ini
             const currentDay = now.getDay();
             const distanceFromMonday = (currentDay + 6) % 7;
             const monday = new Date(now);
             monday.setDate(now.getDate() - distanceFromMonday);
-            monday.setHours(0, 0, 0, 0);
 
-            for (let i = 0; i < 6; i++) {
+            // Push Senin sampai Jumat
+            for (let i = 0; i < 5; i++) {
                 const d = new Date(monday);
                 d.setDate(monday.getDate() + i);
                 result.push(getDayName(d));
@@ -265,15 +263,21 @@
             let label = '';
 
             if (interval === 'daily') {
+                // Ambil Senin-Jumat minggu ini
+                const currentDay = now.getDay();
+                const distanceFromMonday = (currentDay + 6) % 7;
                 const monday = new Date(now);
-                const day = now.getDay();
-                const distanceFromMonday = (day + 6) % 7;
                 monday.setDate(now.getDate() - distanceFromMonday);
                 monday.setHours(0, 0, 0, 0);
-                const endOfWeek = new Date(monday);
-                endOfWeek.setDate(monday.getDate() + 6);
 
-                if (date < monday || date > endOfWeek) return;
+                const friday = new Date(monday);
+                friday.setDate(monday.getDate() + 4);
+                friday.setHours(23, 59, 59, 999);
+
+                if (date < monday || date > friday) return;
+
+                const day = date.getDay();
+                if (day < 1 || day > 5) return; // Hanya Senin - Jumat
 
                 label = getDayName(date);
             } else if (interval === 'weekly') {
@@ -431,5 +435,7 @@
         renderChart(intervalSelect.value);
     });
 </script>
+
+
 
 @endsection

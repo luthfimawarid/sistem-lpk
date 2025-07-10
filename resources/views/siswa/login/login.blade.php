@@ -42,10 +42,10 @@
                             </svg>
                         </span>
                     </div>
-
+<!-- 
                     <div class="text-right mb-4">
                         <a href="#" class="text-blue-600 text-sm hover:underline">Lupa password?</a>
-                    </div>
+                    </div> -->
 
                     <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Masuk</button>
                 </form>

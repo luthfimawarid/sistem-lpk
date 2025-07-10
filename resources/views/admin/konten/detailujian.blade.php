@@ -17,7 +17,7 @@
         </div>
 
         <div class="bg-white p-6 rounded-lg shadow-md mb-6">
-            <h3 class="text-lg font-semibold mb-4">Siswa yang Sudah Mengerjakan Kuis</h3>
+            <h3 class="text-lg font-semibold mb-4">Siswa yang Sudah Mengerjakan Ujian</h3>
             <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead>

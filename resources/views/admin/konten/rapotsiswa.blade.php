@@ -44,7 +44,7 @@
                                     </svg>
 
                                     <!-- Dropdown Menu -->
-                                    <div class="dropdown hidden absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-50">
+                                    <div class="dropdown hidden absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-100">
                                         <ul class="py-1 text-gray-700">
                                             <li>
                                                 <a href="{{ route('detail.nilai', ['id' => $item['id']]) }}" class="block px-4 py-2 hover:bg-gray-100">

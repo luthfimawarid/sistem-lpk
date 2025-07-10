@@ -33,17 +33,30 @@
             </select>
         </div>
 
-        <div id="bidang-skill" class="mb-4 hidden">
-            <label for="bidang" class="block">Bidang Skill</label>
-            <select name="bidang" id="bidang" class="w-full border p-2 rounded">
-                <option value="">-- Pilih Bidang Skill --</option>
-                <option value="Pengolahan Makanan">Pengolahan Makanan</option>
-                <option value="Perakitan Mesin">Perakitan Mesin</option>
-                <option value="Desain Grafis">Desain Grafis</option>
-                <option value="Teknik Listrik">Teknik Listrik</option>
-                <option value="Pemrograman">Pemrograman</option>
-            </select>
-        </div>
+                @php
+                    $listBidang = [
+                        'Perawatan (Kaigo/Caregiver)',
+                        'Pembersihan Gedung',
+                        'Konstruksi',
+                        'Manufaktur Mesin Industri',
+                        'Elektronik dan Listrik',
+                        'Perhotelan',
+                        'Pertanian',
+                        'Perikanan',
+                        'Pengolahan Makanan dan Minuman',
+                        'Jasa Makanan'
+                    ];
+                @endphp
+
+                <div id="bidang-skill">
+                    <label for="bidang" class="block font-medium mb-1">Bidang</label>
+                    <select name="bidang" id="bidang" class="w-full border rounded p-2" required>
+                        <option value="">-- Pilih Bidang --</option>
+                        @foreach($listBidang as $bidang)
+                            <option value="{{ $bidang }}">{{ $bidang }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
         <div class="mb-4">
             <label for="deskripsi" class="block">Deskripsi</label>

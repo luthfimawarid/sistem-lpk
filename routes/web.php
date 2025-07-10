@@ -40,6 +40,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/job-matching/{id}/hapus', [JobController::class, 'destroy'])->name('admin.job-matching.destroy');
     Route::get('/admin/job-matching/{id}/pelamar', [JobController::class, 'viewApplicants'])->name('admin.job-matching.pelamar');
     Route::post('/admin/job-matching/application/{id}/update', [JobController::class, 'updateApplication'])->name('admin.job-matching.application.update');
+    Route::delete('/admin/chat/group/{id}', [ChatController::class, 'deleteGroup'])->name('chat.admin.deleteGroup');
 
 
 
@@ -84,7 +85,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/siswa/unduh-rapor', [DashboardController::class, 'unduhRapor'])->name('siswa.unduh.rapor');
     Route::get('/siswa/tugas/ujian-akhir/{id}/soal/{nomor}', [TugasController::class, 'showSoalUjian'])->name('siswa.tugas.ujian.soal');
     Route::post('/siswa/tugas/ujian-akhir/{id}/jawab', [TugasController::class, 'simpanJawaban'])->name('siswa.tugas.ujian.jawab'); // Ubah nama route
-    Route::get('/siswa/tugas/ujian-akhir/{id}/selesai', [TugasController::class, 'selesaiUjian'])->name('siswa.tugas.ujian.selesai');
+    Route::get('/siswa/tugas/ujian-akhir/{id}/selesai', [TugasController::class, 'selesaiUjian'])->name(name: 'siswa.tugas.ujian.selesai');
     Route::get('/admin/ujian-akhir/{id}', [TugasController::class, 'showDetailUjian'])->name('admin.ujian.detail');
 
 });

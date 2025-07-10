@@ -80,13 +80,17 @@
                         @php
                             $lastMessage = $room->messages->first();
                             $otherUser = $room->users->where('id', '!=', auth()->id())->first();
-                            $roomName = $room->type === 'group' ? $room->name : ($otherUser->nama_lengkap ?? 'Private Chat');
+
+                            if (!$otherUser) continue; // SKIP jika user sudah dihapus
+
+                            $roomName = $room->type === 'group' ? $room->name : $otherUser->nama_lengkap;
                             $messageText = $lastMessage->message ?? 'Belum ada pesan';
                             $messageTime = optional($lastMessage?->created_at)->format('H:i');
                             $link = $room->type === 'group'
                                 ? route('chat.admin.show', $room->id)
-                                : route('chat.admin.start', ['userId' => $otherUser->id ?? 0]);
+                                : route('chat.admin.start', ['userId' => $otherUser->id]);
                         @endphp
+
                         <a href="{{ $link }}" class="flex items-center hover:bg-gray-100 transition p-2 rounded-lg">
                             <img src="/logo.png" class="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover mr-3" alt="Avatar">
                             <div class="flex-1">

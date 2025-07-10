@@ -40,9 +40,7 @@
                                 $isGroup = $room->type === 'group';
 
                                 if ($isGroup) {
-                                    $photo = $room->avatar
-                                        ? asset('storage/profile/' . $room->avatar)
-                                        : asset('default-group.png');
+                                    $photo = asset('/logo.png'); // Gambar grup tetap
                                 } else {
                                     $otherUser = $room->users->where('id', '!=', auth()->id())->first();
                                     $photo = $otherUser && $otherUser->photo
