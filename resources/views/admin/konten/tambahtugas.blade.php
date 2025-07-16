@@ -71,7 +71,7 @@
                             'Pertanian',
                             'Perikanan',
                             'Pengolahan Makanan dan Minuman',
-                            'Jasa Makanan'
+                            'Restoran/Cafe'
                         ];
                     @endphp
                     @foreach($listBidang as $bidang)

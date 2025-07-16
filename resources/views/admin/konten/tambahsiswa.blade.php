@@ -45,7 +45,7 @@
                         'Pertanian',
                         'Perikanan',
                         'Pengolahan Makanan dan Minuman',
-                        'Jasa Makanan'
+                        'Restoran/Cafe'
                     ];
                 @endphp
 

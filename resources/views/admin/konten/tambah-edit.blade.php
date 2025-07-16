@@ -24,6 +24,37 @@
             </div>
 
             <div class="mb-4">
+                <label for="bidang" class="block text-sm font-medium mb-1">Bidang</label>
+                <select name="bidang" id="bidang" class="w-full border rounded px-3 py-2" required>
+                    <option value="">-- Pilih Bidang --</option>
+                    @php
+                        $listBidang = [
+                            'Perawatan (Kaigo/Caregiver)',
+                            'Pembersihan Gedung',
+                            'Konstruksi',
+                            'Manufaktur Mesin Industri',
+                            'Elektronik dan Listrik',
+                            'Perhotelan',
+                            'Pertanian',
+                            'Perikanan',
+                            'Pengolahan Makanan dan Minuman',
+                            'Restoran/Cafe'
+                        ];
+                    @endphp
+                    @foreach($listBidang as $bidang)
+                        <option value="{{ $bidang }}" {{ old('bidang', $job->bidang ?? '') == $bidang ? 'selected' : '' }}>{{ $bidang }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mb-4">
+                <label class="inline-flex items-center">
+                    <input type="checkbox" name="butuh_sertifikat" value="1" {{ old('butuh_sertifikat', $job->butuh_sertifikat ?? false) ? 'checked' : '' }} class="mr-2">
+                    Butuh 2 Sertifikat untuk Melamar
+                </label>
+            </div>
+
+            <div class="mb-4">
                 <label class="block text-sm font-medium mb-1">Lokasi</label>
                 <input type="text" name="lokasi" value="{{ old('lokasi', $job->lokasi) }}" class="w-full border rounded px-3 py-2" required>
             </div>

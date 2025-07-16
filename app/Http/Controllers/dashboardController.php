@@ -53,20 +53,19 @@ class dashboardController extends Controller
     public function indexsiswa()
     {
         $userId = Auth::id();
-        $bidangUser = Auth::user()->bidang;
+        $user = Auth::user();
+        $bidangUser = $user->bidang;
 
-
+        // Cek kuis belum dikerjakan
         $kuisBelumDikerjakan = Tugas::where('tipe', 'kuis')
-            ->whereDate('deadline', '>=', now()) // hanya kuis yang masih aktif
+            ->whereDate('deadline', '>=', now())
             ->whereNotIn('id', function ($query) use ($userId) {
                 $query->select('tugas_id')
                     ->from('tugas_user')
                     ->where('user_id', $userId);
             })
-            ->exists(); // hanya true/false
+            ->exists();
 
-            
-            // Ambil data kursus, chat, nilai, dll seperti biasa...
         $materi = Materi::where('tipe', 'ebook')
             ->where('status', 'aktif')
             ->where('bidang', $bidangUser)
@@ -83,21 +82,25 @@ class dashboardController extends Controller
             ->take(5)
             ->get();
 
-        $tanggalTerdaftar = Auth::user()->created_at->toDateString();
+        $tanggalTerdaftar = $user->created_at->toDateString();
 
-        $jobMatchings = [];
-        $jobApplications = [];
-
+        // Sertifikat yang dimiliki
         $sertifikatLulus = Sertifikat::where('user_id', $userId)->count();
 
-        if ($sertifikatLulus >= 2) {
-            $jobMatchings = JobMatching::where('status', 'terbuka')->get();
+        // Ambil job matching
+        $jobMatchings = JobMatching::where('status', 'terbuka')
+            ->where(function ($query) use ($sertifikatLulus) {
+                $query->where('butuh_sertifikat', false);
+                if ($sertifikatLulus >= 2) {
+                    $query->orWhere('butuh_sertifikat', true);
+                }
+            })
+            ->get();
 
-            // Ambil lamaran user untuk job yang ada
-            $jobApplications = JobApplication::where('user_id', $userId)->get()->keyBy('job_matching_id');
-        }
+        // Ambil lamaran
+        $jobApplications = JobApplication::where('user_id', $userId)->get()->keyBy('job_matching_id');
 
-        // Ambil nilai tugas, evaluasi, tryout seperti biasa...
+        // Nilai tugas, evaluasi, tryout
         $nilaiTugas = TugasUser::join('tugas', 'tugas.id', '=', 'tugas_user.tugas_id')
             ->where('tugas_user.user_id', $userId)
             ->where('tugas.tipe', 'tugas')
@@ -122,31 +125,24 @@ class dashboardController extends Controller
             ->orderBy('tanggal')
             ->get();
 
-        $rooms = Auth::user()->chatRooms()
+        $rooms = $user->chatRooms()
             ->with([
                 'users',
-                'messages' => function ($query) {
-                    $query->latest()->limit(1);
-                }
+                'messages' => fn ($query) => $query->latest()->limit(1),
             ])
             ->latest('updated_at')
             ->get();
 
-        // Rata-rata nilai
+        // Hitung nilai rata-rata
         $rataTugas = $nilaiTugas->avg('nilai') ?? 0;
         $rataEvaluasi = $nilaiEvaluasi->avg('nilai') ?? 0;
         $rataTryout = $nilaiTryout->avg('nilai') ?? 0;
 
-        // Hitung jumlah jenis nilai yang tersedia
-        $jumlahNilaiAktif = 0;
-        $jumlahNilaiAktif += $rataTugas > 0 ? 1 : 0;
-        $jumlahNilaiAktif += $rataEvaluasi > 0 ? 1 : 0;
-        $jumlahNilaiAktif += $rataTryout > 0 ? 1 : 0;
-
+        $jumlahNilaiAktif = collect([$rataTugas, $rataEvaluasi, $rataTryout])->filter(fn($v) => $v > 0)->count();
         $hanyaSatuNilai = $jumlahNilaiAktif === 1;
 
         $hasilPrediksi = 'Belum diprediksi';
-        $nilaiPersen = 0; // <- nilai skor dari API
+        $nilaiPersen = 0;
 
         try {
             $response = Http::post('http://127.0.0.1:5001/prediksi', [
@@ -161,7 +157,7 @@ class dashboardController extends Controller
             if ($response->successful()) {
                 $json = $response->json();
                 $hasilPrediksi = $json['hasil'];
-                $nilaiPersen = round($json['skor'], 2); // <- ambil nilai akhir dari API
+                $nilaiPersen = round($json['skor'], 2);
             }
         } catch (\Exception $e) {
             $hasilPrediksi = 'Gagal memanggil API';
@@ -182,9 +178,8 @@ class dashboardController extends Controller
             'nilaiPersen',
             'kuisBelumDikerjakan',
             'materi',
-            'hanyaSatuNilai' // ← Tambahan ini
+            'hanyaSatuNilai'
         ));
-
     }
 
     public function nilaisiswa()

@@ -245,93 +245,116 @@ $adaNotif = $notifikasi->where('dibaca', false)->isNotEmpty();
 
     <!-- JavaScript -->
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const notifBadge = document.getElementById('notifBadge');
-    const currentNotifId = "{{ $notifikasi->first()?->id ?? '' }}";
-    const alertBox = document.getElementById('alert-notifikasi');
-    const dismissBtn = document.getElementById('dismiss-alert');
-    const detailBtn = document.getElementById('lihatDetailBtn');
-    const notifBtn = document.getElementById('notifBtn');
-    const profileBtn = document.getElementById('profileBtn');
-    const profileDropdown = document.getElementById('profileDropdown');
+    document.addEventListener('DOMContentLoaded', function () {
+        const notifBadge = document.getElementById('notifBadge');
+        const currentNotifId = "{{ $notifikasi->first()?->id ?? '' }}";
+        const alertBox = document.getElementById('alert-notifikasi');
+        const dismissBtn = document.getElementById('dismiss-alert');
+        const detailBtn = document.getElementById('lihatDetailBtn');
+        const notifBtn = document.getElementById('notifBtn');
+        const profileBtn = document.getElementById('profileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
 
-    // ==== 1. BADGE LOGIC ====
-    function updateNotifBadge() {
-        fetch('/notifikasi/jumlah')
-            .then(res => res.json())
-            .then(data => {
-                if (data.jumlah > 0) {
-                    notifBadge.textContent = data.jumlah;
-                    notifBadge.classList.remove('hidden');
-                } else {
-                    notifBadge.classList.add('hidden');
-                }
-            })
-            .catch(err => {
-                console.error('Gagal mengambil jumlah notifikasi:', err);
+        // ==== 1. BADGE LOGIC ====
+        function updateNotifBadge() {
+            fetch('/notifikasi/jumlah')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.jumlah > 0) {
+                        notifBadge.textContent = data.jumlah;
+                        notifBadge.classList.remove('hidden');
+                    } else {
+                        notifBadge.classList.add('hidden');
+                    }
+                })
+                .catch(err => {
+                    console.error('Gagal mengambil jumlah notifikasi:', err);
+                });
+        }
+
+        updateNotifBadge();
+
+        // ==== 2. POPUP LOGIC ====
+        const lastSeen = localStorage.getItem('lastSeenNotifId');
+        if (currentNotifId && currentNotifId !== lastSeen) {
+            if (alertBox) alertBox.style.display = 'flex';
+
+            dismissBtn?.addEventListener('click', () => {
+                localStorage.setItem('lastSeenNotifId', currentNotifId);
+                if (alertBox) alertBox.style.display = 'none';
             });
-    }
 
-    updateNotifBadge();
+            detailBtn?.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.setItem('lastSeenNotifId', currentNotifId);
+                window.location.href = '/notifikasi';
+            });
 
-    // ==== 2. POPUP LOGIC ====
-    const lastSeen = localStorage.getItem('lastSeenNotifId');
-    if (currentNotifId && currentNotifId !== lastSeen) {
-        if (alertBox) alertBox.style.display = 'flex';
+            setTimeout(() => {
+                localStorage.setItem('lastSeenNotifId', currentNotifId);
+                if (alertBox) alertBox.style.display = 'none';
+            }, 10000);
+        }
 
-        dismissBtn?.addEventListener('click', () => {
-            localStorage.setItem('lastSeenNotifId', currentNotifId);
-            if (alertBox) alertBox.style.display = 'none';
-        });
-
-        detailBtn?.addEventListener('click', (e) => {
+        notifBtn?.addEventListener('click', function (e) {
             e.preventDefault();
-            localStorage.setItem('lastSeenNotifId', currentNotifId);
             window.location.href = '/notifikasi';
         });
 
-        setTimeout(() => {
-            localStorage.setItem('lastSeenNotifId', currentNotifId);
-            if (alertBox) alertBox.style.display = 'none';
-        }, 10000);
-    }
+        // ==== 3. PROFILE DROPDOWN ====
+        profileBtn.addEventListener('click', function () {
+            profileDropdown.classList.toggle('hidden');
+        });
 
-    notifBtn?.addEventListener('click', function (e) {
-        e.preventDefault();
-        window.location.href = '/notifikasi';
+        window.addEventListener('click', function (e) {
+            if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                profileDropdown.classList.add('hidden');
+            }
+        });
+
+        // ==== 4. HIGHLIGHT ACTIVE LINK ====
+        const links = document.querySelectorAll('a[href]');
+        const currentURL = window.location.pathname;
+        links.forEach(link => {
+            if (link.getAttribute('href') === currentURL) {
+                link.classList.add('active-link');
+            }
+        });
+
+        // ==== 5. MATERI DROPDOWN ====
+        const dropdownBtn = document.getElementById('dropdown-btn');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const chevron = document.getElementById('chevron');
+
+        dropdownBtn?.addEventListener('click', function () {
+            dropdownMenu.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-90');
+        });
+
+        // ==== 6. SIDEBAR TOGGLE ====
+        sidebarToggle?.addEventListener('click', function (e) {
+            e.stopPropagation(); // penting supaya klik tombol tidak dianggap klik di luar sidebar
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        document.addEventListener('click', function (e) {
+            const isSidebarOpen = !sidebar.classList.contains('-translate-x-full');
+            const isMobile = window.innerWidth < 640; // sm breakpoint Tailwind
+
+            if (
+                isSidebarOpen &&
+                isMobile &&
+                !sidebar.contains(e.target) &&
+                !sidebarToggle.contains(e.target)
+            ) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
     });
-
-    // ==== 3. PROFILE DROPDOWN ====
-    profileBtn.addEventListener('click', function () {
-        profileDropdown.classList.toggle('hidden');
-    });
-
-    window.addEventListener('click', function (e) {
-        if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
-            profileDropdown.classList.add('hidden');
-        }
-    });
-
-    // ==== 4. HIGHLIGHT ACTIVE LINK ====
-    const links = document.querySelectorAll('a[href]');
-    const currentURL = window.location.pathname;
-    links.forEach(link => {
-        if (link.getAttribute('href') === currentURL) {
-            link.classList.add('active-link');
-        }
-    });
-
-    // ==== 5. MATERI DROPDOWN ====
-    const dropdownBtn = document.getElementById('dropdown-btn');
-    const dropdownMenu = document.getElementById('dropdown-menu');
-    const chevron = document.getElementById('chevron');
-
-    dropdownBtn?.addEventListener('click', function () {
-        dropdownMenu.classList.toggle('hidden');
-        chevron.classList.toggle('rotate-90');
-    });
-});
 </script>
+
 
 
 

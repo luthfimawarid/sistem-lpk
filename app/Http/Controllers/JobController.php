@@ -76,12 +76,15 @@ class JobController extends Controller
             'lokasi' => 'required|string|max:255',
             'deskripsi' => 'required',
             'status' => 'required|in:terbuka,tertutup',
+            'bidang' => 'required|string|max:255',
         ]);
 
         $data = $request->all();
-        $data['user_id'] = auth()->id();  // pastikan user login, kalau belum ada bisa diisi manual
+        $data['user_id'] = auth()->id();
+        $data['butuh_sertifikat'] = $request->has('butuh_sertifikat'); // checkbox handling
 
         JobMatching::create($data);
+
 
         return redirect()->route('admin.job-matching.index')->with('success', 'Lowongan berhasil ditambahkan.');
     }
@@ -98,16 +101,22 @@ class JobController extends Controller
         $request->validate([
             'posisi' => 'required|string|max:255',
             'nama_perusahaan' => 'required|string|max:255',
-            'lokasi' => 'required|string|max:255',  // tambah validasi lokasi
+            'lokasi' => 'required|string|max:255',
             'deskripsi' => 'required',
             'status' => 'required|in:terbuka,tertutup',
+            'bidang' => 'required|string|max:255',
         ]);
 
         $job = JobMatching::findOrFail($id);
-        $job->update($request->all());
+
+        $data = $request->all();
+        $data['butuh_sertifikat'] = $request->has('butuh_sertifikat'); // checkbox: true if checked, false if not
+
+        $job->update($data);
 
         return redirect()->route('admin.job-matching.index')->with('success', 'Lowongan berhasil diperbarui.');
     }
+
 
     public function destroy($id)
     {
@@ -122,15 +131,24 @@ class JobController extends Controller
         $user = auth()->user();
         $sertifikatLulus = $user->sertifikat()->count();
 
-        $jobMatchings = JobMatching::where('status', 'terbuka')->get();
+        $jobTanpaSertifikat = JobMatching::where('status', 'terbuka')
+            ->where('butuh_sertifikat', false)
+            ->get();
 
-        // Ambil semua aplikasi user
+        $jobButuhSertifikat = $sertifikatLulus >= 2
+            ? JobMatching::where('status', 'terbuka')->where('butuh_sertifikat', true)->get()
+            : collect();
+
         $jobApplications = JobApplication::where('user_id', $user->id)
             ->get()
-            ->keyBy('job_matching_id'); // agar bisa diakses pakai $job->id
+            ->keyBy('job_matching_id');
 
-        return view('siswa.konten.job-matching', compact('jobMatchings', 'jobApplications', 'sertifikatLulus'));
+        return view('siswa.konten.job-matching', compact(
+            'jobTanpaSertifikat', 'jobButuhSertifikat', 'jobApplications', 'sertifikatLulus'
+        ));
     }
+
+
 
 
     // public function apply($id)

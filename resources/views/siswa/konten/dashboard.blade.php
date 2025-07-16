@@ -18,22 +18,39 @@
     {{-- Ebook --}}
     <section class="mb-6">
         <div class="flex justify-between items-center flex-wrap gap-2">
-            <p id="ebook-count" class="text-base md:text-lg font-semibold">Ebook ({{ $materi->count() }})</p>
-            <a href="/ebook" class="px-3 py-1 text-sm md:text-base text-[#0A58CA] border border-[#0A58CA] rounded-full font-semibold">Lihat semua</a>
+            <p id="ebook-count" class="text-base md:text-lg font-semibold">
+                Ebook ({{ $materi->count() }})
+            </p>
+            <a href="/ebook" class="px-3 py-1 text-sm md:text-base text-[#0A58CA] border border-[#0A58CA] rounded-full font-semibold">
+                Lihat semua
+            </a>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-            @foreach ($materi->take(3) as $course)
-                <div class="bg-white rounded-lg shadow p-4 text-center">
-                    <img src="{{ asset('/logo.png') }}" alt="Course Image" class="rounded-lg mb-2 mx-auto max-w-[120px] sm:max-w-[140px]">
-                    <p class="font-medium text-sm md:text-base">{{ $course->judul }}</p>
-                    <div class="mt-3 flex flex-col sm:flex-row justify-center gap-2">
-                        <a href="{{ asset('storage/materi/' . $course->file) }}" target="_blank" class="bg-blue-500 text-white px-4 py-2 rounded text-xs sm:text-sm">Buka</a>
-                        <a href="{{ asset('storage/materi/' . $course->file) }}" download class="bg-green-500 text-white px-4 py-2 rounded text-xs sm:text-sm">Unduh</a>
-                    </div>
+
+        <div class="mt-4">
+            @if ($materi->count())
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    @foreach ($materi->take(3) as $course)
+                        <div class="bg-white rounded-lg shadow p-4 text-center">
+                            <img src="{{ asset('/logo.png') }}" alt="Course Image"
+                                class="rounded-lg mb-2 mx-auto max-w-[120px] sm:max-w-[140px]">
+                            <p class="font-medium text-sm md:text-base">{{ $course->judul }}</p>
+                            <div class="mt-3 flex flex-col sm:flex-row justify-center gap-2">
+                                <a href="{{ asset('storage/materi/' . $course->file) }}" target="_blank"
+                                class="bg-blue-500 text-white px-4 py-2 rounded text-xs sm:text-sm">Buka</a>
+                                <a href="{{ asset('storage/materi/' . $course->file) }}" download
+                                class="bg-green-500 text-white px-4 py-2 rounded text-xs sm:text-sm">Unduh</a>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
-            @endforeach
+            @else
+                <p class="text-center text-sm text-gray-500 mt-3">
+                    Belum ada ebook yang tersedia saat ini.
+                </p>
+            @endif
         </div>
     </section>
+
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         {{-- Nilai Chart --}}
@@ -86,53 +103,56 @@
         {{-- Job Matching --}}
         <section class="md:col-span-2 bg-white rounded-lg shadow p-4 sm:p-6">
             <p class="text-base md:text-xl font-semibold mb-2">Job Matching</p>
-            @if ($sertifikatLulus < 2)
-                <p class="text-center text-gray-500 mt-4">Job Matching akan tersedia setelah kamu mendapatkan minimal 2 sertifikat lulus.</p>
+
+            @if ($jobMatchings->isEmpty())
+                <p class="text-center text-gray-500 mt-4">Tidak ada lowongan tersedia saat ini.</p>
             @else
-                @if (count($jobMatchings) > 0)
-                    <div class="overflow-x-auto mt-3">
-                        <table class="w-full text-sm text-left">
-                            <thead>
-                                <tr class="text-gray-600 bg-blue-50">
-                                    <th class="py-2 px-3">Posisi</th>
-                                    <th class="py-2 px-3">Perusahaan</th>
-                                    <th class="py-2 px-3">Status Lamaran</th>
-                                    <th class="py-2 px-3">Aksi</th>
+                <div class="overflow-x-auto mt-3">
+                    <table class="w-full text-sm text-left">
+                        <thead>
+                            <tr class="text-gray-600 bg-blue-50">
+                                <th class="py-2 px-3">Posisi</th>
+                                <th class="py-2 px-3">Perusahaan</th>
+                                <th class="py-2 px-3">Status Lamaran</th>
+                                <th class="py-2 px-3">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($jobMatchings as $job)
+                                <tr class="border-t">
+                                    <td class="py-2 px-3">
+                                        {{ $job->posisi }}
+                                        @if ($job->butuh_sertifikat)
+                                            <span class="text-xs text-indigo-600 ml-1">(Butuh Sertifikat)</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-2 px-3">{{ $job->nama_perusahaan }}</td>
+                                    <td class="py-2 px-3">
+                                        @if (isset($jobApplications[$job->id]))
+                                            <span class="px-2 py-1 rounded-full text-white text-xs
+                                                {{ $jobApplications[$job->id]->status === 'lolos' ? 'bg-green-500' :
+                                                ($jobApplications[$job->id]->status === 'diproses' ? 'bg-yellow-500' : 'bg-red-500') }}">
+                                                {{ ucfirst($jobApplications[$job->id]->status) }}
+                                            </span>
+                                        @else
+                                            <span class="text-xs text-gray-500">Belum Melamar</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-2 px-3">
+                                        @if (!isset($jobApplications[$job->id]))
+                                            <form action="{{ url('/job-matching/apply/' . $job->id) }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">Ajukan Lamaran</button>
+                                            </form>
+                                        @else
+                                            <button disabled class="bg-gray-300 text-gray-600 px-3 py-1 rounded text-xs">Sudah Melamar</button>
+                                        @endif
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($jobMatchings as $job)
-                                    <tr class="border-t">
-                                        <td class="py-2 px-3">{{ $job->posisi }}</td>
-                                        <td class="py-2 px-3">{{ $job->nama_perusahaan }}</td>
-                                        <td class="py-2 px-3">
-                                            @if (isset($jobApplications[$job->id]))
-                                                <span class="px-2 py-1 rounded-full text-white text-xs
-                                                    {{ $jobApplications[$job->id]->status === 'lolos' ? 'bg-green-500' : ($jobApplications[$job->id]->status === 'diproses' ? 'bg-yellow-500' : 'bg-red-500') }}">
-                                                    {{ ucfirst($jobApplications[$job->id]->status) }}
-                                                </span>
-                                            @else
-                                                <span class="text-xs text-gray-500">Belum Melamar</span>
-                                            @endif
-                                        </td>
-                                        <td class="py-2 px-3">
-                                            @if (!isset($jobApplications[$job->id]))
-                                                <form action="{{ url('/job-matching/apply/' . $job->id) }}" method="POST">
-                                                    @csrf
-                                                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">Ajukan Lamaran</button>
-                                                </form>
-                                            @else
-                                                <button disabled class="bg-gray-300 text-gray-600 px-3 py-1 rounded text-xs">Sudah Melamar</button>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <p class="text-center text-gray-500 mt-4">Tidak ada lowongan tersedia saat ini.</p>
-                @endif
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @endif
         </section>
 
