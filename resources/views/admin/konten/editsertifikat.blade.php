@@ -54,10 +54,10 @@
 
             <div class="mb-4">
                 <label class="block font-semibold mb-1">Gambar Saat Ini</label>
-                @if ($sertifikat->gambar || $sertifikat->file)
-                    <img src="{{ asset('storage/sertifikat/' . ($sertifikat->gambar ?? $sertifikat->file)) }}" class="w-40 mb-2" alt="Gambar Sertifikat">
+                @if ($sertifikat->file)
+                <img src="{{ asset('storage/' . $sertifikat->file) }}" class="w-40 mb-2" alt="Gambar Sertifikat">
                 @else
-                    <p>Tidak ada gambar</p>
+                <p>Tidak ada gambar</p>
                 @endif
                 <input type="file" name="gambar" class="w-full">
                 <small class="text-gray-600">Biarkan kosong jika tidak ingin mengganti gambar.</small>

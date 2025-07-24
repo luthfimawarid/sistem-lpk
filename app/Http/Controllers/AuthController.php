@@ -178,23 +178,39 @@ class AuthController extends Controller
             'nama_lengkap' => 'required|string',
             'email' => 'required|email|unique:users,email,' . $siswa->id,
             'kelas' => 'required|string',
+            'tanggal_lahir' => 'nullable|date',
+            'bidang' => 'required|string',
         ]);
 
+        // Update data dasar
         $siswa->nama_lengkap = $request->nama_lengkap;
         $siswa->email = $request->email;
         $siswa->kelas = $request->kelas;
+        $siswa->tanggal_lahir = $request->tanggal_lahir;
+        $siswa->bidang = $request->bidang;
 
         if ($request->filled('password')) {
-            $siswa->password = Hash::make($request->password);
+            $siswa->password = \Hash::make($request->password);
         }
 
+        // Foto
         if ($request->hasFile('foto')) {
             $siswa->foto = $request->file('foto')->store('foto_siswa', 'public');
         }
 
+        // Dokumen Pendukung
+        if ($request->hasFile('dokumen')) {
+            $dokumenData = $siswa->dokumen ?? []; // array existing
+            foreach ($request->file('dokumen') as $label => $file) {
+                $key = Str::slug($label, '_'); // contoh: Paspor => paspor
+                $dokumenData[$key] = $file->store('dokumen_siswa', 'public');
+            }
+            $siswa->dokumen = $dokumenData;
+        }
+
         $siswa->save();
 
-        return redirect()->route('admin.siswa.index', $siswa->id)->with('success', 'Data siswa berhasil diupdate');
+        return redirect()->route('admin.siswa.index')->with('success', 'Data siswa berhasil diupdate');
     }
 
     public function destroy($id)

@@ -82,6 +82,10 @@
                 </div>
 
                 <div class="pt-4">
+                    <a href="{{ route('admin.siswa.index') }}"
+                    class="inline-block bg-red-500 text-white px-4 py-2 rounded hover:bg-gray-400 transition">
+                        Batal
+                    </a>
                     <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded transition duration-300">Simpan</button>
                 </div>
             </div>

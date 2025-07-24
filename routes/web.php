@@ -24,7 +24,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/siswa/{id}', [AuthController::class, 'show'])->name('admin.siswa.detail');
     Route::post('/admin/siswa/{id}/dokumen', [AuthController::class, 'uploadDokumen'])->name('admin.siswa.upload_dokumen');
     Route::get('/admin/siswa/{id}/edit', [AuthController::class, 'edit'])->name('admin.siswa.edit');
-    Route::post('/admin/siswa/{id}/update', [AuthController::class, 'update'])->name('admin.siswa.update');
+    Route::put('/admin/siswa/{id}/update', [AuthController::class, 'update'])->name('admin.siswa.update');
     Route::delete('/admin/siswa/{id}', [AuthController::class, 'destroy'])->name('admin.siswa.destroy');
     Route::delete('/admin/siswa/{siswa}/dokumen/{dokumen}', [AuthController::class, 'deleteDokumen'])->name('admin.siswa.delete_dokumen');
     Route::get('/siswa', [AuthController::class, 'index'])->name('admin.siswa.index');

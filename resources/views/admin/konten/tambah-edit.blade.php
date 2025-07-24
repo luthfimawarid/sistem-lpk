@@ -72,9 +72,16 @@
                 </select>
             </div>
 
-            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                {{ $job->exists ? 'Update' : 'Simpan' }}
-            </button>
+            <div class="flex items-center gap-4 mt-6">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    {{ $job->exists ? 'Update' : 'Simpan' }}
+                </button>
+
+                <a href="{{ route('admin.job-matching.index') }}"
+                class="inline-block bg-red-500 text-white px-4 py-2 rounded hover:bg-gray-400 transition">
+                    Batal
+                </a>
+            </div>
         </form>
     </div>
 </main>
