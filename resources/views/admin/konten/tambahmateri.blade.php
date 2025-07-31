@@ -62,8 +62,18 @@
             <select id="bidang" name="bidang" class="mt-1 block w-full border-b py-1 text-sm border-gray-400" required>
                 <option value="" disabled {{ old('bidang') ? '' : 'selected' }}>-- Pilih Bidang --</option>
                 @foreach($listBidang as $bidang)
-                    <option value="{{ $bidang }}" {{ old('bidang') == $bidang ? 'selected' : '' }}>{{ $bidang }}</option>
+                <option value="{{ $bidang }}" {{ old('bidang') == $bidang ? 'selected' : '' }}>{{ $bidang }}</option>
                 @endforeach
+            </select>
+        </div>
+
+        <div class="my-6">
+            <label for="tipe" class="block text-sm font-medium text-gray-700">Tipe Materi</label>
+            <select id="tipe" name="tipe" class="mt-1 block w-full border-b py-1 text-sm border-gray-400" required>
+                <option value="" disabled {{ old('tipe') ? '' : 'selected' }}>-- Pilih Tipe --</option>
+                <option value="ebook" {{ old('tipe') == 'ebook' ? 'selected' : '' }}>Ebook</option>
+                <option value="listening" {{ old('tipe') == 'listening' ? 'selected' : '' }}>Listening</option>
+                <option value="video" {{ old('tipe') == 'video' ? 'selected' : '' }}>Video</option>
             </select>
         </div>
 
@@ -80,15 +90,6 @@
             </select>
         </div>
 
-        <div class="my-6">
-            <label for="tipe" class="block text-sm font-medium text-gray-700">Tipe Materi</label>
-            <select id="tipe" name="tipe" class="mt-1 block w-full border-b py-1 text-sm border-gray-400" required>
-                <option value="" disabled {{ old('tipe') ? '' : 'selected' }}>-- Pilih Tipe --</option>
-                <option value="ebook" {{ old('tipe') == 'ebook' ? 'selected' : '' }}>Ebook</option>
-                <option value="listening" {{ old('tipe') == 'listening' ? 'selected' : '' }}>Listening</option>
-                <option value="video" {{ old('tipe') == 'video' ? 'selected' : '' }}>Video</option>
-            </select>
-        </div>
 
         <div class="flex justify-end space-x-4 mt-6">
             <a href="{{ url()->previous() }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg">Batal</a>

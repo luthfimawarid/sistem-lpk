@@ -39,24 +39,24 @@
         <section class="w-full md:w-2/3">
             <div class="bg-white rounded-lg shadow overflow-hidden h-full">
                 <div class="flex justify-between mx-4 my-5">
-                    <p class="text-base md:text-lg font-semibold">Kursus Saya</p>
+                    <p class="text-base md:text-lg font-semibold">Ebook Aktif</p>
                     <a href="/ebook-admin" class="text-sm md:text-base text-blue-600">Lihat semua</a>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm md:text-base">
                         <thead>
                             <tr class="text-gray-600 bg-blue-50">
-                                <th class="py-2 px-4">Courses Name</th>
+                                <th class="py-2 px-4">Judul Ebook</th>
                                 <th class="py-2 px-4 text-center">Tipe</th>
                                 <th class="py-2 px-4 text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($courses as $materi)
+                            @foreach ($materi as $ebook)
                             <tr class="border-t">
-                                <td class="py-2 px-4">{{ $materi->judul }}</td>
-                                <td class="py-2 px-4 text-center">{{ ucfirst($materi->tipe) }}</td>
-                                <td class="py-2 px-4 text-center">{{ ucfirst($materi->status) }}</td>
+                                <td class="py-2 px-4">{{ $ebook->judul }}</td>
+                                <td class="py-2 px-4 text-center">{{ ucfirst($ebook->tipe) }}</td>
+                                <td class="py-2 px-4 text-center">{{ ucfirst($ebook->status) }}</td>
                             </tr>
                             @endforeach
                         </tbody>

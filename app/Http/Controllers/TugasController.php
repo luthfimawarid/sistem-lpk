@@ -35,7 +35,7 @@ class TugasController extends Controller
             'cover' => 'nullable|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
             'deadline' => 'nullable|date',
             'durasi' => 'nullable|integer|min:1',
-            'status' => 'required|in:belum_selesai,selesai',
+            // 'status' => 'required|in:belum_selesai,selesai',
             'deskripsi' => 'required|string',
             'bidang' => 'required|string'
         ]);
@@ -72,10 +72,10 @@ class TugasController extends Controller
             'judul' => $request->judul,
             'deskripsi' => $request->deskripsi,
             'tipe' => $request->tipe,
-            'cover' => $cover,
+            // 'cover' => $cover,
             'deadline' => $deadline,
             'durasi_menit' => $durasiMenit,
-            'status' => $request->status,
+            // 'status' => $request->status,
             'bidang' => $request->bidang
         ];
 

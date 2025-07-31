@@ -129,17 +129,17 @@
             </div>
 
             <!-- Status -->
-            <div class="mb-4">
+            <!-- <div class="mb-4">
                 <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
                 <select id="status" name="status" class="mt-1 p-2 w-full border rounded-md" required>
                     <option value="belum_selesai" selected>Belum Selesai</option>
                     <option value="selesai">Selesai</option>
                 </select>
-            </div>
+            </div> -->
 
             <div class="flex justify-end">
                 <a href="{{ route('tugas.index') }}"
-                class="inline-block bg-red-500 text-white px-4 py-2 rounded hover:bg-gray-400 transition">
+                class="inline-block bg-red-500 text-white px-4 py-2 rounded hover:bg-gray-400 transition mx-2">
                     Batal
                 </a>
                 <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition">Simpan</button>
