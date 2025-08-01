@@ -198,6 +198,8 @@ Route::get('/tugas/{id}/pengumpulan', [TugasController::class, 'showPengumpulan'
 
 // Route untuk detail kuis
 Route::get('/detail-kuis/{id}', [TugasController::class, 'showDetailKuis'])->name('admin.kuis.detail');
+// Untuk halaman detail tryout
+Route::get('/admin/tryout/{id}', [TugasController::class, 'showTryout'])->name('admin.tryout.detail');
 
 
 

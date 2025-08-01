@@ -9,6 +9,16 @@
         <h2 class="text-xl font-semibold mb-2">{{ $job->posisi }}</h2>
         <p class="mb-1"><strong>Perusahaan:</strong> {{ $job->nama_perusahaan }}</p>
         <p class="mb-1"><strong>Status:</strong> {{ ucfirst($job->status) }}</p>
+
+        {{-- Tampilkan bidang --}}
+        <p class="mb-1"><strong>Bidang:</strong> {{ $job->bidang }}</p>
+
+        {{-- Tampilkan kualifikasi sertifikat --}}
+        <p class="mb-3">
+            <strong>Kualifikasi Sertifikat:</strong>
+            {{ $job->butuh_sertifikat ? 'Wajib memiliki sertifikat' : 'Tidak wajib memiliki sertifikat' }}
+        </p>
+
         <p class="mb-3"><strong>Deskripsi:</strong> {{ $job->deskripsi }}</p>
     </div>
 

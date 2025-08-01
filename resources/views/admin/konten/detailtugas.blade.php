@@ -3,10 +3,34 @@
 @section('content')
 
 <div class="p-6 bg-blue-50">
+    <div class="p-6 bg-white rounded-lg shadow-md mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">{{ $tugas->judul }}</h2>
+            <a href="/tugas-admin" class="rounded text-white py-2 px-4 bg-[#0A58CA]">Kembali</a>
+        </div>
+
+        <p class="mb-1"><strong>Deskripsi:</strong> {{ $tugas->deskripsi }}</p>
+        <p class="mb-1"><strong>Tipe:</strong> {{ ucfirst(str_replace('_', ' ', $tugas->tipe)) }}</p>
+        <p class="mb-1"><strong>Bidang:</strong> {{ $tugas->bidang }}</p>
+
+        @if ($tugas->deadline)
+            <p class="mb-1"><strong>Deadline:</strong> {{ \Carbon\Carbon::parse($tugas->deadline)->translatedFormat('d F Y') }}</p>
+        @endif
+
+        @if ($tugas->durasi)
+            <p class="mb-1"><strong>Durasi Ujian:</strong> {{ $tugas->durasi }} menit</p>
+        @endif
+
+        @if ($tugas->cover)
+            <p class="mb-1"><strong>File Tugas:</strong>
+                <a href="{{ asset('storage/'.$tugas->cover) }}" target="_blank" class="text-blue-600 hover:underline">Lihat File</a>
+            </p>
+        @endif
+    </div>
+
     <div class="p-6 bg-white rounded-lg shadow-md">
         <div class="flex justify-between items-center mb-6">
             <p class="text-lg font-semibold">Daftar Siswa yang Mengumpulkan Tugas</p>
-            <a href="/tugas-admin" class="rounded text-white py-2 px-4 bg-[#0A58CA]">Kembali</a>
         </div>
         
         <!-- Tabel Daftar Siswa -->

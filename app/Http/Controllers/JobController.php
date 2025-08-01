@@ -131,22 +131,36 @@ class JobController extends Controller
         $user = auth()->user();
         $sertifikatLulus = $user->sertifikat()->count();
 
+        // Ambil bidang siswa
+        $bidangSiswa = $user->bidang; // Pastikan kolom ini ada di tabel users
+
+        // Lowongan tanpa sertifikat dan sesuai bidang siswa
         $jobTanpaSertifikat = JobMatching::where('status', 'terbuka')
             ->where('butuh_sertifikat', false)
+            ->where('bidang', $bidangSiswa) // filter bidang
             ->get();
 
+        // Lowongan yang butuh sertifikat (jika sudah punya 2 sertifikat)
         $jobButuhSertifikat = $sertifikatLulus >= 2
-            ? JobMatching::where('status', 'terbuka')->where('butuh_sertifikat', true)->get()
+            ? JobMatching::where('status', 'terbuka')
+                ->where('butuh_sertifikat', true)
+                ->where('bidang', $bidangSiswa) // filter bidang
+                ->get()
             : collect();
 
+        // Cek lamaran yang sudah dilakukan siswa
         $jobApplications = JobApplication::where('user_id', $user->id)
             ->get()
             ->keyBy('job_matching_id');
 
         return view('siswa.konten.job-matching', compact(
-            'jobTanpaSertifikat', 'jobButuhSertifikat', 'jobApplications', 'sertifikatLulus'
+            'jobTanpaSertifikat',
+            'jobButuhSertifikat',
+            'jobApplications',
+            'sertifikatLulus'
         ));
     }
+
 
 
 

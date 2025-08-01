@@ -163,7 +163,7 @@
                 <div class="relative group">
                     <div class="bg-white rounded-lg shadow p-4 text-center group-hover:shadow-lg transition duration-200">
                         {{-- Seluruh kartu bisa diklik ke halaman detail --}}
-                        <a href="{{ route('admin.kuis.detail', $item->id) }}" class="block">
+                        <a href="{{ route('admin.tryout.detail', $item->id) }}" class="block">
                             <img src="{{ asset('/logo.png') }}" alt="Evaluasi" class="mx-auto rounded-md h-40 object-cover">
                             <p class="mt-2 font-medium">{{ $item->judul }}</p>
                             <p class="text-sm text-gray-600">

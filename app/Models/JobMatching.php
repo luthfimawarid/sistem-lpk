@@ -17,6 +17,8 @@ class JobMatching extends Model
         'status',
         'bidang',
         'user_id',
+        'butuh_sertifikat',
+
     ];
 
 

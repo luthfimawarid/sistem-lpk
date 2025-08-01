@@ -468,6 +468,13 @@ class TugasController extends Controller
         return view('admin.konten.detailkuis', compact('tugas', 'pengumpulan'));
     }
 
+    public function showTryout($id)
+    {
+        $tugas = Tugas::with('tugasUser.user')->findOrFail($id);
+
+        return view('admin.konten.detailtryout', compact('tugas'));
+    }
+
 
     public function showPengumpulan($id)
     {
