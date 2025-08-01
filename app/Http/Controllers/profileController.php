@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\TugasUser;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,6 +18,7 @@ class ProfileController extends Controller
         $user = Auth::user(); // ambil data user yang login
         return view('admin.konten.profiladmin', compact('user'));
     }
+    
     public function edit()
     {
         $user = User::find(session('user_id'));
@@ -49,6 +50,7 @@ class ProfileController extends Controller
             $photoPath = $request->file('photo')->store('profile', 'public');
             $user->photo = $photoPath;
         }
+
 
         $user->save();
 

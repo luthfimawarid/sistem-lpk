@@ -182,7 +182,10 @@ class dashboardController extends Controller
             'nilaiPersen',
             'kuisBelumDikerjakan',
             'materi',
-            'hanyaSatuNilai' // ← Tambahan ini
+            'hanyaSatuNilai',
+            'rataTugas',   
+            'rataEvaluasi', 
+            'rataTryout'  
         ));
 
     }

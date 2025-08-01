@@ -62,13 +62,25 @@
                     @foreach ($rooms as $room)
                         @php
                             $lastMessage = $room->messages->first();
-                            $otherUser = $room->users->where('id', '!=', auth()->id())->first();
-                            $roomName = $room->type === 'group' ? $room->name : ($otherUser->nama_lengkap ?? 'Private Chat');
+                            $isGroup = $room->type === 'group';
+                            $otherUser = !$isGroup ? $room->users->where('id', '!=', auth()->id())->first() : null;
+
+                            $roomName = $isGroup
+                                ? $room->name
+                                : ($otherUser->nama_lengkap ?? 'Private Chat');
+
                             $messageText = $lastMessage->message ?? 'Belum ada pesan';
                             $messageTime = optional($lastMessage?->created_at)->format('H:i');
+
+                            $photo = $isGroup
+                                ? asset('/logo.png') // Grup pakai logo
+                                : ($otherUser && $otherUser->photo
+                                    ? asset('storage/' . $otherUser->photo)
+                                    : asset('/default-user.png')); // Default kalau tidak ada foto
                         @endphp
+
                         <a href="{{ route('chat.show', $room->id) }}" class="flex items-center hover:bg-gray-100 transition p-2 rounded-lg">
-                            <img src="/logo.png" class="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover mr-3" alt="Avatar">
+                            <img src="{{ $photo }}" class="w-8 h-8 md:w-10 md:h-10 rounded-full object-cover mr-3 border" alt="Avatar">
                             <div class="flex-1">
                                 <p class="text-xs md:text-sm font-semibold truncate">{{ $roomName }}</p>
                                 <p class="text-xs text-gray-600 truncate">{{ $messageText }}</p>
@@ -177,6 +189,10 @@
             @elseif (!$hanyaSatuNilai && $rataTugas > 0 && $rataEvaluasi > 0 && $rataTryout > 0)
                 <div class="bg-gray-100 p-3 mt-3 rounded-md text-sm sm:text-base text-gray-700">
                     <p><strong>Saran:</strong> {{ $saran }}</p>
+                </div>
+            @elseif ($rataTugas == 0 && $rataEvaluasi == 0 && $rataTryout == 0)
+                <div class="bg-gray-100 p-3 mt-3 rounded-md text-sm sm:text-base text-gray-700">
+                    <p><strong>Saran:</strong> Belum ada data nilai.</p>
                 </div>
             @endif
         </section>

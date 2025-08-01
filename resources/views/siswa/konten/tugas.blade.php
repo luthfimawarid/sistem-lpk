@@ -17,19 +17,23 @@
                         : route('siswa.tugas.ujian.soal', ['id' => $item->id, 'nomor' => 1]);
                 @endphp
 
-                <a href="{{ $link }}" class="block bg-white rounded-lg shadow p-4 text-center hover:shadow-md transition h-full">
+                <div 
+                    onclick="{{ $isSelesai ? "window.location='$link'" : "openConfirmModal('$link')" }}" 
+                    class="cursor-pointer block bg-white rounded-lg shadow p-4 text-center hover:shadow-md transition h-full"
+                >
                     <img src="{{ $item->cover ? asset('storage/cover_tugas/'.$item->cover) : '/logo.png' }}" class="mx-auto rounded-md h-40 object-cover" alt="{{ $item->judul }}">
                     <p class="mt-2 font-medium text-blue-600">{{ $item->judul }}</p>
                     <p class="text-sm text-gray-600">Deadline: {{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('d M Y') : '-' }}</p>
                     <p class="text-sm {{ $isSelesai ? 'text-green-600' : 'text-red-600' }}">
                         Status: {{ $isSelesai ? 'Selesai' : 'Belum Selesai' }}
                     </p>
-                </a>
+                </div>
             @empty
                 <p class="text-gray-500">Belum ada ujian akhir.</p>
             @endforelse
         </div>
     </section>
+
 
     <!-- Tugas -->
     @php $tugasList = $tugas->where('tipe', 'tugas'); @endphp
@@ -131,5 +135,38 @@
         </div>
     </section>
 </main>
+<!-- Modal Konfirmasi Mulai Ujian -->
+<div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-lg w-96 max-w-full p-6">
+        <h2 class="text-xl font-semibold mb-4">Konfirmasi Ujian</h2>
+        <p class="mb-6 text-gray-700">Apakah kamu yakin ingin memulai ujian sekarang? Pastikan kamu sudah siap dan tidak meninggalkan halaman selama ujian berlangsung.</p>
+        <div class="flex justify-end gap-4">
+            <button onclick="closeConfirmModal()" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Batal</button>
+            <a id="confirmBtn" href="#" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Mulai</a>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<script>
+    function openConfirmModal(link) {
+        document.getElementById('confirmBtn').href = link;
+        document.getElementById('confirmModal').classList.remove('hidden');
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('confirmModal').classList.add('hidden');
+    }
+
+    // Tutup modal kalau klik area luar
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('confirmModal');
+        if (event.target === modal) {
+            closeConfirmModal();
+        }
+    });
+</script>
 
 @endsection
