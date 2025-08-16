@@ -3,8 +3,41 @@
 @section('content')
 
 <main class="p-6 bg-gray-100 min-h-screen">
-    <div class="flex justify-end mb-6">
-        <a href="{{ route('tugas.create') }}" class="bg-[#0A58CA] text-white px-4 py-2 rounded-md hover:bg-blue-600 transition">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+        <!-- Filter Form -->
+        <form method="GET" class="flex flex-wrap gap-2 items-center text-sm">
+            <label for="filter_by" class="text-gray-700">Filter berdasarkan:</label>
+            <select name="filter_by" id="filter_by" class="border rounded px-2 py-1" onchange="this.form.submit()">
+                <option value="bidang" {{ $filterField == 'bidang' ? 'selected' : '' }}>Bidang</option>
+                <option value="tipe" {{ $filterField == 'tipe' ? 'selected' : '' }}>Jenis Tugas</option>
+                <option value="deadline" {{ $filterField == 'deadline' ? 'selected' : '' }}>Kadaluarsa</option>
+            </select>
+
+            @php
+                $options = collect([]);
+                if ($filterField == 'bidang') $options = $bidangOptions;
+                elseif ($filterField == 'tipe') $options = $tipeOptions;
+                elseif ($filterField == 'deadline') $options = $deadlineOptions;
+            @endphp
+
+            <select name="filter_value" id="filter_value" class="border rounded px-2 py-1">
+                <option value="">-- Semua --</option>
+                @foreach($options as $option)
+                    <option value="{{ $option }}" {{ $filterValue == $option ? 'selected' : '' }}>
+                        {{ $filterField == 'deadline' ? \Carbon\Carbon::parse($option)->format('d M Y') : ucfirst($option) }}
+                    </option>
+                @endforeach
+            </select>
+
+            <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Terapkan</button>
+
+            @if(request()->has('filter_by') || request()->has('filter_value'))
+                <a href="{{ route('tugas.index') }}" class="text-blue-600 underline ml-2">Reset</a>
+            @endif
+        </form>
+
+        <!-- Tombol Tambah Tugas -->
+        <a href="{{ route('tugas.create') }}" class="bg-[#0A58CA] text-white px-4 py-2 rounded-md hover:bg-blue-600 transition whitespace-nowrap">
             Tambah Tugas
         </a>
     </div>
@@ -19,8 +52,9 @@
                 <!-- Bagian yang bisa diklik -->
                 <a href="{{ route('admin.ujian.detail', $item->id) }}" class="flex-grow">
                     <img src="{{ asset('/logo.png') }}" alt="Evaluasi" class="mx-auto rounded-md h-40 object-cover">
-                    <p class="mt-2 font-medium text-blue-600">{{ $item->judul }}</p>
-                    <p class="text-sm text-gray-600">Deadline: {{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('d M Y') : '-' }}</p>
+                    <p class="mt-2 font-medium text-black">{{ $item->judul }}</p>
+                    <p class="text-sm text-gray-500">Bidang: {{ ucfirst($item->bidang) }}</p>
+                    <p class="text-sm text-red-600">Deadline: {{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('d M Y') : '-' }}</p>
                 </a>
                 
                 <!-- Tombol Edit dan Hapus di bagian bawah card -->
@@ -56,7 +90,8 @@
                         <a href="{{ route('tugas.pengumpulan', $item->id) }}" class="block">
                             <img src="{{ asset('/logo.png') }}" alt="Evaluasi" class="mx-auto rounded-md h-40 object-cover">
                             <p class="mt-2 font-medium">{{ $item->judul }}</p>
-                            <p class="text-sm text-gray-600">
+                            <p class="text-sm text-gray-500">Bidang: {{ ucfirst($item->bidang) }}</p>
+                            <p class="text-sm text-red-600">
                                 Deadline: {{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('d M Y') : '-' }}
                             </p>
                         </a>
@@ -92,7 +127,8 @@
                         <a href="{{ route('admin.kuis.detail', $item->id) }}" class="block">
                             <img src="{{ asset('/logo.png') }}" alt="Evaluasi" class="mx-auto rounded-md h-40 object-cover">
                             <p class="mt-2 font-medium">{{ $item->judul }}</p>
-                            <p class="text-sm text-gray-600">
+                            <p class="text-sm text-gray-500">Bidang: {{ ucfirst($item->bidang) }}</p>
+                            <p class="text-sm text-red-600">
                                 Deadline: {{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('d M Y') : '-' }}
                             </p>
                         </a>
@@ -129,7 +165,8 @@
                         <a href="{{ route('tugas.pengumpulan', $item->id) }}" class="block">
                             <img src="{{ asset('/logo.png') }}" alt="Evaluasi" class="mx-auto rounded-md h-40 object-cover">
                             <p class="mt-2 font-medium">{{ $item->judul }}</p>
-                            <p class="text-sm text-gray-600">
+                            <p class="text-sm text-gray-500">Bidang: {{ ucfirst($item->bidang) }}</p>
+                            <p class="text-sm text-red-600">
                                 Deadline: {{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('d M Y') : '-' }}
                             </p>
                         </a>
@@ -163,10 +200,11 @@
                 <div class="relative group">
                     <div class="bg-white rounded-lg shadow p-4 text-center group-hover:shadow-lg transition duration-200">
                         {{-- Seluruh kartu bisa diklik ke halaman detail --}}
-                        <a href="{{ route('admin.kuis.detail', $item->id) }}" class="block">
+                        <a href="{{ route('admin.tryout.detail', $item->id) }}" class="block">
                             <img src="{{ asset('/logo.png') }}" alt="Evaluasi" class="mx-auto rounded-md h-40 object-cover">
                             <p class="mt-2 font-medium">{{ $item->judul }}</p>
-                            <p class="text-sm text-gray-600">
+                            <p class="text-sm text-gray-500">Bidang: {{ ucfirst(string: $item->bidang) }}</p>
+                            <p class="text-sm text-red-600">
                                 Deadline: {{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('d M Y') : '-' }}
                             </p>
                         </a>

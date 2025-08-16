@@ -1,3 +1,8 @@
+@php
+    // Apakah siswa sudah memiliki sertifikat?
+    $sudahLulus = $punyaSertifikat ?? false;
+@endphp
+
 @extends('siswa.main.sidebar')
 
 @section('content')
@@ -34,7 +39,7 @@
         </div>
     </section>
 
-
+    @if (!$sudahLulus)
     <!-- Tugas -->
     @php $tugasList = $tugas->where('tipe', 'tugas'); @endphp
     <section class="mb-6">
@@ -134,6 +139,7 @@
             @endforelse
         </div>
     </section>
+    @endif
 </main>
 <!-- Modal Konfirmasi Mulai Ujian -->
 <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">

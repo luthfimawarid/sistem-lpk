@@ -1,3 +1,5 @@
+@php use Illuminate\Support\Str; @endphp
+
 @extends('admin.main.sidebar')
 
 @section('content')
@@ -52,6 +54,16 @@
             </svg>
         </div>
 
+        {{-- Tabs dengan animasi underline --}}
+        <div class="relative mb-4">
+            <div class="flex space-x-6 text-sm md:text-base border-b border-gray-300" id="tabs">
+                <button onclick="switchTab('semua')" class="tab-button relative text-blue-600 font-semibold pb-3 transition-all" id="tab-semua">Semua</button>
+                <button onclick="switchTab('grup')" class="tab-button relative text-gray-600 pb-3 transition-all" id="tab-grup">Grup/Kelas</button>
+                <button onclick="switchTab('siswa')" class="tab-button relative text-gray-600 pb-3 transition-all" id="tab-siswa">Siswa</button>
+            </div>
+            <div id="tab-underline" class="tab-underline absolute bottom-0 left-0 h-0.5 bg-blue-600 w-16 rounded transition-all duration-300"></div>
+        </div>
+
         {{-- Daftar Chat --}}
         <div class="border rounded-lg py-3">
             @if($rooms->isEmpty())
@@ -74,14 +86,34 @@
                             : ($otherUser 
                                 ? route('chat.admin.start', ['userId' => $otherUser->id])
                                 : '#');
+
+                        $dataType = $isGroup ? 'grup' : 'siswa';
                     @endphp
 
-
-                    <a href="{{ $routeName }}" class="chat-item block hover:bg-gray-100 transition duration-200">
+                    <a href="{{ $routeName }}"
+                       class="chat-item block hover:bg-gray-100 transition duration-200"
+                       data-type="{{ $dataType }}">
                         <div class="flex items-center justify-between px-3 py-3 md:py-4">
                             <div class="flex items-center gap-3 md:gap-5">
-                                <img src="/logo.png" alt="Room"
-                                    class="w-10 h-10 md:w-12 md:h-12 border-2 rounded-full object-cover" />
+                                @if($isGroup)
+                                    <img src="{{ $room->photo ? asset('storage/' . $room->photo) : asset('logo.png') }}"
+                                        alt="Grup"
+                                        class="w-10 h-10 md:w-12 md:h-12 border-2 rounded-full object-cover" />
+                                @else
+                                    @if($otherUser?->photo)
+                                        <img src="{{ asset('storage/' . $otherUser->photo) }}"
+                                            alt="{{ $otherUser->nama_lengkap }}"
+                                            class="w-10 h-10 md:w-12 md:h-12 border-2 rounded-full object-cover" />
+                                    @else
+                                        @php
+                                            $initial = strtoupper(Str::substr($otherUser->nama_lengkap ?? '', 0, 1));
+                                        @endphp
+                                        <div class="w-10 h-10 md:w-12 md:h-12 bg-[#0A58CA] border-2 rounded-full flex items-center justify-center text-white font-bold text-base md:text-lg">
+                                            {{ $initial }}
+                                        </div>
+                                    @endif
+                                @endif
+
                                 <div>
                                     <h3 class="room-name text-sm md:text-lg font-bold truncate w-[160px] md:w-[240px]">
                                         {{ $roomName }}
@@ -113,7 +145,46 @@
 @endsection
 
 @section('scripts')
+<style>
+    .tab-underline {
+        transition: all 0.3s ease-in-out;
+    }
+</style>
+
 <script>
+    function switchTab(type) {
+        const allChats = document.querySelectorAll('.chat-item');
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const underline = document.getElementById('tab-underline');
+
+        // Reset all tabs
+        tabButtons.forEach(btn => {
+            btn.classList.remove('text-blue-600', 'font-semibold');
+            btn.classList.add('text-gray-600');
+        });
+
+        // Set active tab
+        const activeTab = document.getElementById(`tab-${type}`);
+        activeTab.classList.add('text-blue-600', 'font-semibold');
+        activeTab.classList.remove('text-gray-600');
+
+        // Animate underline
+        const tabContainer = document.getElementById('tabs');
+        const containerLeft = tabContainer.getBoundingClientRect().left;
+        const activeRect = activeTab.getBoundingClientRect();
+        const offsetLeft = activeRect.left - containerLeft;
+
+        underline.style.width = `${activeRect.width}px`;
+        underline.style.left = `${offsetLeft}px`;
+
+        // Filter chat list
+        allChats.forEach(chat => {
+            const chatType = chat.getAttribute('data-type');
+            chat.style.display = (type === 'semua' || type === chatType) ? 'block' : 'none';
+        });
+    }
+
+    // Pencarian
     document.getElementById('searchChat').addEventListener('input', function () {
         const keyword = this.value.toLowerCase();
         const chats = document.querySelectorAll('.chat-item');
@@ -121,9 +192,13 @@
         chats.forEach(chat => {
             const roomName = chat.querySelector('.room-name').textContent.toLowerCase();
             const messagePreview = chat.querySelector('.message-preview').textContent.toLowerCase();
-
             chat.style.display = (roomName.includes(keyword) || messagePreview.includes(keyword)) ? 'block' : 'none';
         });
+    });
+
+    // Inisialisasi default
+    document.addEventListener('DOMContentLoaded', function () {
+        switchTab('semua');
     });
 </script>
 @endsection

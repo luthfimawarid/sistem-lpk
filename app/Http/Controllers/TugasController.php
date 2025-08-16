@@ -2,25 +2,51 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BobotPenilaian;
 use App\Models\Tugas;
 use App\Models\SoalKuis;
 use App\Models\JawabanKuis;
 use App\Models\Notifikasi;
+use App\Models\Sertifikat;
 use App\Models\TugasUser;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http; // Tambahkan baris ini
+
 
 class TugasController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $tugas = Tugas::all();
-        return view('admin.konten.tugas', compact('tugas'));
+        $filterField = $request->get('filter_by');
+        $filterValue = $request->get('filter_value');
 
+        $query = Tugas::query();
+
+        if ($filterField && $filterValue) {
+            if ($filterField === 'deadline') {
+                $query->whereDate('deadline', $filterValue);
+            } else {
+                $query->where($filterField, $filterValue);
+            }
+        }
+
+        $tugas = $query->get();
+
+        // Ambil data unik dari kolom terkait untuk dropdown
+        $bidangOptions = Tugas::select('bidang')->distinct()->pluck('bidang');
+        $tipeOptions = Tugas::select('tipe')->distinct()->pluck('tipe');
+        $deadlineOptions = Tugas::whereNotNull('deadline')
+                                ->selectRaw('DATE(deadline) as deadline')
+                                ->distinct()
+                                ->pluck('deadline');
+
+        return view('admin.konten.tugas', compact('tugas', 'filterField', 'filterValue', 'bidangOptions', 'tipeOptions', 'deadlineOptions'));
     }
+
 
     public function create()
     {
@@ -29,59 +55,48 @@ class TugasController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        // Validasi awal
+        $rules = [
             'judul' => 'required|string|max:255',
             'tipe' => 'required|in:tugas,kuis,ujian_akhir,evaluasi_mingguan,tryout',
-            'cover' => 'nullable|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
+            // 'cover' => 'nullable|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
             'deadline' => 'nullable|date',
             'durasi' => 'nullable|integer|min:1',
-            'status' => 'required|in:belum_selesai,selesai',
             'deskripsi' => 'required|string',
-            'bidang' => 'required|string'
-        ]);
+            'bidang' => 'required|string',
+            'kelas' => 'required|string'
+        ];
+
+        // Validasi tambahan jika ujian akhir atau evaluasi
+        if (in_array($request->tipe, ['ujian_akhir', 'evaluasi_mingguan'])) {
+            $rules['siswa_id'] = 'required|array';
+            $rules['siswa_id.*'] = 'exists:users,id';
+        }
 
         // Validasi khusus ujian akhir
         if ($request->tipe === 'ujian_akhir') {
-            $request->validate([
-                'durasi' => 'required|integer|min:1'
-            ]);
+            $rules['durasi'] = 'required|integer|min:1';
+            $rules['jenis_ujian_akhir'] = 'required|in:bahasa,ssw';
         }
 
-        // Handle upload cover
+        $request->validate($rules);
+
+        // Handle file upload
         $cover = null;
         if ($request->hasFile('cover')) {
             $cover = $request->file('cover')->store('cover_tugas', 'public');
         }
 
-        // Hitung deadline dan durasi
+        // Hitung deadline & durasi
         $durasiMenit = null;
         if ($request->tipe === 'ujian_akhir') {
-            $durasiMenit = (int)$request->durasi;
+            $durasiMenit = (int) $request->durasi;
             $deadline = now()->addMinutes($durasiMenit);
         } else {
             $deadline = $request->deadline;
-            
-            // Reset durasi menit jika bukan ujian akhir
-            if ($request->has('durasi')) {
-                $durasiMenit = null;
-            }
         }
 
-        // Buat tugas
-        $tugasData = [
-            'judul' => $request->judul,
-            'deskripsi' => $request->deskripsi,
-            'tipe' => $request->tipe,
-            'cover' => $cover,
-            'deadline' => $deadline,
-            'durasi_menit' => $durasiMenit,
-            'status' => $request->status,
-            'bidang' => $request->bidang
-        ];
-
-        $tugas = Tugas::create($tugasData);
-
-        // Notifikasi
+        // Setup notifikasi
         $notification = [
             'judul' => 'Tugas Baru!',
             'pesan' => 'Ada tugas baru yang harus kamu kerjakan.',
@@ -94,7 +109,7 @@ class TugasController extends Controller
                 $notification['pesan'] = 'Ada kuis baru yang tersedia. Jangan lupa kerjakan ya.';
                 break;
             case 'evaluasi_mingguan':
-                $notification['judul'] = 'Evaluasi Mingguan Baru!';
+                $notification['judul'] = 'Evaluasi Mingguan!';
                 $notification['pesan'] = 'Yuk cek evaluasi minggu ini.';
                 break;
             case 'tryout':
@@ -103,41 +118,104 @@ class TugasController extends Controller
                 break;
             case 'ujian_akhir':
                 $notification['judul'] = 'Ujian Akhir!';
-                $notification['pesan'] = 'Ujian akhir sudah tersedia. Waktu pengerjaan: '.$durasiMenit.' menit';
+                $notification['pesan'] = 'Ujian akhir sudah tersedia. Waktu pengerjaan: ' . $durasiMenit . ' menit.';
                 break;
         }
 
-        // Kirim notifikasi ke siswa
-        User::where('role', 'siswa')
-            ->where('bidang', $request->bidang)
-            ->each(function ($user) use ($notification, $request) {
+        // Proses TUGAS per siswa (evaluasi mingguan & ujian akhir)
+        if (in_array($request->tipe, ['ujian_akhir', 'evaluasi_mingguan'])) {
+            foreach ($request->siswa_id as $siswaId) {
+                // ✅ Lewati siswa yang sudah punya 2 sertifikat
+                if (\App\Models\Sertifikat::where('user_id', $siswaId)->count() >= 2) {
+                    continue;
+                }
+
+                $tugas = Tugas::create([
+                    'judul' => $request->judul,
+                    'deskripsi' => $request->deskripsi,
+                    'tipe' => $request->tipe,
+                    'jenis_ujian_akhir' => $request->jenis_ujian_akhir,
+                    'deadline' => $deadline,
+                    'durasi_menit' => $durasiMenit,
+                    'kelas' => $request->kelas,
+                    'bidang' => $request->bidang,
+                    'cover' => $cover,
+                    'user_id' => $siswaId
+                ]);
+
+                // Simpan soal jika ada
+                if ($request->tipe === 'ujian_akhir' && $request->has('soal')) {
+                    foreach ($request->soal as $item) {
+                        SoalKuis::create([
+                            'tugas_id' => $tugas->id,
+                            'pertanyaan' => $item['pertanyaan'],
+                            'opsi_a' => $item['opsi_a'],
+                            'opsi_b' => $item['opsi_b'],
+                            'opsi_c' => $item['opsi_c'],
+                            'opsi_d' => $item['opsi_d'],
+                            'jawaban' => $item['jawaban'],
+                        ]);
+                    }
+                }
+
+                // Kirim notifikasi
                 Notifikasi::create([
-                    'user_id' => $user->id,
+                    'user_id' => $siswaId,
                     'judul' => $notification['judul'],
                     'pesan' => $notification['pesan'],
                     'tipe' => $notification['tipe'],
-                    'bidang' => $request->bidang, // pastikan kolom ini ada di tabel
+                    'bidang' => $request->bidang
                 ]);
-            });
+            }
+        } else {
+            // Proses TUGAS biasa
+            $tugas = Tugas::create([
+                'judul' => $request->judul,
+                'deskripsi' => $request->deskripsi,
+                'tipe' => $request->tipe,
+                'deadline' => $deadline,
+                'durasi_menit' => $durasiMenit,
+                'kelas' => $request->kelas,
+                'bidang' => $request->bidang,
+                'cover' => $cover,
+                'user_id' => null
+            ]);
 
+            // Simpan soal jika ada
+            if (in_array($request->tipe, ['kuis', 'tryout']) && $request->has('soal')) {
+                foreach ($request->soal as $item) {
+                    SoalKuis::create([
+                        'tugas_id' => $tugas->id,
+                        'pertanyaan' => $item['pertanyaan'],
+                        'opsi_a' => $item['opsi_a'],
+                        'opsi_b' => $item['opsi_b'],
+                        'opsi_c' => $item['opsi_c'],
+                        'opsi_d' => $item['opsi_d'],
+                        'jawaban' => $item['jawaban'],
+                    ]);
+                }
+            }
 
-        // Simpan soal jika diperlukan
-        if (in_array($request->tipe, ['kuis', 'ujian_akhir','tryout']) && $request->has('soal')) {
-            collect($request->soal)->each(function ($item) use ($tugas) {
-                SoalKuis::create([
-                    'tugas_id' => $tugas->id,
-                    'pertanyaan' => $item['pertanyaan'],
-                    'opsi_a' => $item['opsi_a'],
-                    'opsi_b' => $item['opsi_b'],
-                    'opsi_c' => $item['opsi_c'],
-                    'opsi_d' => $item['opsi_d'],
-                    'jawaban' => $item['jawaban'],
-                ]);
-            });
+            // Kirim notifikasi hanya ke siswa yang belum punya 2 sertifikat
+            User::where('role', 'siswa')
+                ->where('bidang', $request->bidang)
+                ->where('kelas', $request->kelas)
+                ->get()
+                ->filter(function ($user) {
+                    return \App\Models\Sertifikat::where('user_id', $user->id)->count() < 2;
+                })
+                ->each(function ($user) use ($notification, $request) {
+                    Notifikasi::create([
+                        'user_id' => $user->id,
+                        'judul' => $notification['judul'],
+                        'pesan' => $notification['pesan'],
+                        'tipe' => $notification['tipe'],
+                        'bidang' => $request->bidang,
+                    ]);
+                });
         }
 
-        return redirect()->route('tugas.index')
-            ->with('success', 'Tugas berhasil ditambahkan.');
+        return redirect()->route('tugas.index')->with('success', 'Tugas berhasil ditambahkan.');
     }
 
     public function edit($id)
@@ -193,15 +271,20 @@ class TugasController extends Controller
     {
         $user = Auth::user();
 
-        // Ambil semua tugas yang bidang-nya sesuai dengan bidang siswa
+        // Cek jumlah sertifikat yang dimiliki siswa
+        $jumlahSertifikat = Sertifikat::where('user_id', $user->id)->count();
+        $punyaSertifikat = $jumlahSertifikat >= 2;
+
+        // Ambil semua tugas berdasarkan bidang & kelas yang sesuai dengan user
         $tugas = Tugas::with(['tugasUser' => function ($query) use ($user) {
                 $query->where('user_id', $user->id);
             }])
             ->where('bidang', $user->bidang)
+            ->where('kelas', $user->kelas)
             ->orderBy('deadline', 'asc')
             ->get();
 
-        return view('siswa.konten.tugas', compact('tugas'));
+        return view('siswa.konten.tugas', compact('tugas', 'punyaSertifikat'));
     }
 
     public function showSiswa($id)
@@ -468,6 +551,13 @@ class TugasController extends Controller
         return view('admin.konten.detailkuis', compact('tugas', 'pengumpulan'));
     }
 
+    public function showTryout($id)
+    {
+        $tugas = Tugas::with('tugasUser.user')->findOrFail($id);
+
+        return view('admin.konten.detailtryout', compact('tugas'));
+    }
+
 
     public function showPengumpulan($id)
     {
@@ -517,48 +607,69 @@ class TugasController extends Controller
 
     public function nilaiRaporAdmin()
     {
-        $siswa = User::where('role', 'siswa')->get();
+        // Ambil semua siswa dengan relasi tugasUser dan tugas
+        $siswa = User::where('role', 'siswa')->with('tugasUser.tugas')->get();
 
-        $data = $siswa->map(function ($user) {
-            $tugasUser = $user->tugasUser()->with('tugas')->get();
+        // Mengambil bobot dinamis dari database
+        $bobotDB = BobotPenilaian::pluck('bobot', 'jenis_penilaian')->toArray();
+        $bobotTugas = $bobotDB['tugas'] ?? 0;
+        $bobotEvaluasi = $bobotDB['evaluasi_mingguan'] ?? 0;
+        $bobotTryout = $bobotDB['tryout'] ?? 0;
 
-            // Nilai per tipe
-            $nilaiTugas = $tugasUser->where('tugas.tipe', 'tugas')->pluck('nilai')->filter()->avg();
-            $nilaiEvaluasi = $tugasUser->where('tugas.tipe', 'evaluasi_mingguan')->pluck('nilai')->filter()->avg();
-            $nilaiTryout = $tugasUser->where('tugas.tipe', 'tryout')->pluck('nilai')->filter()->avg();
+        $data = $siswa->map(function ($user) use ($bobotTugas, $bobotEvaluasi, $bobotTryout) {
+            
+            // Rata-rata nilai mentah per tipe
+            $rataTugas = $user->tugasUser->where('tugas.tipe', 'tugas')->avg('nilai');
+            $rataEvaluasi = $user->tugasUser->where('tugas.tipe', 'evaluasi_mingguan')->avg('nilai');
+            $rataTryout = $user->tugasUser->where('tugas.tipe', 'tryout')->avg('nilai');
+            
+            // Hitung nilai akhir berbobot
+            $totalNilaiAktif = 0;
+            $totalBobotAktif = 0;
 
-            // Bobot nilai
-            $bobotTugas = 0.3;
-            $bobotEvaluasi = 0.3;
-            $bobotTryout = 0.4;
+            if ($rataTugas) {
+                $totalNilaiAktif += $rataTugas * $bobotTugas;
+                $totalBobotAktif += $bobotTugas;
+            }
+            if ($rataEvaluasi) {
+                $totalNilaiAktif += $rataEvaluasi * $bobotEvaluasi;
+                $totalBobotAktif += $bobotEvaluasi;
+            }
+            if ($rataTryout) {
+                $totalNilaiAktif += $rataTryout * $bobotTryout;
+                $totalBobotAktif += $bobotTryout;
+            }
+            
+            // Hitung nilai persentase
+            $nilaiPersen = ($totalBobotAktif > 0) ? round($totalNilaiAktif / $totalBobotAktif) : 0;
 
-            $nilaiTugas = $nilaiTugas ?? 0;
-            $nilaiEvaluasi = $nilaiEvaluasi ?? 0;
-            $nilaiTryout = $nilaiTryout ?? 0;
+            // Prediksi kelulusan (panggilan API)
+            $prediksi = 'Belum ada prediksi';
+            try {
+                $response = Http::post('http://127.0.0.1:5001/prediksi', [
+                    'tugas' => $rataTugas ?? 0,
+                    'evaluasi' => $rataEvaluasi ?? 0,
+                    'tryout' => $rataTryout ?? 0,
+                ]);
 
-            // Rata-rata keseluruhan berbobot
-            $rataKeseluruhan = ($nilaiTugas * $bobotTugas) + ($nilaiEvaluasi * $bobotEvaluasi) + ($nilaiTryout * $bobotTryout);
-            $rataKeseluruhan = round($rataKeseluruhan, 2);
-
-            // Prediksi kelulusan
-            if ($rataKeseluruhan > 65) {
-                $prediksi = 'Lulus';
-            } elseif ($rataKeseluruhan >= 60) {
-                $prediksi = 'Beresiko';
-            } else {
-                $prediksi = 'Tidak Lulus';
+                if ($response->successful()) {
+                    $json = $response->json();
+                    $prediksi = $json['hasil'];
+                }
+            } catch (\Exception $e) {
+                $prediksi = 'Gagal memuat prediksi';
             }
 
             return [
+                'id' => $user->id,
                 'nama' => $user->nama_lengkap,
                 'kelas' => $user->kelas ?? '-',
                 'bidang' => $user->bidang ?? '-',
-                'nilai_tugas' => $nilaiTugas ? round($nilaiTugas) : '-',
-                'nilai_evaluasi' => $nilaiEvaluasi ? round($nilaiEvaluasi) : '-',
-                'nilai_tryout' => $nilaiTryout ? round($nilaiTryout) : '-',
-                'rata_keseluruhan' => $rataKeseluruhan,
+                'nilai_tugas' => $rataTugas ? round($rataTugas) : '-',
+                'nilai_evaluasi' => $rataEvaluasi ? round($rataEvaluasi) : '-',
+                'nilai_tryout' => $rataTryout ? round($rataTryout) : '-',
                 'prediksi' => $prediksi,
-                'id' => $user->id,
+                'nilai_akhir' => $nilaiPersen, // Tambahkan nilai akhir di sini
             ];
         });
 

@@ -18,22 +18,39 @@
     {{-- Ebook --}}
     <section class="mb-6">
         <div class="flex justify-between items-center flex-wrap gap-2">
-            <p id="ebook-count" class="text-base md:text-lg font-semibold">Ebook ({{ $materi->count() }})</p>
-            <a href="/ebook" class="px-3 py-1 text-sm md:text-base text-[#0A58CA] border border-[#0A58CA] rounded-full font-semibold">Lihat semua</a>
+            <p id="ebook-count" class="text-base md:text-lg font-semibold">
+                Ebook ({{ $materi->count() }})
+            </p>
+            <a href="/ebook" class="px-3 py-1 text-sm md:text-base text-[#0A58CA] border border-[#0A58CA] rounded-full font-semibold">
+                Lihat semua
+            </a>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-            @foreach ($materi->take(3) as $course)
-                <div class="bg-white rounded-lg shadow p-4 text-center">
-                    <img src="{{ asset('/logo.png') }}" alt="Course Image" class="rounded-lg mb-2 mx-auto max-w-[120px] sm:max-w-[140px]">
-                    <p class="font-medium text-sm md:text-base">{{ $course->judul }}</p>
-                    <div class="mt-3 flex flex-col sm:flex-row justify-center gap-2">
-                        <a href="{{ asset('storage/materi/' . $course->file) }}" target="_blank" class="bg-blue-500 text-white px-4 py-2 rounded text-xs sm:text-sm">Buka</a>
-                        <a href="{{ asset('storage/materi/' . $course->file) }}" download class="bg-green-500 text-white px-4 py-2 rounded text-xs sm:text-sm">Unduh</a>
-                    </div>
+
+        <div class="mt-4">
+            @if ($materi->count())
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    @foreach ($materi->take(3) as $course)
+                        <div class="bg-white rounded-lg shadow p-4 text-center">
+                            <img src="{{ asset('/logo.png') }}" alt="Course Image"
+                                class="rounded-lg mb-2 mx-auto max-w-[120px] sm:max-w-[140px]">
+                            <p class="font-medium text-sm md:text-base">{{ $course->judul }}</p>
+                            <div class="mt-3 flex flex-col sm:flex-row justify-center gap-2">
+                                <a href="{{ asset('storage/materi/' . $course->file) }}" target="_blank"
+                                class="bg-blue-500 text-white px-4 py-2 rounded text-xs sm:text-sm">Buka</a>
+                                <a href="{{ asset('storage/materi/' . $course->file) }}" download
+                                class="bg-green-500 text-white px-4 py-2 rounded text-xs sm:text-sm">Unduh</a>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
-            @endforeach
+            @else
+                <p class="text-center text-sm text-gray-500 mt-3">
+                    Belum ada ebook yang tersedia saat ini.
+                </p>
+            @endif
         </div>
     </section>
+
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         {{-- Nilai Chart --}}
@@ -97,102 +114,170 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
         {{-- Job Matching --}}
         <section class="md:col-span-2 bg-white rounded-lg shadow p-4 sm:p-6">
-            <p class="text-base md:text-xl font-semibold mb-2">Job Matching</p>
-            @if ($sertifikatLulus < 2)
-                <p class="text-center text-gray-500 mt-4">Job Matching akan tersedia setelah kamu mendapatkan minimal 2 sertifikat lulus.</p>
+            <p class="text-base md:text-xl font-semibold mb-4">Job Matching</p>
+
+            {{-- ✅ Lowongan tanpa sertifikat --}}
+            <h3 class="text-sm sm:text-base font-semibold mb-2 text-green-600">Lowongan Terbuka (Tanpa Sertifikat)</h3>
+            @if ($jobTanpaSertifikat->isEmpty())
+                <p class="text-gray-500 text-sm mb-4">Tidak ada lowongan yang tersedia tanpa sertifikat.</p>
             @else
-                @if (count($jobMatchings) > 0)
-                    <div class="overflow-x-auto mt-3">
-                        <table class="w-full text-sm text-left">
-                            <thead>
-                                <tr class="text-gray-600 bg-blue-50">
-                                    <th class="py-2 px-3">Posisi</th>
-                                    <th class="py-2 px-3">Perusahaan</th>
-                                    <th class="py-2 px-3">Status Lamaran</th>
-                                    <th class="py-2 px-3">Aksi</th>
+                <div class="overflow-x-auto mb-6">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-[#0A58CA] text-white">
+                            <tr>
+                                <th class="py-2 px-4">Posisi</th>
+                                <th class="py-2 px-4">Perusahaan</th>
+                                <th class="py-2 px-4">Status Lamaran</th>
+                                <th class="py-2 px-4">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($jobTanpaSertifikat as $job)
+                                <tr class="border-t">
+                                    <td class="py-2 px-4">{{ $job->posisi }}</td>
+                                    <td class="py-2 px-4">{{ $job->nama_perusahaan }}</td>
+                                    <td class="py-2 px-4">
+                                        @if (isset($jobApplications[$job->id]))
+                                            <span class="px-2 py-1 text-white rounded
+                                                {{ $jobApplications[$job->id]->status == 'lolos' ? 'bg-green-500' :
+                                                ($jobApplications[$job->id]->status == 'diproses' ? 'bg-yellow-500' : 'bg-red-500') }}">
+                                                {{ ucfirst($jobApplications[$job->id]->status) }}
+                                            </span>
+
+                                            @if ($jobApplications[$job->id]->interview_message)
+                                                <div class="mt-1 text-sm text-blue-600">
+                                                    <p>{{ $jobApplications[$job->id]->interview_message }}</p>
+                                                </div>
+                                            @endif
+                                        @else
+                                            <span class="text-gray-500">Belum Melamar</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-2 px-4">
+                                        @if (!isset($jobApplications[$job->id]))
+                                            <form action="{{ route('siswa.job-matching.apply', $job->id) }}" method="POST">
+                                                @csrf
+                                                <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                                    Lamar
+                                                </button>
+                                            </form>
+                                        @else
+                                            <button disabled class="bg-gray-300 text-gray-600 px-3 py-1 rounded">
+                                                Sudah Melamar
+                                            </button>
+                                        @endif
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($jobMatchings as $job)
-                                    <tr class="border-t">
-                                        <td class="py-2 px-3">{{ $job->posisi }}</td>
-                                        <td class="py-2 px-3">{{ $job->nama_perusahaan }}</td>
-                                        <td class="py-2 px-3">
-                                            @if (isset($jobApplications[$job->id]))
-                                                <span class="px-2 py-1 rounded-full text-white text-xs
-                                                    {{ $jobApplications[$job->id]->status === 'lolos' ? 'bg-green-500' : ($jobApplications[$job->id]->status === 'diproses' ? 'bg-yellow-500' : 'bg-red-500') }}">
-                                                    {{ ucfirst($jobApplications[$job->id]->status) }}
-                                                </span>
-                                            @else
-                                                <span class="text-xs text-gray-500">Belum Melamar</span>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+
+            {{-- ✅ Lowongan butuh sertifikat --}}
+            <h3 class="text-sm sm:text-base font-semibold mb-2 text-indigo-600">Lowongan Khusus (Butuh 2 Sertifikat)</h3>
+            @if ($sertifikatLulus < 2)
+                <p class="text-gray-500 text-sm">Kamu belum memiliki 2 sertifikat lulus. Dapatkan minimal 2 sertifikat untuk melihat lowongan ini.</p>
+            @elseif ($jobButuhSertifikat->isEmpty())
+                <p class="text-gray-500 text-sm">Tidak ada lowongan khusus saat ini.</p>
+            @else
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm text-left">
+                        <thead class="bg-[#0A58CA] text-white">
+                            <tr>
+                                <th class="py-2 px-4">Posisi</th>
+                                <th class="py-2 px-4">Perusahaan</th>
+                                <th class="py-2 px-4">Status Lamaran</th>
+                                <th class="py-2 px-4">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($jobButuhSertifikat as $job)
+                                <tr class="border-t">
+                                    <td class="py-2 px-4">{{ $job->posisi }}</td>
+                                    <td class="py-2 px-4">{{ $job->nama_perusahaan }}</td>
+                                    <td class="py-2 px-4">
+                                        @if (isset($jobApplications[$job->id]))
+                                            <span class="px-2 py-1 text-white rounded
+                                                {{ $jobApplications[$job->id]->status == 'lolos' ? 'bg-green-500' :
+                                                ($jobApplications[$job->id]->status == 'diproses' ? 'bg-yellow-500' : 'bg-red-500') }}">
+                                                {{ ucfirst($jobApplications[$job->id]->status) }}
+                                            </span>
+
+                                            @if ($jobApplications[$job->id]->interview_message)
+                                                <div class="mt-1 text-sm text-blue-600">
+                                                    <p>{{ $jobApplications[$job->id]->interview_message }}</p>
+                                                </div>
                                             @endif
-                                        </td>
-                                        <td class="py-2 px-3">
-                                            @if (!isset($jobApplications[$job->id]))
-                                                <form action="{{ url('/job-matching/apply/' . $job->id) }}" method="POST">
-                                                    @csrf
-                                                    <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">Ajukan Lamaran</button>
-                                                </form>
-                                            @else
-                                                <button disabled class="bg-gray-300 text-gray-600 px-3 py-1 rounded text-xs">Sudah Melamar</button>
-                                            @endif
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <p class="text-center text-gray-500 mt-4">Tidak ada lowongan tersedia saat ini.</p>
-                @endif
+                                        @else
+                                            <span class="text-gray-500">Belum Melamar</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-2 px-4">
+                                        @if (!isset($jobApplications[$job->id]))
+                                            <form action="{{ route('siswa.job-matching.apply', $job->id) }}" method="POST">
+                                                @csrf
+                                                <button class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                                    Lamar
+                                                </button>
+                                            </form>
+                                        @else
+                                            <button disabled class="bg-gray-300 text-gray-600 px-3 py-1 rounded">
+                                                Sudah Melamar
+                                            </button>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             @endif
         </section>
 
         {{-- Prediksi Kelulusan --}}
         <section class="bg-white rounded-lg shadow p-4 sm:p-6">
             <p class="text-base md:text-xl font-semibold mb-4">Prediksi Kelulusan</p>
+            
+            {{-- Menggunakan variabel yang sudah diolah di controller --}}
             @php
                 $warnaBulatan = 'bg-gray-400';
                 $warnaTeks = 'text-gray-700';
-                $persen = $nilaiPersen ?? 0;
-                $saran = 'Belum ada data prediksi.';
+                
                 if ($hasilPrediksi == 'Lulus') {
                     $warnaBulatan = 'bg-green-600';
                     $warnaTeks = 'text-green-600';
-                    $saran = 'Pertahankan konsistensi belajar agar hasil tetap optimal.';
                 } elseif ($hasilPrediksi == 'Beresiko') {
                     $warnaBulatan = 'bg-yellow-500';
                     $warnaTeks = 'text-yellow-600';
-                    $saran = 'Tingkatkan konsistensi belajar dan konsultasikan dengan tutor.';
                 } elseif ($hasilPrediksi == 'Tidak Lulus') {
                     $warnaBulatan = 'bg-red-600';
                     $warnaTeks = 'text-red-600';
-                    $saran = 'Segera evaluasi proses belajar dan minta bantuan mentor.';
                 }
             @endphp
+            
             <div class="flex justify-around items-center mb-4">
-                <div class="{{ $warnaBulatan }} text-white rounded-full w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center text-base sm:text-lg font-bold">
-                    {{ $persen }}%
+                {{-- Menggunakan variabel yang sudah diolah --}}
+                <div class="bg {{ $warnaBulatan }} text-white rounded-full w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center text-base sm:text-lg font-bold">
+                    {{ $nilaiPersen ?? 0 }}%
                 </div>
                 <p class="{{ $warnaTeks }} font-medium text-base sm:text-xl">
                     {{ $hasilPrediksi }}
                 </p>
             </div>
-            <form method="POST" action="{{ route('siswa.refresh.prediksi') }}">
-                @csrf
-                <button class="bg-[#0A58CA] w-full text-white px-4 py-2 rounded-full text-sm sm:text-base hover:bg-blue-600 transition">Cek Prediksi</button>
-            </form>
-            @if ($hanyaSatuNilai)
+            
+            <button id="btnCekPrediksi" class="bg-[#0A58CA] w-full text-white px-4 py-2 rounded-full text-sm sm:text-base hover:bg-blue-600 transition flex items-center justify-center">
+                <span id="textCek">Cek Prediksi</span>
+                <svg id="loadingIcon" class="animate-spin ml-2 h-4 w-4 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-65" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+            </button>
+            
+            {{-- Kondisional untuk menampilkan catatan/saran --}}
+            @if ($saran)
                 <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 my-4 rounded-md text-sm sm:text-base">
-                    <strong>Catatan:</strong> Saat ini prediksi hanya dihitung berdasarkan satu jenis nilai. Untuk hasil prediksi yang lebih akurat, lengkapi nilai dari Tugas, Evaluasi, dan Tryout.
-                </div>
-            @elseif (!$hanyaSatuNilai && $rataTugas > 0 && $rataEvaluasi > 0 && $rataTryout > 0)
-                <div class="bg-gray-100 p-3 mt-3 rounded-md text-sm sm:text-base text-gray-700">
-                    <p><strong>Saran:</strong> {{ $saran }}</p>
-                </div>
-            @elseif ($rataTugas == 0 && $rataEvaluasi == 0 && $rataTryout == 0)
-                <div class="bg-gray-100 p-3 mt-3 rounded-md text-sm sm:text-base text-gray-700">
-                    <p><strong>Saran:</strong> Belum ada data nilai.</p>
+                    <strong>Catatan:</strong> {{ $saran }}
                 </div>
             @endif
         </section>

@@ -1,29 +1,60 @@
 from flask import Flask, request, jsonify
+import joblib
+import pandas as pd
+from model_manual import ManualDecisionTree
 
 app = Flask(__name__)
+
+# Load model manual decision tree
+model = joblib.load("model_kelulusan.pkl")
+
+def get_persentase_dan_saran(hasil):
+    """
+    Fungsi untuk menentukan persentase dan saran berdasarkan hasil prediksi.
+    """
+    if hasil == 'Lulus':
+        return 70, 'Pertahankan konsistensi belajar agar hasil tetap optimal.'
+    elif hasil == 'Beresiko':
+        return 62, 'Tingkatkan konsistensi belajar dan konsultasikan dengan tutor.'
+    else: # Jika hasil adalah 'Tidak Lulus' atau lainnya
+        return 55, 'Segera evaluasi proses belajar dan minta bantuan mentor.'
 
 @app.route('/prediksi', methods=['POST'])
 def prediksi():
     data = request.get_json()
-    tugas = data['tugas']
-    evaluasi = data['evaluasi']
-    tryout = data['tryout']
+    
+    # Ambil input
+    tugas = float(data.get('tugas', 0)) # Menggunakan .get() untuk menghindari error jika key tidak ada
+    evaluasi = float(data.get('evaluasi', 0))
+    tryout = float(data.get('tryout', 0))
 
-    bobot_tugas = data.get('bobot_tugas', 30)
-    bobot_evaluasi = data.get('bobot_evaluasi', 30)
-    bobot_tryout = data.get('bobot_tryout', 40)
+    # Handle kasus jika semua nilai 0
+    if tugas == 0 and evaluasi == 0 and tryout == 0:
+        return jsonify({
+            'hasil': 'Belum ada prediksi',
+            'persentase': 0,
+            'saran': 'Belum ada data nilai yang cukup untuk melakukan prediksi.'
+        })
 
-    # Hitung nilai akhir berdasarkan bobot dinamis
-    total = (tugas * bobot_tugas + evaluasi * bobot_evaluasi + tryout * bobot_tryout) / 100
+    # Buat DataFrame 1 baris untuk prediksi
+    df = pd.DataFrame([{
+        'tugas': tugas,
+        'evaluasi': evaluasi,
+        'tryout': tryout
+    }])
+    
+    # Prediksi menggunakan model
+    hasil = model.predict(df)[0]
+    
+    # Dapatkan persentase dan saran berdasarkan hasil prediksi
+    persentase, saran = get_persentase_dan_saran(hasil)
 
-    if total > 65:
-        hasil = 'Lulus'
-    elif total >= 60:
-        hasil = 'Beresiko'
-    else:
-        hasil = 'Tidak Lulus'
-
-    return jsonify({'hasil': hasil, 'skor': total})
+    # Kembalikan semua data yang dibutuhkan Laravel
+    return jsonify({
+        'hasil': hasil,
+        'persentase': persentase,
+        'saran': saran
+    })
 
 if __name__ == '__main__':
     app.run(port=5001)

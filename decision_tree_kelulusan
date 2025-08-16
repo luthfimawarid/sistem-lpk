@@ -1,0 +1,15 @@
+digraph {
+	A [label="Tryout ≥ 65?"]
+	B [label="Evaluasi Mingguan ≥ 65?"]
+	C [label="Tugas ≥ 65?"]
+	D [label=Lulus]
+	E [label=Beresiko]
+	F [label=Beresiko]
+	G [label="Tidak Lulus"]
+	A -> B [label=Ya]
+	A -> C [label=Tidak]
+	B -> D [label=Ya]
+	B -> E [label=Tidak]
+	C -> F [label=Ya]
+	C -> G [label=Tidak]
+}

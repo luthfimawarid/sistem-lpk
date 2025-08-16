@@ -1,43 +1,40 @@
+# prediksi_kelulusan.py
+
 import pandas as pd
 import joblib
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, export_text
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
 
-# Load data
+# 1. Load data
 data = pd.read_csv("ml/data-siswa.csv")
 
-# Hitung skor akhir dengan bobot
-data['skor_akhir'] = (
-    data['tryout'] * 0.4 +
-    data['evaluasi'] * 0.3 +
-    data['tugas'] * 0.3
-)
+# Pastikan kolom 'label' sudah ada di CSV
+if 'label' not in data.columns:
+    raise ValueError("Kolom 'label' harus ada di dataset untuk Decision Tree asli")
 
-# Buat label berdasarkan aturan
-def labelkan(skor):
-    if skor < 60:
-        return 'Tidak Lulus'
-    elif skor <= 65:
-        return 'Beresiko'
-    else:
-        return 'Lulus'
-
-data['label'] = data['skor_akhir'].apply(labelkan)
-
-# Fitur dan label
+# 2. Pisahkan fitur dan target
 X = data[['tugas', 'evaluasi', 'tryout']]
 y = data['label']
 
-# Train model
+# 3. Split data train & test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-model = DecisionTreeClassifier()
+
+# 4. Buat dan latih model Decision Tree
+model = DecisionTreeClassifier(criterion='entropy', max_depth=3, random_state=42)
 model.fit(X_train, y_train)
 
-# Save model
+# 5. Prediksi untuk data test
+y_pred = model.predict(X_test)
+
+# 6. Evaluasi akurasi
+print("Akurasi:", accuracy_score(y_test, y_pred))
+
+# 7. Simpan model
 joblib.dump(model, "model_kelulusan.pkl")
 print("Model berhasil disimpan!")
 
-# Evaluasi
-y_pred = model.predict(X_test)
-print("Akurasi:", accuracy_score(y_test, y_pred))
+# 8. Lihat aturan pohon
+rules = export_text(model, feature_names=['tugas', 'evaluasi', 'tryout'])
+print("\nStruktur Decision Tree:")
+print(rules)

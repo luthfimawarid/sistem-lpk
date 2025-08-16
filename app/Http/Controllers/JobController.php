@@ -2,18 +2,54 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\JobApplied;
+use App\Models\Notifikasi; // ← ini penting
 use App\Models\JobApplication;
 use App\Models\JobMatching;
 use Illuminate\Http\Request;
+use App\Models\Tugas; // pastikan di atas ada ini
 use Illuminate\Support\Facades\Auth;
 
 class JobController extends Controller
 {
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
-        $jobs = JobMatching::withCount('jobApplications')->get(); // Hitung pelamar
-        return view('admin.konten.jobmatching', compact('jobs'));
+        $sortField = $request->get('sort_by', 'posisi');
+        $sortValue = $request->get('filter_value');
+
+        // Validasi kolom yang diperbolehkan
+        $allowedSortFields = ['posisi', 'bidang', 'lokasi', 'nama_perusahaan'];
+
+        if (!in_array($sortField, $allowedSortFields)) {
+            $sortField = 'posisi';
+        }
+
+        // Ambil semua data yang sesuai filter (jika ada)
+        $query = JobMatching::withCount('jobApplications');
+
+        if ($sortValue) {
+            $query->where($sortField, $sortValue);
+        }
+
+        $jobs = $query->orderBy($sortField)->get();
+
+        // Ambil opsi unik dari DB
+        $posisiOptions = JobMatching::select('posisi')->distinct()->pluck('posisi');
+        $bidangOptions = JobMatching::select('bidang')->distinct()->pluck('bidang');
+        $lokasiOptions = JobMatching::select('lokasi')->distinct()->pluck('lokasi');
+        $perusahaanOptions = JobMatching::select('nama_perusahaan')->distinct()->pluck('nama_perusahaan');
+
+        return view('admin.konten.jobmatching', compact(
+            'jobs',
+            'sortField',
+            'sortValue',
+            'posisiOptions',
+            'bidangOptions',
+            'lokasiOptions',
+            'perusahaanOptions'
+        ));
     }
+
 
     // Menampilkan pelamar untuk 1 job
     public function viewApplicants($id)
@@ -30,11 +66,13 @@ class JobController extends Controller
     {
         $userId = Auth::id();
 
-        // Cek lowongan
-        $job = JobMatching::where('id', $jobId)->where('status', 'terbuka')->firstOrFail();
+        $job = JobMatching::where('id', $jobId)
+            ->where('status', 'terbuka')
+            ->firstOrFail();
 
-        // Cek apakah sudah melamar
-        $alreadyApplied = JobApplication::where('job_matching_id', $jobId)->where('user_id', $userId)->exists();
+        $alreadyApplied = JobApplication::where('job_matching_id', $jobId)
+            ->where('user_id', $userId)
+            ->exists();
 
         if ($alreadyApplied) {
             return redirect()->back()->with('error', 'Kamu sudah mengajukan lamaran untuk posisi ini.');
@@ -47,8 +85,20 @@ class JobController extends Controller
             'status' => 'diajukan',
         ]);
 
+        // Tambahkan notifikasi
+        Notifikasi::create([
+            'user_id' => 1,
+            'judul'   => 'Lamaran Baru',
+            'pesan'   => Auth::user()->nama_lengkap . ' melamar posisi ' . $job->posisi . ' di ' . $job->nama_perusahaan,
+            'tipe'    => 'Lamaran',
+            'bidang'  => null, // karena nullable
+            'dibaca'  => 0,
+        ]);
+
         return redirect()->back()->with('success', 'Lamaran berhasil diajukan.');
     }
+
+
 
     public function updateApplication(Request $request, $id)
     {
@@ -76,12 +126,15 @@ class JobController extends Controller
             'lokasi' => 'required|string|max:255',
             'deskripsi' => 'required',
             'status' => 'required|in:terbuka,tertutup',
+            'bidang' => 'required|string|max:255',
         ]);
 
         $data = $request->all();
-        $data['user_id'] = auth()->id();  // pastikan user login, kalau belum ada bisa diisi manual
+        $data['user_id'] = auth()->id();
+        $data['butuh_sertifikat'] = $request->has('butuh_sertifikat'); // checkbox handling
 
         JobMatching::create($data);
+
 
         return redirect()->route('admin.job-matching.index')->with('success', 'Lowongan berhasil ditambahkan.');
     }
@@ -98,16 +151,22 @@ class JobController extends Controller
         $request->validate([
             'posisi' => 'required|string|max:255',
             'nama_perusahaan' => 'required|string|max:255',
-            'lokasi' => 'required|string|max:255',  // tambah validasi lokasi
+            'lokasi' => 'required|string|max:255',
             'deskripsi' => 'required',
             'status' => 'required|in:terbuka,tertutup',
+            'bidang' => 'required|string|max:255',
         ]);
 
         $job = JobMatching::findOrFail($id);
-        $job->update($request->all());
+
+        $data = $request->all();
+        $data['butuh_sertifikat'] = $request->has('butuh_sertifikat'); // checkbox: true if checked, false if not
+
+        $job->update($data);
 
         return redirect()->route('admin.job-matching.index')->with('success', 'Lowongan berhasil diperbarui.');
     }
+
 
     public function destroy($id)
     {
@@ -121,16 +180,49 @@ class JobController extends Controller
     {
         $user = auth()->user();
         $sertifikatLulus = $user->sertifikat()->count();
+        $bidangSiswa = $user->bidang;
 
-        $jobMatchings = JobMatching::where('status', 'terbuka')->get();
+        // ✅ Cek nilai evaluasi mingguan di tabel tugas_user yang join dengan tugas
+        $punyaNilaiEvaluasi = Tugas::join('tugas_user', 'tugas.id', '=', 'tugas_user.tugas_id')
+            ->where('tugas_user.user_id', $user->id)
+            ->where('tugas.tipe', 'evaluasi_mingguan')
+            ->whereNotNull('tugas_user.nilai')
+            ->exists();
 
-        // Ambil semua aplikasi user
+        // ✅ Lowongan tanpa sertifikat hanya muncul kalau sudah ada nilai evaluasi mingguan
+        $jobTanpaSertifikat = collect();
+        if ($punyaNilaiEvaluasi) {
+            $jobTanpaSertifikat = JobMatching::where('status', 'terbuka')
+                ->where('butuh_sertifikat', false)
+                ->where('bidang', $bidangSiswa)
+                ->get();
+        }
+
+        // ✅ Lowongan yang butuh sertifikat
+        $jobButuhSertifikat = $sertifikatLulus >= 2
+            ? JobMatching::where('status', 'terbuka')
+                ->where('butuh_sertifikat', true)
+                ->where('bidang', $bidangSiswa)
+                ->get()
+            : collect();
+
+        // ✅ Cek lamaran yang sudah dilakukan siswa
         $jobApplications = JobApplication::where('user_id', $user->id)
             ->get()
-            ->keyBy('job_matching_id'); // agar bisa diakses pakai $job->id
+            ->keyBy('job_matching_id');
 
-        return view('siswa.konten.job-matching', compact('jobMatchings', 'jobApplications', 'sertifikatLulus'));
+        return view('siswa.konten.job-matching', compact(
+            'jobTanpaSertifikat',
+            'jobButuhSertifikat',
+            'jobApplications',
+            'sertifikatLulus',
+            'punyaNilaiEvaluasi'
+        ));
     }
+
+
+
+
 
 
     // public function apply($id)

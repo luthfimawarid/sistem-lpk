@@ -44,13 +44,13 @@
                         'Pertanian',
                         'Perikanan',
                         'Pengolahan Makanan dan Minuman',
-                        'Jasa Makanan'
+                        'Restoran/Cafe'
                     ];
                 @endphp
 
                 <div id="bidang-skill">
                     <label for="bidang" class="block font-medium mb-1">Bidang</label>
-                    <select name="bidang" id="bidang" class="w-full border rounded p-2" required>
+                    <select name="bidang" id="bidang" class="w-full border rounded p-2">
                         <option value="">-- Pilih Bidang --</option>
                         @foreach($listBidang as $bidang)
                             <option value="{{ $bidang }}">{{ $bidang }}</option>
@@ -91,6 +91,19 @@
     document.addEventListener('DOMContentLoaded', function () {
         toggleTipe(); // untuk kondisi jika user kembali atau reload
     });
+    function toggleTipe() {
+        const tipe = document.getElementById('tipe').value;
+        const bidangDiv = document.getElementById('bidang-skill');
+        const bidangSelect = document.getElementById('bidang');
+
+        if (tipe === 'skill') {
+            bidangDiv.classList.remove('hidden');
+            bidangSelect.setAttribute('required', 'required');
+        } else {
+            bidangDiv.classList.add('hidden');
+            bidangSelect.removeAttribute('required');
+        }
+    }
 </script>
 
 @endsection

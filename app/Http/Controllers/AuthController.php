@@ -42,13 +42,28 @@ class AuthController extends Controller
         return redirect('/');
     }
     
-    public function index()
+    public function index(Request $request)
     {
-        // Ambil semua user yang rolenya "siswa"
-        $siswas = User::where('role', 'siswa')->get();
+        $filterField = $request->get('filter_by');
+        $filterValue = $request->get('filter_value');
 
-        return view('admin.konten.siswa', compact('siswas'));
+        // Ambil semua siswa
+        $query = User::where('role', 'siswa');
+
+        // Terapkan filter jika ada
+        if ($filterField && $filterValue) {
+            $query->where($filterField, $filterValue);
+        }
+
+        $siswas = $query->get();
+
+        // Ambil daftar kelas & bidang unik dari DB
+        $kelasOptions = User::where('role', 'siswa')->select('kelas')->distinct()->pluck('kelas');
+        $bidangOptions = User::where('role', 'siswa')->select('bidang')->distinct()->pluck('bidang');
+
+        return view('admin.konten.siswa', compact('siswas', 'filterField', 'filterValue', 'kelasOptions', 'bidangOptions'));
     }
+
 
     public function create() {
         return view('admin.konten.tambahsiswa');
@@ -61,7 +76,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string',
             'kelas' => 'required|string',
-            'bidang' => 'required|string|in:Perawatan (Kaigo/Caregiver),Pembersihan Gedung,Konstruksi,Manufaktur Mesin Industri,Elektronik dan Listrik,Perhotelan,Pertanian,Perikanan,Pengolahan Makanan dan Minuman,Jasa Makanan',
+            'bidang' => 'required|string|in:Perawatan (Kaigo/Caregiver),Pembersihan Gedung,Konstruksi,Manufaktur Mesin Industri,Elektronik dan Listrik,Perhotelan,Pertanian,Perikanan,Pengolahan Makanan dan Minuman,Restoran/Cafe',
             'foto' => 'nullable|image',
             'tanggal_lahir' => 'nullable|date',
             'dokumen.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png'
@@ -179,23 +194,39 @@ class AuthController extends Controller
             'nama_lengkap' => 'required|string',
             'email' => 'required|email|unique:users,email,' . $siswa->id,
             'kelas' => 'required|string',
+            'tanggal_lahir' => 'nullable|date',
+            'bidang' => 'required|string',
         ]);
 
+        // Update data dasar
         $siswa->nama_lengkap = $request->nama_lengkap;
         $siswa->email = $request->email;
         $siswa->kelas = $request->kelas;
+        $siswa->tanggal_lahir = $request->tanggal_lahir;
+        $siswa->bidang = $request->bidang;
 
         if ($request->filled('password')) {
-            $siswa->password = Hash::make($request->password);
+            $siswa->password = \Hash::make($request->password);
         }
 
+        // Foto
         if ($request->hasFile('foto')) {
             $siswa->foto = $request->file('foto')->store('foto_siswa', 'public');
         }
 
+        // Dokumen Pendukung
+        if ($request->hasFile('dokumen')) {
+            $dokumenData = $siswa->dokumen ?? []; // array existing
+            foreach ($request->file('dokumen') as $label => $file) {
+                $key = Str::slug($label, '_'); // contoh: Paspor => paspor
+                $dokumenData[$key] = $file->store('dokumen_siswa', 'public');
+            }
+            $siswa->dokumen = $dokumenData;
+        }
+
         $siswa->save();
 
-        return redirect()->route('admin.siswa.index', $siswa->id)->with('success', 'Data siswa berhasil diupdate');
+        return redirect()->route('admin.siswa.index')->with('success', 'Data siswa berhasil diupdate');
     }
 
     public function destroy($id)

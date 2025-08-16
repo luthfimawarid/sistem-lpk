@@ -1,3 +1,12 @@
+@php
+    $adminNotifications = \DB::table('notifikasi')
+        ->join('users', 'notifikasi.user_id', '=', 'users.id')
+        ->where('users.role', 'admin')
+        ->orderBy('notifikasi.created_at', 'desc')
+        ->take(5)
+        ->get();
+@endphp
+
 <!DOCTYPE html>
 <html lang="en" class="font-[Poppins]">
 <head>
@@ -11,26 +20,45 @@
 </head>
 <body>
 
-    <!-- Button to open sidebar (mobile view) -->
     <div class="flex justify-between items-center bg-white p-3 md:p-5 shadow">
-            <!-- Tombol Hamburger -->
-            <button id="sidebar-toggle" type="button"
-                class="p-2 text-gray-500 rounded-lg sm:hidden hover:bg-[#A6CDC6] focus:ring-2 focus:ring-gray-300">
-                <span class="sr-only">Open sidebar</span>
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zM2 10a.75.75 0 012.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10zM2 15.25a.75.75 0 012.75-.75h7.5a.75.75 0 010 1.5h-7.5A.75.75 0 012 15.25z"></path>
-                </svg>
-            </button>
+        <button id="sidebar-toggle" type="button"
+            class="p-2 text-gray-500 rounded-lg sm:hidden hover:bg-[#A6CDC6] focus:ring-2 focus:ring-gray-300">
+            <span class="sr-only">Open sidebar</span>
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zM2 10a.75.75 0 012.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10zM2 15.25a.75.75 0 012.75-.75h7.5a.75.75 0 010 1.5h-7.5A.75.75 0 012 15.25z"></path>
+            </svg>
+        </button>
 
-            <!-- Teks Welcome Back -->
-            <h1 class="text-sm md:text-xl md:ml-64 font-semibold">
-                Welcome Back, {{ Auth::user()->nama_lengkap }}!
-            </h1>
-            <!-- Ikon Profil & Search -->
-            <div class="flex items-center space-x-3 md:space-x-3">
-                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+        <h1 class="text-sm md:text-xl md:ml-64 font-semibold">
+            Welcome Back, {{ Auth::user()->nama_lengkap }}!
+        </h1>
+        <div class="flex items-center space-x-3 md:space-x-3">
+            <div class="px-4 py-3 flex items-center gap-2 w-full rounded-md border border-gray-300 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500">
+                <input 
+                    type="text" 
+                    id="sidebarSearch" 
+                    placeholder="Cari menu..." 
+                    class="w-full focus:outline-none"
+                />
+                <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/>
                 </svg>
+            </div>
+
+            <div class="flex items-center space-x-3 md:space-x-3">
+                <div class="relative">
+                    <a href="{{ route('notifikasi.admin') }}" class="focus:outline-none relative">
+                        <svg class="w-8 h-8 mt-1 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M17.133 12.632v-1.8a5.406 5.406 0 0 0-4.154-5.262.955.955 0 0 0 .021-.106V3.1a1 1 0 0 0-2 0v2.364a.955.955 0 0 0 .021.106 5.406 5.406 0 0 0-4.154 5.262v1.8C6.867 15.018 5 15.614 5 16.807 5 17.4 5 18 5.538 18h12.924C19 18 19 17.4 19 16.807c0-1.193-1.867-1.789-1.867-4.175ZM8.823 19a3.453 3.453 0 0 0 6.354 0H8.823Z"/>
+                        </svg>
+                        @if($adminNotifications->where('dibaca', false)->count() > 0)
+                            <span class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
+                                {{ $adminNotifications->where('dibaca', false)->count() }}
+                            </span>
+                        @endif
+                    </a>
+                </div>
+
                 <div class="relative">
                     <button id="profileBtn" class="focus:outline-none">
                         <svg class="w-8 h-8 mt-1.5 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -38,7 +66,6 @@
                         </svg>
                     </button>
 
-                    <!-- Dropdown Menu -->
                     <div id="profileDropdown"
                         class="hidden absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border z-50">
                         <a href="/profil-admin" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Lihat Profil</a>
@@ -50,8 +77,8 @@
                 </div>
             </div>
         </div>
+    </div>
 
-    <!-- Sidebar -->
     <aside id="sidebar" class="fixed top-0 left-0 z-40 w-64 text-white h-full shadow-md transform -translate-x-full transition-transform sm:translate-x-0" style="background-color: #0A58CA;">
         <div class="p-4">
             <div class="p-4 flex justify-center">
@@ -101,7 +128,6 @@
                             <span>Video</span>
                         </a>
                     </div>
-
                 </li>
                 <li>
                     <a href="/chat-admin" class="flex items-center p-2 rounded-lg hover:bg-[#A6CDC6]">
@@ -164,66 +190,90 @@
     </aside>
 
     <div class="min-h-screen lg:ml-64" style="background-color:rgb(223, 238, 255);">
-        @yield('content')
+        <div id="mainContent">
+            @yield('content')
+        </div>
     </div>
+
     @yield('scripts')
 
-    <!-- JavaScript -->
     <script>
-        const profileBtn = document.getElementById('profileBtn');
-            const profileDropdown = document.getElementById('profileDropdown');
+        document.addEventListener("DOMContentLoaded", function () {
+            // Menandai link aktif berdasarkan URL saat ini
+            const links = document.querySelectorAll('a[href]');
+            const currentURL = window.location.pathname;
 
-            profileBtn.addEventListener('click', function () {
-                profileDropdown.classList.toggle('hidden');
-            });
-
-            // Tutup dropdown saat klik di luar area
-            window.addEventListener('click', function (e) {
-                if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
-                    profileDropdown.classList.add('hidden');
+            links.forEach(link => {
+                if (link.getAttribute('href') === currentURL) {
+                    link.classList.add('active-link');
                 }
             });
-       document.addEventListener("DOMContentLoaded", function () {
-        // Menandai link aktif berdasarkan URL saat ini
-        const links = document.querySelectorAll('a[href]');
-        const currentURL = window.location.pathname;
 
-        links.forEach(link => {
-            if (link.getAttribute('href') === currentURL) {
-                link.classList.add('active-link');
+            // Dropdown menu "Materi" toggle
+            const dropdownBtn = document.getElementById('dropdown-btn');
+            const dropdownMenu = document.getElementById('dropdown-menu');
+            const chevron = document.getElementById('chevron');
+
+            if (dropdownBtn && dropdownMenu && chevron) {
+                dropdownBtn.addEventListener('click', () => {
+                    dropdownMenu.classList.toggle('hidden');
+                    chevron.classList.toggle('rotate-90');
+                });
             }
-        });
+            
+            // Dropdown menu "Profil" toggle
+            const profileBtn = document.getElementById('profileBtn');
+            const profileDropdown = document.getElementById('profileDropdown');
 
-        // Dropdown menu toggle
-        const dropdownBtn = document.getElementById('dropdown-btn');
-        const dropdownMenu = document.getElementById('dropdown-menu');
-        const chevron = document.getElementById('chevron');
+            if (profileBtn && profileDropdown) {
+                profileBtn.addEventListener('click', function() {
+                    profileDropdown.classList.toggle('hidden');
+                });
 
-        if (dropdownBtn && dropdownMenu && chevron) {
-            dropdownBtn.addEventListener('click', () => {
-                dropdownMenu.classList.toggle('hidden');
-                chevron.classList.toggle('rotate-90'); // Animasi rotasi ikon
-            });
-        }
-
-        // Sidebar toggle untuk tampilan mobile
-        const sidebarToggle = document.getElementById('sidebar-toggle');
-        const sidebar = document.getElementById('sidebar');
-
-        if (sidebarToggle && sidebar) {
-            sidebarToggle.addEventListener('click', function () {
-                sidebar.classList.toggle('-translate-x-full');
-            });
-        }
-
-        // Menutup sidebar jika klik di luar sidebar (untuk UX yang lebih baik)
-        document.addEventListener('click', function (event) {
-            if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
-                sidebar.classList.add('-translate-x-full');
+                window.addEventListener('click', function(e) {
+                    if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                        profileDropdown.classList.add('hidden');
+                    }
+                });
             }
+
+            // Sidebar toggle untuk tampilan mobile
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', function () {
+                    sidebar.classList.toggle('-translate-x-full');
+                });
+
+                document.addEventListener('click', function (event) {
+                    if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                        sidebar.classList.add('-translate-x-full');
+                    }
+                });
+            }
+
+            // Search bar functionality (sudah benar, tidak perlu diubah)
+            const searchInput = document.getElementById('sidebarSearch');
+            let debounceTimer;
+
+            searchInput.addEventListener('input', function () {
+                const query = this.value.trim();
+                if (query === '') {
+                    return;
+                }
+
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    fetch(`/search-content?q=${encodeURIComponent(query)}`)
+                        .then(res => res.text())
+                        .then(html => {
+                            document.getElementById('mainContent').innerHTML = html;
+                        })
+                        .catch(err => console.error('Search error:', err));
+                }, 300);
+            });
         });
-    });
     </script>
-
 </body>
 </html>

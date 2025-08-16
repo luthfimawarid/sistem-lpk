@@ -1,49 +1,151 @@
 Nama,tugas,evaluasi,tryout,label
-Imam Habib Abdillah,95.333,90.47,82.75,Lulus
-Muhamad Satori,93.5,88.6,90.75,Lulus
-Ela Rahmawati,94.25,86.55,84,Lulus
-Dahnia Wati,93,75.73,78,Beresiko
-Novi Rahmadiyana,91.833,75.5,68.25,Beresiko
-Milati Alvi,91.75,75.16,71.25,Beresiko
-Adi Maulana,86.083,74.23,50,Beresiko
-Retno Putri Angguni,91.083,69.83,63,Beresiko
-Dina Diana Zahro,89.916,65.83,43.75,Tidak Lulus
-Sandi Aryanto,79.75,64.06,51.5,Tidak Lulus
-Bagus Subagja,86.666,63.69,57.75,Tidak Lulus
-Farrel Putra Mulyadi,88.583,63.64,65,Beresiko
-Indra Irawan,82.75,63.63,38.5,Tidak Lulus
-Andri Wahyu Budiman,78.5,62.26,49,Tidak Lulus
-Ikhrom,82.166,60.64,55.75,Tidak Lulus
-Natasya Salsyabila,90.833,55.32,43.5,Tidak Lulus
-Dandi Arista,76.583,60.33,63,Beresiko
-Kristian Junaedi,73.75,44.4,37.75,Tidak Lulus
-Nabila Zahra,96.2,91.3,88.6,Lulus
-Fikri Ramadhan,85.4,78.9,70.2,Beresiko
-Citra Yuliana,91.0,85.5,79.3,Lulus
-Dewi Kartika,89.1,76.5,68.0,Beresiko
-Aldi Nugraha,70.5,59.2,44.3,Tidak Lulus
-Rizky Pratama,88.3,82.7,86.5,Lulus
-Galuh Permana,83.0,71.0,59.0,Beresiko
-Naufal Hadi,72.5,66.0,55.5,Tidak Lulus
-Salsabila Anjani,94.2,89.0,90.1,Lulus
-Yusuf Ibrahim,79.3,61.5,52.4,Tidak Lulus
-Laras Mentari,87.5,79.8,75.0,Beresiko
-Dea Ayu Lestari,92.8,88.5,85.2,Lulus
-Rendi Saputra,81.1,73.4,66.6,Beresiko
-Silvi Ramadhani,74.6,58.9,48.8,Tidak Lulus
-Farel Dwi Putra,89.7,85.0,78.9,Lulus
-Anisa Maulida,77.4,65.1,54.3,Tidak Lulus
-Raka Arya,85.2,80.6,72.4,Beresiko
-Meisya Putri,93.3,87.9,90.0,Lulus
-Zaki Ahmad,84.0,74.5,69.1,Beresiko
-Tiara Andini,92.6,91.1,92.2,Lulus
-Dina Kurnia,88.9,80.0,74.8,Beresiko
-Fauzan Reza,69.4,53.7,39.9,Tidak Lulus
-Ayu Safitri,86.6,82.1,70.0,Beresiko
-Arif Setiawan,91.5,88.3,87.4,Lulus
-Yulia Puspita,75.5,62.7,48.2,Tidak Lulus
-Hilman Nugroho,87.2,81.4,76.5,Beresiko
-Lutfi Hidayat,93.8,90.9,88.0,Lulus
-Intan Maulani,72.1,60.2,50.0,Tidak Lulus
-Hana Dwi Lestari,80.3,70.0,65.7,Beresiko
-Reza Maulana,95.1,89.4,91.8,Lulus
+Siswa_001,75.24,92.61,40.75,Beresiko
+Siswa_002,88.26,73.91,68.03,Lulus
+Siswa_003,71.06,94.94,99.52,Lulus
+Siswa_004,60.0,43.32,76.43,Tidak Lulus
+Siswa_005,77.93,52.38,74.4,Beresiko
+Siswa_006,98.25,96.14,94.32,Lulus
+Siswa_007,82.78,82.71,91.2,Lulus
+Siswa_008,89.05,78.12,68.5,Lulus
+Siswa_009,54.99,98.47,84.73,Tidak Lulus
+Siswa_010,52.51,80.61,53.06,Tidak Lulus
+Siswa_011,53.02,79.12,82.05,Beresiko
+Siswa_012,68.46,44.89,65.97,Beresiko
+Siswa_013,65.36,47.46,44.25,Tidak Lulus
+Siswa_014,81.14,76.46,58.04,Lulus
+Siswa_015,56.45,71.33,83.25,Beresiko
+Siswa_016,68.2,56.27,87.14,Lulus
+Siswa_017,90.36,70.43,79.35,Lulus
+Siswa_018,43.59,54.14,45.13,Tidak Lulus
+Siswa_019,46.66,41.97,93.66,Beresiko
+Siswa_020,58.53,50.65,56.7,Beresiko
+Siswa_021,44.64,67.69,80.2,Beresiko
+Siswa_022,60.52,83.53,92.18,Lulus
+Siswa_023,46.15,59.25,63.85,Beresiko
+Siswa_024,43.78,81.63,76.19,Lulus
+Siswa_025,54.31,70.6,66.31,Beresiko
+Siswa_026,48.05,62.4,59.21,Beresiko
+Siswa_027,96.59,55.17,65.84,Lulus
+Siswa_028,55.83,58.47,98.03,Lulus
+Siswa_029,93.98,44.83,82.7,Lulus
+Siswa_030,98.31,63.92,46.71,Lulus
+Siswa_031,71.19,57.27,67.5,Beresiko
+Siswa_032,65.03,96.66,57.61,Lulus
+Siswa_033,79.51,56.29,57.12,Beresiko
+Siswa_034,51.75,82.15,78.98,Lulus
+Siswa_035,41.72,93.51,47.03,Tidak Lulus
+Siswa_036,94.78,46.8,68.63,Lulus
+Siswa_037,89.0,48.55,50.46,Lulus
+Siswa_038,61.96,44.35,78.39,Beresiko
+Siswa_039,82.9,71.01,48.77,Lulus
+Siswa_040,48.05,90.8,73.99,Lulus
+Siswa_041,78.57,55.21,45.09,Beresiko
+Siswa_042,52.94,73.22,65.47,Beresiko
+Siswa_043,56.77,73.04,75.61,Beresiko
+Siswa_044,56.2,52.57,90.73,Lulus
+Siswa_045,96.43,82.92,89.97,Lulus
+Siswa_046,88.27,42.63,40.37,Tidak Lulus
+Siswa_047,96.6,77.0,72.9,Lulus
+Siswa_048,69.51,66.64,67.92,Lulus
+Siswa_049,65.33,62.71,63.07,Beresiko
+Siswa_050,74.2,92.64,64.19,Lulus
+Siswa_051,55.71,63.88,74.69,Beresiko
+Siswa_052,90.05,51.87,61.9,Lulus
+Siswa_053,40.19,57.07,84.15,Tidak Lulus
+Siswa_054,63.23,97.63,55.02,Lulus
+Siswa_055,87.46,48.3,66.81,Lulus
+Siswa_056,98.63,72.55,40.62,Lulus
+Siswa_057,82.59,44.63,68.61,Lulus
+Siswa_058,53.57,68.55,46.98,Beresiko
+Siswa_059,49.4,73.93,86.67,Beresiko
+Siswa_060,49.32,69.02,96.38,Lulus
+Siswa_061,55.73,84.91,89.36,Lulus
+Siswa_062,59.73,58.97,50.19,Beresiko
+Siswa_063,60.77,76.61,98.72,Lulus
+Siswa_064,55.57,50.84,89.35,Beresiko
+Siswa_065,44.21,49.94,51.41,Tidak Lulus
+Siswa_066,40.96,63.3,76.75,Tidak Lulus
+Siswa_067,78.49,90.23,71.38,Lulus
+Siswa_068,43.19,76.38,54.07,Tidak Lulus
+Siswa_069,45.8,70.32,90.64,Beresiko
+Siswa_070,59.96,49.57,99.15,Lulus
+Siswa_071,58.68,91.22,46.07,Lulus
+Siswa_072,74.43,43.7,49.87,Beresiko
+Siswa_073,49.0,54.07,93.5,Lulus
+Siswa_074,53.51,43.99,58.08,Beresiko
+Siswa_075,59.61,51.05,83.32,Beresiko
+Siswa_076,72.27,99.62,62.57,Lulus
+Siswa_077,92.26,85.25,48.59,Lulus
+Siswa_078,92.77,57.69,55.84,Lulus
+Siswa_079,79.96,95.9,53.32,Lulus
+Siswa_080,46.76,40.98,55.51,Tidak Lulus
+Siswa_081,71.56,81.77,92.59,Lulus
+Siswa_082,80.78,76.74,89.56,Lulus
+Siswa_083,72.67,88.86,74.22,Lulus
+Siswa_084,71.87,83.37,82.45,Lulus
+Siswa_085,71.25,72.57,68.22,Lulus
+Siswa_086,67.79,47.58,43.35,Tidak Lulus
+Siswa_087,70.33,61.08,81.1,Beresiko
+Siswa_088,64.01,77.43,63.55,Beresiko
+Siswa_089,75.66,77.08,52.44,Lulus
+Siswa_090,62.5,84.12,55.4,Beresiko
+Siswa_091,76.53,70.95,42.39,Beresiko
+Siswa_092,82.2,81.04,65.66,Lulus
+Siswa_093,69.0,51.65,95.38,Beresiko
+Siswa_094,89.39,63.21,64.38,Lulus
+Siswa_095,70.93,80.1,46.16,Beresiko
+Siswa_096,63.21,81.81,48.17,Beresiko
+Siswa_097,67.03,55.95,45.1,Tidak Lulus
+Siswa_098,64.48,52.75,90.13,Beresiko
+Siswa_099,40.98,61.1,64.52,Tidak Lulus
+Siswa_100,47.29,84.84,82.37,Lulus
+Siswa_101,75.02,65.7,77.68,Lulus
+Siswa_102,66.68,95.68,75.12,Lulus
+Siswa_103,53.52,44.14,43.8,Tidak Lulus
+Siswa_104,89.98,88.4,88.12,Lulus
+Siswa_105,76.45,76.37,78.29,Lulus
+Siswa_106,49.2,65.38,99.74,Beresiko
+Siswa_107,87.93,99.18,86.92,Lulus
+Siswa_108,99.38,95.04,53.08,Lulus
+Siswa_109,72.08,68.06,98.77,Lulus
+Siswa_110,83.84,44.6,79.99,Beresiko
+Siswa_111,70.33,91.23,99.41,Lulus
+Siswa_112,92.1,60.33,59.1,Lulus
+Siswa_113,57.94,68.77,72.92,Beresiko
+Siswa_114,66.98,47.35,96.32,Lulus
+Siswa_115,41.25,51.09,92.89,Tidak Lulus
+Siswa_116,63.69,44.05,93.94,Beresiko
+Siswa_117,91.28,44.91,82.03,Lulus
+Siswa_118,72.49,89.34,70.63,Lulus
+Siswa_119,73.27,90.73,78.04,Lulus
+Siswa_120,68.72,92.91,66.57,Lulus
+Siswa_121,71.17,41.91,44.6,Tidak Lulus
+Siswa_122,54.92,40.97,94.52,Tidak Lulus
+Siswa_123,95.19,97.87,64.93,Lulus
+Siswa_124,88.66,59.89,44.81,Lulus
+Siswa_125,73.88,51.48,94.7,Lulus
+Siswa_126,57.09,59.84,44.96,Beresiko
+Siswa_127,64.54,87.41,72.23,Lulus
+Siswa_128,49.12,82.86,73.22,Lulus
+Siswa_129,54.87,67.08,92.62,Lulus
+Siswa_130,84.17,55.25,56.26,Lulus
+Siswa_131,67.29,95.41,97.88,Lulus
+Siswa_132,51.54,66.28,80.63,Beresiko
+Siswa_133,70.16,99.84,55.37,Lulus
+Siswa_134,76.91,58.72,49.9,Lulus
+Siswa_135,66.9,93.18,82.06,Lulus
+Siswa_136,50.14,96.97,54.97,Lulus
+Siswa_137,76.46,90.81,46.57,Lulus
+Siswa_138,84.45,81.63,61.58,Lulus
+Siswa_139,81.13,76.38,85.03,Lulus
+Siswa_140,93.72,57.5,59.37,Lulus
+Siswa_141,44.52,45.83,44.9,Tidak Lulus
+Siswa_142,51.77,61.21,40.94,Beresiko
+Siswa_143,53.16,79.9,85.92,Beresiko
+Siswa_144,98.82,66.48,48.44,Lulus
+Siswa_145,97.88,55.8,90.16,Lulus
+Siswa_146,93.89,81.4,57.65,Lulus
+Siswa_147,73.74,78.61,47.59,Lulus
+Siswa_148,81.72,47.22,58.66,Lulus
+Siswa_149,81.74,55.72,95.74,Lulus
+Siswa_150,65.33,91.59,91.31,Lulus

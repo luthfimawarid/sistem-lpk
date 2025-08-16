@@ -6,7 +6,7 @@
     <section class="my-6 w-full">
         <div class="bg-white rounded-lg shadow h-auto overflow-hidden">
             <!-- Header -->
-            <div class="flex flex-row justify-between items-center mx-4 md:mx-6 my-5 py-3 pb-2 space-y-0">
+            <div class="flex flex-row justify-between items-center mx-4 md:mx-6 mt-5 pt-3 space-y-0">
                 <p class="text-lg md:text-xl font-semibold">Data Siswa</p>
                 <a href="{{ route('admin.siswa.create') }}" class="flex items-center text-sm bg-[#0A58CA] text-white rounded-full px-4 py-2 font-medium">
                     Tambah Siswa
@@ -15,6 +15,31 @@
                     </svg>
                 </a>
             </div>
+
+            <!-- Filter Form -->
+            <form method="GET" class="flex flex-wrap gap-2 items-center text-sm mb-4 mx-6">
+                <label for="filter_by" class="text-gray-700">Filter berdasarkan:</label>
+                <select name="filter_by" id="filter_by" class="border rounded px-2 py-1" onchange="this.form.submit()">
+                    <option value="kelas" {{ $filterField == 'kelas' ? 'selected' : '' }}>Kelas</option>
+                    <option value="bidang" {{ $filterField == 'bidang' ? 'selected' : '' }}>Bidang</option>
+                </select>
+
+                @php
+                    $options = collect([]);
+                    if ($filterField == 'kelas') $options = $kelasOptions;
+                    elseif ($filterField == 'bidang') $options = $bidangOptions;
+                @endphp
+
+                <select name="filter_value" id="filter_value" class="border rounded px-2 py-1">
+                    <option value="">-- Semua --</option>
+                    @foreach($options as $option)
+                        <option value="{{ $option }}" {{ $filterValue == $option ? 'selected' : '' }}>{{ $option }}</option>
+                    @endforeach
+                </select>
+
+                <button type="submit" class="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Terapkan</button>
+            </form>
+
 
             <!-- Table Wrapper -->
             <div class="overflow-x-auto">

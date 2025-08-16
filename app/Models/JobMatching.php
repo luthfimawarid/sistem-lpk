@@ -15,7 +15,10 @@ class JobMatching extends Model
         'lokasi',
         'deskripsi',
         'status',
-        'user_id',  // tambahkan ini
+        'bidang',
+        'user_id',
+        'butuh_sertifikat',
+
     ];
 
 

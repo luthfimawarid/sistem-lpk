@@ -101,6 +101,8 @@ class ChatController extends Controller
                     'users' => collect([(object)[
                         'id' => $siswa->id,
                         'nama_lengkap' => $siswa->nama_lengkap,
+                        'photo' => $siswa->photo,
+                        'kelas' => $siswa->kelas,
                     ]]),
                     'messages' => collect(),
                     'id' => null,

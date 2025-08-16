@@ -38,7 +38,7 @@ class MateriController extends Controller
         $request->validate([
             'judul' => 'required|string|max:255',
             'author' => 'required|string|max:255',
-            'bidang' => 'required|string|in:Perawatan (Kaigo/Caregiver),Pembersihan Gedung,Konstruksi,Manufaktur Mesin Industri,Elektronik dan Listrik,Perhotelan,Pertanian,Perikanan,Pengolahan Makanan dan Minuman,Jasa Makanan',
+            'bidang' => 'required|string|in:Perawatan (Kaigo/Caregiver),Pembersihan Gedung,Konstruksi,Manufaktur Mesin Industri,Elektronik dan Listrik,Perhotelan,Pertanian,Perikanan,Pengolahan Makanan dan Minuman,Restoran/Cafe',
             'file' => 'required|mimetypes:application/pdf,audio/mpeg,video/mp4|max:200000',
             'tipe' => 'required|in:ebook,listening,video',
             'status' => 'required|in:aktif,nonaktif',

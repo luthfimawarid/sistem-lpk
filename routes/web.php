@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BobotPenilaianController;
+use App\Http\Controllers\ContentSearchController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\NotifikasiController;
 use App\Http\Controllers\ProfileController;
@@ -24,7 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/siswa/{id}', [AuthController::class, 'show'])->name('admin.siswa.detail');
     Route::post('/admin/siswa/{id}/dokumen', [AuthController::class, 'uploadDokumen'])->name('admin.siswa.upload_dokumen');
     Route::get('/admin/siswa/{id}/edit', [AuthController::class, 'edit'])->name('admin.siswa.edit');
-    Route::post('/admin/siswa/{id}/update', [AuthController::class, 'update'])->name('admin.siswa.update');
+    Route::put('/admin/siswa/{id}/update', [AuthController::class, 'update'])->name('admin.siswa.update');
     Route::delete('/admin/siswa/{id}', [AuthController::class, 'destroy'])->name('admin.siswa.destroy');
     Route::delete('/admin/siswa/{siswa}/dokumen/{dokumen}', [AuthController::class, 'deleteDokumen'])->name('admin.siswa.delete_dokumen');
     Route::get('/siswa', [AuthController::class, 'index'])->name('admin.siswa.index');
@@ -87,9 +89,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/siswa/tugas/ujian-akhir/{id}/jawab', [TugasController::class, 'simpanJawaban'])->name('siswa.tugas.ujian.jawab'); // Ubah nama route
     Route::get('/siswa/tugas/ujian-akhir/{id}/selesai', [TugasController::class, 'selesaiUjian'])->name(name: 'siswa.tugas.ujian.selesai');
     Route::get('/admin/ujian-akhir/{id}', [TugasController::class, 'showDetailUjian'])->name('admin.ujian.detail');
+    Route::get('/notifikasi-admin', [NotifikasiController::class, 'indexadmin'])->name('notifikasi.admin');
+    Route::post('/notifikasi-admin/{id}/baca', [NotifikasiController::class, 'markAsReadAdmin'])
+        ->name('notifikasi.admin.baca')
+        ->middleware('auth');
+    Route::get('/notifikasi-admin/{id}/baca', [NotifikasiController::class, 'markAsReadAdmin'])
+    ->name('notifikasi.admin.baca')
+    ->middleware('auth');
 
 });
 
+    Route::post('/admin/bobot', action: [ProfileController::class, 'updateBobot'])->name('admin.bobot.update');
 
 
 // Route::get('/chat', function () {
@@ -118,7 +128,7 @@ Route::middleware('auth')->group(function () {
 //     return view('siswa.konten.profil');
 // });
 
-Route::get('/profil', [ProfileController::class, 'profil'])->name('admin.profil');
+Route::get('/profil', [ProfileController::class, 'profil'])->name('siswa.profil');
 Route::post('/siswa/profil/update', [ProfileController::class, 'updateProfilSiswa'])->name('siswa.update.profil');
 Route::post('/siswa/profil/password', [ProfileController::class, 'updatePasswordSiswa'])->name('siswa.update.password');
 
@@ -137,6 +147,7 @@ Route::post('/siswa/profil/password', [ProfileController::class, 'updatePassword
 
 // Admin
 
+Route::get('/search-content', [ContentSearchController::class, 'search']);
 
 
 
@@ -198,6 +209,8 @@ Route::get('/tugas/{id}/pengumpulan', [TugasController::class, 'showPengumpulan'
 
 // Route untuk detail kuis
 Route::get('/detail-kuis/{id}', [TugasController::class, 'showDetailKuis'])->name('admin.kuis.detail');
+// Untuk halaman detail tryout
+Route::get('/admin/tryout/{id}', [TugasController::class, 'showTryout'])->name('admin.tryout.detail');
 
 
 

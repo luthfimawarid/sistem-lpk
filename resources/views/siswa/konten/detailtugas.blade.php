@@ -58,7 +58,7 @@
             @if ($userStatus && $userStatus->jawaban)
                 <p class="text-gray-700">✅ Kamu sudah mengirim jawaban:</p>
                 <div class="flex flex-col sm:flex-row sm:items-center gap-4 mt-2">
-                    <a href="{{ asset('storage/' . $tugas->cover) }}" target="_blank"
+                    <a href="{{ asset('storage/jawaban_siswa/' .  $userStatus->jawaban) }}" target="_blank"
                        class="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-[#0A58CA] text-sm flex items-center">
                        <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                             <path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z"/>
@@ -66,7 +66,7 @@
                         </svg>
                        Lihat Jawaban
                     </a>
-                    <a href="{{ asset('storage/' . $tugas->cover) }}" download
+                    <a href="{{ asset('storage/jawaban_siswa/' .  $userStatus->jawaban) }}" download
                        class="bg-[#0A58CA] text-white px-4 py-2 rounded-lg hover:bg-blue-800 text-sm flex items-center">
                        <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                         <path fill-rule="evenodd" d="M13 11.15V4a1 1 0 1 0-2 0v7.15L8.78 8.374a1 1 0 1 0-1.56 1.25l4 5a1 1 0 0 0 1.56 0l4-5a1 1 0 1 0-1.56-1.25L13 11.15Z" clip-rule="evenodd"/>

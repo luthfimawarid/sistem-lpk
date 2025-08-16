@@ -202,7 +202,7 @@ $adaNotif = $notifikasi->where('dibaca', false)->isNotEmpty();
                         <svg class="w-6 h-6 text-white dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                             <path fill-rule="evenodd" d="M8 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1h2a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2Zm6 1h-4v2H9a1 1 0 0 0 0 2h6a1 1 0 1 0 0-2h-1V4Zm-6 8a1 1 0 0 1 1-1h6a1 1 0 1 1 0 2H9a1 1 0 0 1-1-1Zm1 3a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2H9Z" clip-rule="evenodd"/>
                         </svg>
-                        <span class="ml-3">Tugas</span>
+                        <span class="ml-3">Ujian & Tugas</span>
                         <span class="w-2 h-2 rounded-full bg-white opacity-0 group-[.active-link]:opacity-100"></span>
                     </a>
                 </li>
@@ -245,93 +245,116 @@ $adaNotif = $notifikasi->where('dibaca', false)->isNotEmpty();
 
     <!-- JavaScript -->
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const notifBadge = document.getElementById('notifBadge');
-    const currentNotifId = "{{ $notifikasi->first()?->id ?? '' }}";
-    const alertBox = document.getElementById('alert-notifikasi');
-    const dismissBtn = document.getElementById('dismiss-alert');
-    const detailBtn = document.getElementById('lihatDetailBtn');
-    const notifBtn = document.getElementById('notifBtn');
-    const profileBtn = document.getElementById('profileBtn');
-    const profileDropdown = document.getElementById('profileDropdown');
+    document.addEventListener('DOMContentLoaded', function () {
+        const notifBadge = document.getElementById('notifBadge');
+        const currentNotifId = "{{ $notifikasi->first()?->id ?? '' }}";
+        const alertBox = document.getElementById('alert-notifikasi');
+        const dismissBtn = document.getElementById('dismiss-alert');
+        const detailBtn = document.getElementById('lihatDetailBtn');
+        const notifBtn = document.getElementById('notifBtn');
+        const profileBtn = document.getElementById('profileBtn');
+        const profileDropdown = document.getElementById('profileDropdown');
+        const sidebarToggle = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
 
-    // ==== 1. BADGE LOGIC ====
-    function updateNotifBadge() {
-        fetch('/notifikasi/jumlah')
-            .then(res => res.json())
-            .then(data => {
-                if (data.jumlah > 0) {
-                    notifBadge.textContent = data.jumlah;
-                    notifBadge.classList.remove('hidden');
-                } else {
-                    notifBadge.classList.add('hidden');
-                }
-            })
-            .catch(err => {
-                console.error('Gagal mengambil jumlah notifikasi:', err);
+        // ==== 1. BADGE LOGIC ====
+        function updateNotifBadge() {
+            fetch('/notifikasi/jumlah')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.jumlah > 0) {
+                        notifBadge.textContent = data.jumlah;
+                        notifBadge.classList.remove('hidden');
+                    } else {
+                        notifBadge.classList.add('hidden');
+                    }
+                })
+                .catch(err => {
+                    console.error('Gagal mengambil jumlah notifikasi:', err);
+                });
+        }
+
+        updateNotifBadge();
+
+        // ==== 2. POPUP LOGIC ====
+        const lastSeen = localStorage.getItem('lastSeenNotifId');
+        if (currentNotifId && currentNotifId !== lastSeen) {
+            if (alertBox) alertBox.style.display = 'flex';
+
+            dismissBtn?.addEventListener('click', () => {
+                localStorage.setItem('lastSeenNotifId', currentNotifId);
+                if (alertBox) alertBox.style.display = 'none';
             });
-    }
 
-    updateNotifBadge();
+            detailBtn?.addEventListener('click', (e) => {
+                e.preventDefault();
+                localStorage.setItem('lastSeenNotifId', currentNotifId);
+                window.location.href = '/notifikasi';
+            });
 
-    // ==== 2. POPUP LOGIC ====
-    const lastSeen = localStorage.getItem('lastSeenNotifId');
-    if (currentNotifId && currentNotifId !== lastSeen) {
-        if (alertBox) alertBox.style.display = 'flex';
+            setTimeout(() => {
+                localStorage.setItem('lastSeenNotifId', currentNotifId);
+                if (alertBox) alertBox.style.display = 'none';
+            }, 10000);
+        }
 
-        dismissBtn?.addEventListener('click', () => {
-            localStorage.setItem('lastSeenNotifId', currentNotifId);
-            if (alertBox) alertBox.style.display = 'none';
-        });
-
-        detailBtn?.addEventListener('click', (e) => {
+        notifBtn?.addEventListener('click', function (e) {
             e.preventDefault();
-            localStorage.setItem('lastSeenNotifId', currentNotifId);
             window.location.href = '/notifikasi';
         });
 
-        setTimeout(() => {
-            localStorage.setItem('lastSeenNotifId', currentNotifId);
-            if (alertBox) alertBox.style.display = 'none';
-        }, 10000);
-    }
+        // ==== 3. PROFILE DROPDOWN ====
+        profileBtn.addEventListener('click', function () {
+            profileDropdown.classList.toggle('hidden');
+        });
 
-    notifBtn?.addEventListener('click', function (e) {
-        e.preventDefault();
-        window.location.href = '/notifikasi';
+        window.addEventListener('click', function (e) {
+            if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
+                profileDropdown.classList.add('hidden');
+            }
+        });
+
+        // ==== 4. HIGHLIGHT ACTIVE LINK ====
+        const links = document.querySelectorAll('a[href]');
+        const currentURL = window.location.pathname;
+        links.forEach(link => {
+            if (link.getAttribute('href') === currentURL) {
+                link.classList.add('active-link');
+            }
+        });
+
+        // ==== 5. MATERI DROPDOWN ====
+        const dropdownBtn = document.getElementById('dropdown-btn');
+        const dropdownMenu = document.getElementById('dropdown-menu');
+        const chevron = document.getElementById('chevron');
+
+        dropdownBtn?.addEventListener('click', function () {
+            dropdownMenu.classList.toggle('hidden');
+            chevron.classList.toggle('rotate-90');
+        });
+
+        // ==== 6. SIDEBAR TOGGLE ====
+        sidebarToggle?.addEventListener('click', function (e) {
+            e.stopPropagation(); // penting supaya klik tombol tidak dianggap klik di luar sidebar
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        document.addEventListener('click', function (e) {
+            const isSidebarOpen = !sidebar.classList.contains('-translate-x-full');
+            const isMobile = window.innerWidth < 640; // sm breakpoint Tailwind
+
+            if (
+                isSidebarOpen &&
+                isMobile &&
+                !sidebar.contains(e.target) &&
+                !sidebarToggle.contains(e.target)
+            ) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
     });
-
-    // ==== 3. PROFILE DROPDOWN ====
-    profileBtn.addEventListener('click', function () {
-        profileDropdown.classList.toggle('hidden');
-    });
-
-    window.addEventListener('click', function (e) {
-        if (!profileBtn.contains(e.target) && !profileDropdown.contains(e.target)) {
-            profileDropdown.classList.add('hidden');
-        }
-    });
-
-    // ==== 4. HIGHLIGHT ACTIVE LINK ====
-    const links = document.querySelectorAll('a[href]');
-    const currentURL = window.location.pathname;
-    links.forEach(link => {
-        if (link.getAttribute('href') === currentURL) {
-            link.classList.add('active-link');
-        }
-    });
-
-    // ==== 5. MATERI DROPDOWN ====
-    const dropdownBtn = document.getElementById('dropdown-btn');
-    const dropdownMenu = document.getElementById('dropdown-menu');
-    const chevron = document.getElementById('chevron');
-
-    dropdownBtn?.addEventListener('click', function () {
-        dropdownMenu.classList.toggle('hidden');
-        chevron.classList.toggle('rotate-90');
-    });
-});
 </script>
+
 
 
 

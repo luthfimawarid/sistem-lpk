@@ -15,10 +15,13 @@ class Tugas extends Model
         'tipe', 
         'cover', 
         'deadline',
-        'durasi_menit', // <-- Tambahkan ini
+        'durasi_menit',
         'status',
-        'bidang'
+        'bidang',
+        'kelas',
+        'jenis_ujian_akhir' // ✅ tambahkan ini
     ];
+
 
     public function soalKuis()
     {
@@ -29,6 +32,12 @@ class Tugas extends Model
     {
         return $this->hasMany(TugasUser::class);
     }
+
+    public function kelas()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 
 
 }
